@@ -25,3 +25,6 @@ const paymentSchema = mongoose.Schema({
     required: true, enum: ["Pending", "Successful", "Failed"]}
   
 });
+
+
+module.exports = mongoose.model("Payment", paymentSchema);

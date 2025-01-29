@@ -12,7 +12,7 @@ const fullNameSchema = new mongoose.Schema({
   },
 });
 
-const userScehma = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     fullname: fullNameSchema,
     email: {
@@ -61,5 +61,5 @@ userScehma.pre("save", async function (next) {
   next();
 });
 
-const User = mongoose.model("User", userSchema);
-module.exports = User;
+
+module.exports = mongoose.model("User", userSchema);
