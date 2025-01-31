@@ -11,6 +11,24 @@ const fullNameSchema = new mongoose.Schema({
     required: true,
   },
 });
+const beneficiarySchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+  },
+  nickName: {
+    type: String,
+    required: true,
+  },
+  balance: {
+    type: Number,
+    required: true,
+  },
+});
 
 const userSchema = new mongoose.Schema(
   {
@@ -27,6 +45,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "principal",
     },
+    beneficiary:beneficiarySchema,
     balance: {
       type: Number,
       default: 0,
@@ -52,7 +71,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userScehma.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }

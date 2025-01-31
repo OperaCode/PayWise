@@ -3,12 +3,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const connectDb = require("./config/db");
+const connectDb = require("./config/dbconnect");
 const errorHandler = require("./middleware/errormiddleware");
 
 const userRoutes = require("./routes/userRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
-const vendorRoutes = require("./routes/vendorRoute");
+//const paymentRoutes = require("./routes/paymentRoutes");
+//rsconst vendorRoutes = require("./routes/vendorRoute");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,8 +34,8 @@ app.use(
 );
 
 app.use("/user", userRoutes);
-app.use("/payment", paymentRoutes);
-app.use("/vendor", vendorRoutes);
+//app.use("/payment", paymentRoutes);
+//app.use("/vendor", vendorRoutes);
 
 mongoose.connection.once("open", () => {
   console.log("Connected to Database");

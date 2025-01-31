@@ -1,4 +1,5 @@
-const UserModel = require("../model/userModel");
+
+const UserModel = require("../models/userModel");
 const asyncHandler = require('express-async-handler');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -66,7 +67,7 @@ if(!user) {
   res.status(401).json({message: 'User not found'})
 }
 // to check if password match
-const passwordMatch = await bcrypt.compare(password, admin.password);
+const passwordMatch = await bcrypt.compare(password, user.password);
 if (!passwordMatch) {
   return res.status(404).json({ message: "Invalid Credentials" });
 }
@@ -80,7 +81,7 @@ res.cookie("token", token, {
   secure: true,
 });
 
-const { _id, fullname, role } = admin;
+const { _id, fullname, role } = user;
     res.status(201).json({ _id, fullname, email, role, token });
 
 } catch (error) {
@@ -88,12 +89,41 @@ const { _id, fullname, role } = admin;
 }
 });
 
+const getUser =asyncHandler(async(req, res)=>{
+try {
+  const {userId} =  req.params;
+const user = await UserModel.findOne({userId});
+if (user) {
+  const { _id, fullname, email} = user;
+  res.status(200).json({ _id, fullname, email});
+} else {
+  res.status(404).json({ message: "User Not Found" });
+}
+console.error(err);
+    res.status(500).send("Internal Server Error");
 
 
 
+} catch (error) {
+  console.log(error);
+}
+});
+
+const getBeneficiaries = asyncHandler(async (req, res) => {
+  try {
+    const beneficiaries = await UserModel.find()
+      .sort("-createAt")
+     // .select("-password");
+
+    if (!beneficiaries) {
+      return res.status(404).json({ message: "No beneficiaries found" });
+    }
+    res.status(200).json(beneficiaries);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message: "Internal Server Error"});
+  }
+});
 
 
-
-
-
- module.exports = {registerUser}
+ module.exports = {registerUser,loginUser,getUser,getBeneficiaries}
