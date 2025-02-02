@@ -45,28 +45,21 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "principal",
     },
-    beneficiary:beneficiarySchema,
+    beneficiary: beneficiarySchema,
     balance: {
       type: Number,
       default: 0,
     },
-    vendors: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Vendor",
-      default: [{}],
-    },
-    payments: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Vendor",
-      default: [{}],
-    },
+    vendors: [{ type: mongoose.Schema.Types.ObjectId, ref: "vendors" }],
+    payments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
     updatedAt: {
       type: Date,
       default: null,
     },
     reminderPreference: {
-       type: Boolean, 
-       default: true },
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );
@@ -79,6 +72,5 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
-
 
 module.exports = mongoose.model("User", userSchema);
