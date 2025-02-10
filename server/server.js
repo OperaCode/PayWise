@@ -11,7 +11,7 @@ const userRoutes = require("./routes/userRoutes");
 //rsconst vendorRoutes = require("./routes/vendorRoute");
 
 const app = express();
-const PORT = 5000;
+const PORT = 3000;
 
 connectDb();
 
