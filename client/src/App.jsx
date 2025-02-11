@@ -1,11 +1,13 @@
 
+
+import landingpage from "./Pages/landingPage.jsx"
 import './App.css'
 
-function App() {
+const App = ()=> {
  
   return (
     <>
-      
+     <landingpage/>
     </>
   )
 }
