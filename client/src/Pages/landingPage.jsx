@@ -1,8 +1,8 @@
 import React from 'react'
 
-const landingPage = () => {
+const LandingPage = () => {
   return (
-    <>
+    <div>
       <div className='bg-slate-200'>
         Header component
       </div>
@@ -14,8 +14,8 @@ const landingPage = () => {
         <p>Goodbye to late fines and missed deadlines. PayWise allows you to automate regular payments, such as those for subscription services and utility bills. </p>
         <button>Get Started Today!</button>
       </div>
-    </>
+    </div>
   )
 }
 
-export default landingPage
+export default LandingPage

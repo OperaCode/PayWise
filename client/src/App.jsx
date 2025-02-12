@@ -1,13 +1,16 @@
 
+import React from 'react';
 
-import landingpage from "./Pages/landingPage.jsx"
 import './App.css'
+import LandingPage from './Pages/landingPage';
+import Header from './components/Header';
 
 const App = ()=> {
  
   return (
     <>
-     <landingpage/>
+    <Header/>
+  <LandingPage/>
     </>
   )
 }
