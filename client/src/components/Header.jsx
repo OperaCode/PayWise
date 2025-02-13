@@ -3,6 +3,9 @@ import { useContext,useEffect } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import { Moon, Sun } from "lucide-react";
 import Logo from "../assets/paywise-logo.png"
+import { Link } from 'react-router-dom';
+
+
 
 
 const Header = () => {
@@ -14,13 +17,19 @@ const Header = () => {
         <header className="bg-zinc-100 shadow-sm fixed w-full top-0 z-0 ">
             <nav className=' flex justify-between p-4 items-center md:px-12'>
                 <div className=''>
-                    <img src={Logo} alt="" className='hover:cursor-pointer w-40 md:w-48'/>
+                   <Link to="/">
+                   <img src={Logo} alt="" className='hover:cursor-pointer w-40 md:w-48'/>
+                   </Link>
                 </div>
 
                 <div className='flex items-center gap-4 p-4'>
                     <ul className='flex gap-4 font-bold'>
+                        <Link to="/login">
                         <li className='hover:cursor-pointer'>Sign In</li>
+                        </Link>
+                        <Link to="/register">
                         <li className='hover:cursor-pointer'>Register</li>
+                        </Link>
                     </ul>
 
                     <button
