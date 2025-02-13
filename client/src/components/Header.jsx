@@ -1,5 +1,5 @@
 import React from 'react';
-import { useContext } from "react";
+import { useContext,useEffect } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import { Moon, Sun } from "lucide-react";
 import Logo from "../assets/paywise-logo.png"
@@ -8,6 +8,8 @@ import Logo from "../assets/paywise-logo.png"
 const Header = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
 
+
+   
     return (
         <header className="bg-zinc-100 shadow-sm fixed w-full top-0 z-0 ">
             <nav className=' flex justify-between p-4 items-center md:px-12'>

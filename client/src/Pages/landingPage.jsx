@@ -77,16 +77,21 @@ const LandingPage = () => {
                     </div>
 
                     {/* Testimonials */}
-                    <div className='mt-16'>
-                        <div className='text-center'>
+                    <div className=''>
+                        <div className=''>
                             <img src={quote} alt="Testimonials" className=' w-16' />
                         </div>
-                        <div className='grid md:grid-cols-3 gap-8 mt-8'>
-                            <div className='bg-neutral-300 p-8 rounded-xl'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque dicta blanditiis, rerum iure officia illo, ipsa nemo hic corporis facilis unde quo saepe consequatur porro?</div>
-                            <div className='bg-neutral-300 p-8 rounded-xl'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque dicta blanditiis, rerum iure officia illo, ipsa nemo hic corporis facilis unde quo saepe consequatur porro?</div>
-                            <div className='bg-neutral-300 p-8 rounded-xl'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque dicta blanditiis, rerum iure officia illo, ipsa nemo hic corporis facilis unde quo saepe consequatur porro?</div>
+                        <div className='grid md:grid-cols-3 gap-8 mb-8 px-6'>
+                            <div className='bg-neutral-300 p-8 rounded-xl'>The automated bill payment feature ensures that my utility bills, internet, and subscriptions are paid on time. PayWise is a game changer for anyone looking for seamless bill management!
+                            <br /><span> — David A., Digital Marketer</span></div>
+                            <div className='bg-neutral-300 p-8 rounded-xl'>PayWise solved bill payment frustrations with instant transfers—no more waiting hours or even days for money to reflect!
+                            <br /><span> — Jessica T., Small Business Owner</span>
+                            </div>
+                            <div className='bg-neutral-300 p-8 rounded-xl'>I was skeptical at first, but PayWise exceeded my expectations. Setting up my wallet was instant, and I love that I can fund it directly from my bank or card.
+                            <br /><span>— Michael R., Software Engineer</span></div>
+                            </div>
                         </div>
-                    </div>
+                    
                 </div>
 
                 {/* Footer */}
