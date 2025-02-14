@@ -1,6 +1,6 @@
 #root {
-  margin: 0 auto;
-  box-sizing: border-box;
+ 
+  
   --bg-color: white;
   --text-color: black;
 }
@@ -16,7 +16,7 @@ body {
   color: var(--text-color);
   font-family: Arial, sans-serif;
   text-align: center;
-  padding: 20px;
+  /* padding: 20px; */
 }
 
 /* Toggle Button */

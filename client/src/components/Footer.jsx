@@ -11,7 +11,7 @@ import { Linkedin } from 'lucide-react';
 const Footer = () => {
     return (
         <>
-            <footer className='flex items-center w-full justify-around p-8 bg-neutral-900 text-white h-50' >
+            <footer className='flex items-center w-screen justify-around  bg-neutral-900 text-white h-50' >
                 <div className='flex flex-col '>
                     <img src={footerlogo} alt="" className='w-18' />
                     <p className='text-sm'>110234, Lagos, Nigeria.</p>

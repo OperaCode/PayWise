@@ -6,15 +6,13 @@ import Logo from "../assets/paywise-logo.png"
 import { Link } from 'react-router-dom';
 
 
-
-
 const Header = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
 
 
    
     return (
-        <header className="bg-zinc-100 shadow-sm fixed w-full top-0 z-0 ">
+        <header className="bg-zinc-100 shadow-sm fixed w-screen top-0 z-0 ">
             <nav className=' flex justify-between p-4 items-center md:px-12'>
                 <div className=''>
                    <Link to="/">
