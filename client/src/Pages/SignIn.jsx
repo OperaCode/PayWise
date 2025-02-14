@@ -34,29 +34,29 @@ const Login = () => {
                     </button>
                 </div>
 
-                <div className="rounded-lg shadow-lg w-full  gap-4 items-center flex">
+                <div className="rounded-lg shadow-lg w-full  px-10 gap-4 items-center flex">
                  {/* Right - Illustration */}
-                    <div className="w-1/2  hidden md:flex  flex-col justify-center p-6 items-center ">
+                    <div className="w-1/2  hidden md:flex flex-col justify-center items-center ">
                         <img src={image} alt="Signup  Illustration" className="w-md" />
                         <p className="hidden md:block">
-                            Already have an account? <a href="/login" className="font-bold">Log in</a>
+                            Don't have an account? <a href="/register" className="font-bold">Sign Up</a> 
                         </p>
                     </div>
 
                  {/* Left - Form Section */}
-                    <div className="w-1/2 p-6 flex-1  ">
-                        <h2 className="text-3xl text-center mb-3 font-bold">Log in</h2>
+                    <div className="w-1/2 p-6  flex-1  ">
+                        <h2 className="text-5xl text-center text-cyan-900 mb-3 font-extrabold">Sign in</h2>
                         <p className=" mb-6 text-center">
                             Hello Chief! Welcome Back!
                         </p>
                         <form  className="space-y-4">
-                            <input type="email" name="email" placeholder="Email"  className="w-full p-3 rounded-lg bg-gray-200  shadow-md" required />
-                            <input type="password" name="password" placeholder="Enter password"  className="w-full p-3 rounded-lg bg-gray-200  shadow-md" required />
+                            <input type="email" name="email" placeholder="Email"  className="w-md full p-3 rounded-2xl bg-gray-200 border-4 border-neutral-500 shadow-lg"required />
+                            <input type="password" name="password" placeholder="Enter password"  className="w-md full p-3 rounded-2xl bg-gray-200 border-4 border-neutral-500 shadow-lg" required />
                             
-                            <button type="submit" className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition hover:cursor-pointer">Log in</button>
+                            <button type="submit" className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer ">Log in</button>
                         </form>
                         <p className="md:hidden">
-                            Don't have an account? <a href="/login" className="font-bold">Sign Up</a>
+                            Don't have an account? <a href="/register" className="font-bold">Sign Up</a>
                         </p>
 
                     </div>

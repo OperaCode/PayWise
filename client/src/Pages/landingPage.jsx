@@ -8,6 +8,7 @@ import tick from "../assets/tick.png";
 import hero2 from "../assets/hero2.png";
 import quote from "../assets/heroquote.png";
 import Footer from '../components/Footer';
+import { Link } from 'react-router-dom';
 
 const LandingPage = () => {
     return (
@@ -30,7 +31,9 @@ const LandingPage = () => {
                         <p className='text-4xl md:text-5xl'>live better</p><br />
 
                         <p className='text-xl  w-xl m-auto'>Goodbye to late fines and missed deadlines. PayWise allows you to automate regular payments, such as those for subscription services and utility bills.</p>
-                        <button className='bg-blue-900 text-white px-6 py-3 rounded-3xl font-semibold mt-4 hover:bg-blue-800'>Get Started Today!</button>
+                       <Link to="/register">
+                       <button className='bg-cyan-700 text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-blue-900'>Get Started Today!</button>
+                       </Link>
                     </div>
 
                     {/* Features Section */}

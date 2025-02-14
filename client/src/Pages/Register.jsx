@@ -5,7 +5,7 @@ import image from "../assets/signup.png"
 import logo from "../assets/paywise-logo.png"
 import { Link } from "react-router-dom";
 
-const SignUp = () => {
+const Register = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
     const [formData, setFormData] = useState({
         firstName: "",
@@ -31,7 +31,7 @@ const SignUp = () => {
             <div className="flex justify-between px-4 items-center ">
                 <div className=" w-50">
                     <Link to="/">
-                        <img src={logo} alt="signup" className="" />
+                        <img src={logo} alt="Register" className="" />
                     </Link>
                 </div>
                 <button onClick={toggleTheme} className=" h-10  p-2 bg-gray-200 dark:bg-gray-700 rounded-2xl hover:cursor-pointer">
@@ -41,27 +41,27 @@ const SignUp = () => {
             <div className="p-8 rounded-lg shadow-lg w-full  gap-4 flex">
                 {/* Left - Form Section */}
                 <div className="w-1/2 p- flex-1">
-                    <h2 className="text-3xl text-center mb-3 font-bold">Sign up</h2>
+                    <h2 className="text-5xl text-center text-cyan-900 mb-3 font-extrabold">Sign up</h2>
                     <p className=" mb-6 text-center">
                         Hello Chief! Let’s get you started
                     </p>
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <input type="text" name="firstName" placeholder="First Name" onChange={handleChange} className="w-full p-3 rounded-lg bg-gray-200  shadow-md" required />
-                        <input type="text" name="lastName" placeholder="Last Name" onChange={handleChange} className="w-full p-3 rounded-lg bg-gray-200  shadow-md" required />
-                        <input type="email" name="email" placeholder="Email Address" onChange={handleChange} className="w-full p-3 rounded-lg bg-gray-200  shadow-md" required />
-                        <input type="password" name="password" placeholder="Password" onChange={handleChange} className="w-full p-3 rounded-lg bg-gray-200  shadow-md" required />
-                        <input type="password" name="confirmPassword" placeholder="Confirm Password" onChange={handleChange} className="w-full p-3 rounded-lg bg-gray-200  shadow-md" required />
-                        <button type="submit" className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition hover:cursor-pointer">Let's get started</button>
+                        <input type="text" name="firstName" placeholder="First Name" onChange={handleChange} className="w-md full p-3 rounded-2xl bg-gray-200 border-4 border-neutral-500 shadow-lg" required />
+                        <input type="text" name="lastName" placeholder="Last Name" onChange={handleChange} className="w-md p-3 rounded-2xl bg-gray-200  border-4 border-neutral-500 shadow-lg" required />
+                        <input type="email" name="email" placeholder="Email Address" onChange={handleChange} className="w-md p-3 rounded-lg bg-gray-200  border-4 border-neutral-500 shadow-lg" required />
+                        <input type="password" name="password" placeholder="Password" onChange={handleChange} className="w-md p-3 rounded-2xl bg-gray-200  border-4 border-neutral-500 shadow-lg" required />
+                        <input type="password" name="confirmPassword" placeholder="Confirm Password" onChange={handleChange} className="w-md p-3 rounded-2xl bg-gray-200  border-4 border-neutral-500 shadow-lg" required />
+                        <button type="submit" className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer ">Let's get started</button>
                     </form>
                     <p className="md:hidden">
-                        Already have an account? <a href="/login" className="font-bold">Log in</a>
+                        Already have an account? <a href="/login" className="font-bold text-cyan-900">Log in</a>
                     </p>
 
                 </div>
 
                 {/* Right - Illustration */}
                 <div className="w-1/2  hidden md:flex flex-col justify-center items-center ">
-                    <img src={image} alt="Signup  Illustration" className="w-md" />
+                    <img src={image} alt="Register  Illustration" className="w-md" />
                     <p className="hidden md:block">
                         Already have an account? <a href="/login" className="font-bold">Log in</a>
                     </p>
@@ -74,4 +74,4 @@ const SignUp = () => {
     );
 };
 
-export default SignUp;
+export default Register;
