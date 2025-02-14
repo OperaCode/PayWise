@@ -18,7 +18,7 @@ const Footer = () => {
                 </div>
                 <div className=''>
                     <ul className='hover:cursor-pointer md:flex gap-8 text-sm'>
-                        <li>About</li>
+                        <a href="/about"><li>About</li></a>
                         <li>Terms</li>
                         <li>Privacy</li>
                     </ul>

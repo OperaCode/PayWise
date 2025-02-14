@@ -32,7 +32,7 @@ const LandingPage = () => {
 
                         <p className='text-xl w-xl m-auto'>Goodbye to late fines and missed deadlines. PayWise allows you to automate regular payments, such as those for subscription services and utility bills.</p>
                        <Link to="/register">
-                       <button className='bg-cyan-700 text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-blue-900'>Get Started Today!</button>
+                       <button className='bg-cyan-700 text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Get Started Today!</button>
                        </Link>
                     </div>
 
@@ -69,22 +69,25 @@ const LandingPage = () => {
                     </div>
 
                     {/* Rewards Section */}
-                    <div className='md:flex gap-8 items-center mt-16 '>
+                    <div className='md:flex gap-8 items-center mt-16 px-8'>
                         <div className='flex-1'>
                             <img src={hero2} alt="Earn Rewards" className='' />
                         </div>
                         <div className='flex-1 p-4 md:w- m-auto text-center'>
                             <h1 className='text-3xl font-bold md:text-5xl '>Earn rewards for every automated payment</h1>
                             <p className='mt-2'>Every time you use our platform for automated payments, you’ll earn reward-based tokens. These tokens can be redeemed for discounts and exclusive perks, making financial discipline more rewarding than ever.</p>
+                            <Link to="/about">
+                       <button className='bg-cyan-700 text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Learn MORE...!</button>
+                       </Link>
                         </div>
                     </div>
 
                     {/* Testimonials */}
-                    <div className=''>
+                    <div className='px-12'>
                         <div className=''>
                             <img src={quote} alt="Testimonials" className=' w-16' />
                         </div>
-                        <div className='grid md:grid-cols-3 gap-8 mb-8 px-6'>
+                        <div className='grid md:grid-cols-3 gap-8 mb-8 px-12'>
                             <div className='bg-neutral-300 p-8 rounded-xl'>The automated bill payment feature ensures that my utility bills, internet, and subscriptions are paid on time. PayWise is a game changer for anyone looking for seamless bill management!
                             <br /><span> — David A., Digital Marketer</span></div>
                             <div className='bg-neutral-300 p-8 rounded-xl'>PayWise solved bill payment frustrations with instant transfers—no more waiting hours or even days for money to reflect!
