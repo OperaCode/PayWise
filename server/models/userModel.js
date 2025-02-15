@@ -1,25 +1,9 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const uuid = require("uuid");
 
 
-const beneficiarySchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-  },
-  nickName: {
-    type: String,
-    required: true,
-  },
-  balance: {
-    type: Number,
-    required: true,
-  },
-});
+
 
 const userSchema = new mongoose.Schema(
   {
@@ -39,21 +23,20 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    role: {
-      type: String,
-      default: "principal",
-    },
-    beneficiary: beneficiarySchema,
-    balance: {
-      type: Number,
-      default: 0,
-    },
-    vendors: [{ type: mongoose.Schema.Types.ObjectId, ref: "vendors" }],
-    payments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
-    updatedAt: {
-      type: Date,
-      default: null,
-    },
+
+    // Wallet Details
+  walletId: { type: String, unique: true, default: uuid }, // Unique wallet address
+  balance: { type: Number, default: 0 },
+  notifications: [
+    {
+      message: String,
+      type: { type: String, enum: ["success", "error", "info"], required: true },
+      isRead: { type: Boolean, default: false },
+      createdAt: { type: Date, default: Date.now },
+    }
+  ],
+   
+    
     reminderPreference: {
       type: Boolean,
       default: true,

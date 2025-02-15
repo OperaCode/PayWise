@@ -93,34 +93,6 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-const getUser = asyncHandler(async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const user = await userModel.findById(userId);
-    if (user) {
-      const { _id, firstName, lastName, email } = user;
-      res.status(200).json({ _id, fullName: `${firstName} ${lastName}`, email });
-    } else {
-      res.status(404).json({ message: "User Not Found" });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
 
-const getBeneficiaries = asyncHandler(async (req, res) => {
-  try {
-    const beneficiaries = await userModel.find().sort("-createdAt");
-
-    if (!beneficiaries.length) {
-      return res.status(404).json({ message: "No beneficiaries found" });
-    }
-    res.status(200).json(beneficiaries);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
 
 module.exports = { registerUser, loginUser, getUser, getBeneficiaries };
