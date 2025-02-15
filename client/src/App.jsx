@@ -20,9 +20,10 @@ const App = () => {
 
   return (
     <>
-      {loading ? (
+      {/* {loading ? (
         <Loader /> // Show loader while loading
       ) : (
+      )} */}
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<LandingLayout><AboutUs /></LandingLayout>} />
@@ -31,7 +32,6 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
         </Routes>
-      )}
     </>
   );
 };

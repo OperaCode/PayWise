@@ -1,0 +1,18 @@
+themes.css
+
+/* Light Theme */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --button-bg: #f0f0f0;
+    --button-text: #333333;
+  }
+  
+  /* Dark Theme */
+  /* [data-theme="dark"] {
+    --bg-color: #1a1a1a;
+    --text-color: #ffffff;
+    --button-bg: #333333;
+    --button-text: #ffffff;
+  } */
+  

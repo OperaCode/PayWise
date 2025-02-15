@@ -32,7 +32,7 @@ const Header = () => {
 
                     <button
                         onClick={toggleTheme}
-                        className="p-2 bg-gray-200 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
+                        className="p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
                     >
                         {theme === "light" ? <Moon className="text-white" /> : <Sun className="text-yellow-400" />}
                     </button>

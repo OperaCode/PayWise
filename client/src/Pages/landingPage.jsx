@@ -27,12 +27,12 @@ const LandingPage = () => {
                     <div className=' '>
                         <img src={heropicture} className='w-3xl m-auto' alt="Hero" />
                         {/* <h1 className='font-medium text-5xl md:text-7xl w-full'>Pay Smarter, <span className='text-4xl md:text-5xl'>Live Better</span></h1> */}
-                        <h1 className='font-medium text-5xl md:text-7xl'>Pay Smarter,</h1>
-                        <p className='text-4xl md:text-5xl'>live better</p><br />
+                        <h1 className='font-medium text-5xl md:text-7xl text-center'>Pay Smarter,</h1>
+                        <p className='text-4xl md:text-5xl text-center'>live better</p><br />
 
-                        <p className='text-xl w-xl m-auto'>Goodbye to late fines and missed deadlines. PayWise allows you to automate regular payments, such as those for subscription services and utility bills.</p>
+                        <p className='text-xl w-lg m-auto text-center'>Goodbye to late fines and missed deadlines. PayWise allows you to automate regular payments, such as those for subscription services and utility bills.</p>
                        <Link to="/register">
-                       <button className='bg-cyan-700 text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Get Started Today!</button>
+                       <button className='bg-cyan-700 border text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Get Started Today!</button>
                        </Link>
                     </div>
 
@@ -77,7 +77,7 @@ const LandingPage = () => {
                             <h1 className='text-3xl font-bold md:text-5xl '>Earn rewards for every automated payment</h1>
                             <p className='mt-2'>Every time you use our platform for automated payments, you’ll earn reward-based tokens. These tokens can be redeemed for discounts and exclusive perks, making financial discipline more rewarding than ever.</p>
                             <Link to="/about">
-                       <button className='bg-cyan-700 text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Learn MORE...!</button>
+                       <button className='bg-cyan-700  text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Learn MORE...!</button>
                        </Link>
                         </div>
                     </div>
