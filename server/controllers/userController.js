@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
+const cloudinary = require("cloudinary").v2;
+const multer = require("multer");
 
 
 
@@ -14,6 +16,24 @@ const generateToken = (userId) => {
 };
 
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+
+// Configure Multer for Local Storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, "../uploads/");
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
+  },
+});
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
@@ -99,12 +119,12 @@ const loginUser = asyncHandler(async (req, res) => {
     //   return res.status(500).json({ message: "Password storage error" });
     // }
 
-    
+
     // Debugging password mismatch issue
     // console.log("Input Password:", password);
     // console.log("Stored Password:", user.password);
-    
-    
+
+
     // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
@@ -138,11 +158,98 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const getUser = asyncHandler(async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log("req user Id =", req.userId);
+    // find user by id
+    const user = await userModel.findById(userId);
+    if (user) {
+      console.log(user)
+      const { _id, firstName,lastName, email} = user;
+      res.status(200).json({ _id, fullName: `${firstName} ${lastName}`, email});
+    } else {
+      res.status(404).json({ message: "User Not Found" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal Server Error: " + err);
+  }
+});
 
+const getUsers = asyncHandler(async(req, res) => {
+  try {
+    const users = await userModel.find()
+      .sort("-createAt")
+      .select("-password");
+
+    if (!users) {
+      return res.status(404).json({ message: "No user found" });
+    }
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// incomplete
+const updateUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update user fields dynamically
+    Object.keys(req.body).forEach((key) => {
+      if (req.body[key] !== undefined) {
+        user[key] = req.body[key];
+      }
+    });
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      message: "User updated successfully",
+      user: updatedUser,
+    });
+  } catch (err) {
+    console.error("Update User Error:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+const deleteUser = asyncHandler(async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await userModel.findById(userId);
+    if (!user) {
+      res.status(404);
+      throw new Error("user not found");
+    }
+    await user.deleteOne();
+    res.status(200).json({ message: "user deleted successfully" });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ errorMessage: err.message });
+  }
+});
+
+// function to log out user
+const LogoutUser = asyncHandler(async (req, res) => {
+  res.cookie("token", " ", {
+    path: "/",
+    httpOnly: true,
+    expires: new Date(0),
+    sameSite: "none",
+    secure: true,
+  });
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 
 
-
-
-module.exports = { registerUser, loginUser};
+module.exports = { registerUser, loginUser, getUser, getUsers, updateUser, deleteUser,LogoutUser};

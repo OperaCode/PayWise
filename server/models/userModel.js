@@ -11,11 +11,12 @@ const userSchema = new mongoose.Schema(
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
     password: { type: String, required: true },
+    profilePicture: { type: String, default: null }, // Store image URL
     wallet: {
       walletId: { type: String, unique: true, required: true, default: uuidv4 },
       balance: { type: Number, default: 0 },
     },
-    biller: [{ type: mongoose.Schema.Types.ObjectId, ref: "Vendor", enum:"Vendor,biller" }], // Array of vendor IDs
+    billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Vendor", enum:"Vendor,biller" }], // Array of vendor IDs
   },
   { timestamps: true }
 );
