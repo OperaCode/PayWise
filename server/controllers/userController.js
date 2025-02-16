@@ -3,13 +3,17 @@ const asyncHandler = require('express-async-handler');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const userModel = require("../models/userModel");
+const { v4: uuidv4 } = require("uuid");
 
-// Generate token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.ACCESS_TOKEN, {
-    expiresIn: "1d",
+
+
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.ACCESS_TOKEN, {
+    expiresIn: "30d", // Token expires in 30 days
   });
 };
+
+
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
@@ -17,10 +21,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
-    } else if (password.length < 8) {
-      return res.status(400).json({ message: "Password must be at least 8 characters" });
-    } else if (password.length > 20) {
-      return res.status(400).json({ message: "Password must not be more than 20 characters" });
+    }
+    if (password.length < 8 || password.length > 20) {
+      return res.status(400).json({ message: "Password must be between 8 and 20 characters" });
     }
 
     const userExist = await userModel.findOne({ email });
@@ -29,33 +32,50 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Hash password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user in the database
-    const user = await userModel.create({ firstName, lastName, email, password: hashedPassword });
+    // Create a new user with a transaction wallet
+    const newUser = await userModel.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      wallet: {
+        balance: 0,
+        walletId: uuidv4(),
+      },
+    });
 
-    if (user) {
+    if (newUser) {
       // Generate a token for the user
-      const token = generateToken(user._id);
+      const token = generateToken(newUser._id);
+
       res.cookie("token", token, {
         path: "/",
         httpOnly: true,
-        expires: new Date(Date.now() + 86400000), // Correct expiration time (24h)
+        expires: new Date(Date.now() + 86400000), // 1 day
         sameSite: "none",
         secure: true,
       });
-      
-      // Send a success response with the user details and token
+
       res.status(201).json({
-        id: user._id,
-        name: `${user.firstName} ${user.lastName}`,
-        email: user.email,
-        token,
+        message: "User registered successfully",
+        user: {
+          _id: newUser._id,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          email: newUser.email,
+          walletId: newUser.wallet.walletId,
+          balance: newUser.wallet.balance,
+          token,
+        },
       });
-   
+    } else {
+      res.status(400).json({ message: "User registration failed" });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Registration Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -63,36 +83,66 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await userModel.findOne({ email });
 
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // Check if password matches
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials, user not found" });
+    }
+
+    // // Ensure password is correctly hashed before comparing
+    // if (typeof user.password !== "string") {
+    //   console.error("Stored password is not a string:", user.password);
+    //   return res.status(500).json({ message: "Password storage error" });
+    // }
+
+    
+    // Debugging password mismatch issue
+    console.log("Input Password:", password);
+    console.log("Stored Password:", user.password);
+    
+    
+    // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return res.status(401).json({ message: "Invalid Credentials: Password mismatch" });
+      console.error("Password mismatch detected:", { inputPassword: password, storedPassword: user.password });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // Generate JWT token
     const token = generateToken(user._id);
+
     res.cookie("token", token, {
       path: "/",
       httpOnly: true,
-      expires: new Date(Date.now() + 86400000),
+      expires: new Date(Date.now() + 86400000), // 1 day
       sameSite: "none",
       secure: true,
     });
 
-    const { _id, firstName, lastName, role } = user;
-    res.status(200).json({ _id, fullName: `${firstName} ${lastName}`, email, role, token });
+    const { _id, firstName, lastName } = user;
+    res.status(200).json({
+      _id,
+      fullName: `${firstName} ${lastName}`,
+      email,
+      token,
+    });
 
   } catch (error) {
-    console.error(error);
+    console.error("Login Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
+const getUser = asyncHandler(async (req, res) => {
+
+});
 
 
-module.exports = { registerUser, loginUser, getUser, getBeneficiaries };
+
+
+
+module.exports = { registerUser, loginUser};
