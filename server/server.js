@@ -5,8 +5,12 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDb = require("./config/dbconnect");
 const errorHandler = require("./middleware/errormiddleware");
+const initializePassport = require("./config/passport"); // Import passport configuration
+const session = require("express-session");
+const passport = require("passport"); 
 
 const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/authRoutes");
 //const paymentRoutes = require("./routes/paymentRoutes");
 //rsconst vendorRoutes = require("./routes/vendorRoute");
 
@@ -33,7 +37,18 @@ app.use(
   })
 );
 
+// Configure passport
+initializePassport(passport);
+
+// Passport Middleware
+app.use(session({ secret: "paywise-secret", resave: false, saveUninitialized: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+
 app.use("/user", userRoutes);
+app.use("/auth", authRoutes);
+
 //app.use("/payment", paymentRoutes);
 //app.use("/vendor", vendorRoutes);
 

@@ -101,8 +101,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
     
     // Debugging password mismatch issue
-    console.log("Input Password:", password);
-    console.log("Stored Password:", user.password);
+    // console.log("Input Password:", password);
+    // console.log("Stored Password:", user.password);
     
     
     // Verify password
