@@ -11,6 +11,7 @@ const passport = require("passport");
 
 const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
+const billerRoutes = require("./routes/billerRoutes");
 //const paymentRoutes = require("./routes/paymentRoutes");
 //rsconst vendorRoutes = require("./routes/vendorRoute");
 
@@ -48,9 +49,9 @@ app.use(passport.session());
 
 app.use("/user", userRoutes);
 app.use("/auth", authRoutes);
+app.use("/biller", billerRoutes);
 
 //app.use("/payment", paymentRoutes);
-//app.use("/vendor", vendorRoutes);
 
 mongoose.connection.once("open", () => {
   console.log("Connected to Database");
