@@ -6,7 +6,7 @@ import Footer from '../components/Footer'
 // This layout should wrap the entire landing page, it includes header, main content, and footer.
 const LandingLayout = ({children}) => {
     return (
-        <div className='bg-zinc-100 w-full border'>
+        <div className='bg-zinc-100 w-full'>
            
                 <Header />
           

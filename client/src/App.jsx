@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './App.css';
 import { Route, Routes } from "react-router-dom";
 import LandingLayout from './Layouts/LandingLayout';
@@ -9,9 +9,12 @@ import Register from './Pages/Register';
 import AboutUs from './Pages/AboutUs.jsx';
 import Privacy from './Pages/Privacy.jsx';
 import Loader from './components/Loader.jsx';
+import { ThemeContext } from './context/ThemeContext.jsx';
+import Header from './components/Header.jsx';
 
 const App = () => {
   const [loading, setLoading] =useState(true);
+  const { theme } = useContext(ThemeContext); // Get theme from context
 
   useEffect(() => {
     // Simulate an API call or app initialization delay
@@ -19,20 +22,28 @@ const App = () => {
   }, []);
 
   return (
-    <>
+    <div className={`app-container ${theme}`}>
       {/* {loading ? (
         <Loader /> // Show loader while loading
       ) : (
-      )} */}
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
+        
+      )}; */}
+
+      {/* <Header/> */}
+        <Routes >
+          <Route path="/" element={<LandingPage />}  />
           <Route path="/about" element={<LandingLayout><AboutUs /></LandingLayout>} />
           <Route path="/terms-and-conditions" element={<LandingLayout><TermsAndConditions /></LandingLayout>} />
           <Route path="/privacy-policy" element={<LandingLayout><Privacy /></LandingLayout>} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
         </Routes>
-    </>
+
+
+
+
+
+    </div>
   );
 };
 

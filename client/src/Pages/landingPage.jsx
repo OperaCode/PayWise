@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom';
 const LandingPage = () => {
     return (
         <>
-            <div className='bg-zinc-100 w-full flex-col m-auto justify-center' >
+            <div className=' w-full flex-col  justify-center' >
 
                 {/* Header  */}
                 <div >
@@ -21,19 +21,21 @@ const LandingPage = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className=' justify-center p-6 m-auto pt-30 '>
+                <div className=' justify-center p-6 m-auto pt-40 '>
 
                     {/* Hero Section */}
-                    <div className=' '>
+                    <div className=' items-center m-auto flex-col justify-center '>
                         <img src={heropicture} className='w-3xl m-auto' alt="Hero" />
                         {/* <h1 className='font-medium text-5xl md:text-7xl w-full'>Pay Smarter, <span className='text-4xl md:text-5xl'>Live Better</span></h1> */}
                         <h1 className='font-medium text-5xl md:text-7xl text-center'>Pay Smarter,</h1>
                         <p className='text-4xl md:text-5xl text-center'>live better</p><br />
 
                         <p className='text-xl w-lg m-auto text-center'>Goodbye to late fines and missed deadlines. PayWise allows you to automate regular payments, such as those for subscription services and utility bills.</p>
+                       <div className='flex justify-center'>
                        <Link to="/register">
-                       <button className='bg-cyan-700 border text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Get Started Today!</button>
+                       <button className='bg-cyan-700  text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Get Started Today!</button>
                        </Link>
+                       </div>
                     </div>
 
                     {/* Features Section */}
