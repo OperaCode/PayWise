@@ -3,13 +3,53 @@ const Biller = require("../models/billerModel");
 
 
 const createBiller = asyncHandler(async (req, res) => {
-    console.log("User in request:", req.user); // Debugging line
-  
+   // console.log("User in request:", req.user); // Debugging line
+  try {
     if (!req.user || !req.user._id) {
       return res.status(401).json({ message: "Unauthorized: No user found" });
     }
   
     const { name, category, accountNumber, bankName, serviceType, phone, email } = req.body;
+
+    if (
+      !name ||
+      !category ||
+      !accountNumber ||
+      !bankName ||
+      !serviceType ||
+      !phone ||
+      !email 
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Please fill in all required fields" });
+    }
+
+    //  Check if the biller already exists (By accountNumber or email)
+    const existingBiller = await Biller.findOne({ 
+      $or: [{ accountNumber }, { email }] // Check if accountNumber OR email exists
+  });
+
+  if (existingBiller) {
+      return res.status(400).json({ 
+          message: `A biller with this ${existingBiller.accountNumber === accountNumber ? "account number" : "email"} already exists.` 
+      });
+  }
+
+    // Count user's billers
+    const userBillers = await Biller.find({ user: req.user._id });
+
+    const vendorCount = userBillers.filter(b => b.category === "vendor").length;
+    const beneficiaryCount = userBillers.filter(b => b.category === "beneficiary").length;
+
+    // Restriction function based on category
+    if (category === "vendor" && vendorCount >= 5) {
+        return res.status(400).json({ message: "You can only have up to 5 vendors, Upgrade to get more." });
+    }
+
+    if (category === "beneficiary" && beneficiaryCount >= 1) {
+        return res.status(400).json({ message: "You can only have 1 beneficiary,Upgrade to get more." });
+    }
   
     const biller = await Biller.create({
       user: req.user._id,
@@ -23,6 +63,11 @@ const createBiller = asyncHandler(async (req, res) => {
     });
   
     res.status(201).json(biller);
+  } catch (error) {
+    console.error("Error creating biller:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+   
   });
 
 

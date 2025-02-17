@@ -2,11 +2,14 @@ const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 const UserModel = require("../models/userModel");
 
-// Middleware to protect user routes by verifying JWT token
 const protectUser = asyncHandler(async (req, res, next) => {
+  // console.log("Headers Received: ", req.headers); // Debugging line
   let token;
 
-  // Check if token exists in Authorization header or cookies
+  // Log Authorization header and cookies
+  //console.log("Auth Header:", req.headers.authorization);
+  //console.log("Cookies Token:", req.cookies?.token);
+
   token =
     req.headers?.authorization?.startsWith("Bearer") 
       ? req.headers.authorization.split(" ")[1] 
@@ -17,30 +20,30 @@ const protectUser = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    // Verify token using the secret key
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Debugging: Decode token before verification
+    const decodedRaw = jwt.decode(token);
+    //console.log("Decoded Token:", decodedRaw);
 
-    // Ensure decoded has a valid user ID
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    //console.log("Verified User ID:", decoded.id);
+
     if (!decoded.id) {
       return res.status(401).json({ message: "Unauthorized, invalid token payload" });
     }
 
-    // Fetch user and attach it to `req.user`
     req.user = await UserModel.findById(decoded.id).select("-password");
 
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized, user not found" });
     }
 
-    next(); // Proceed to next middleware
+    next();
   } catch (err) {
-    let errorMessage = "Unauthorized, invalid token";
+    console.error("JWT Verification Error:", err);
 
-    if (err.name === "TokenExpiredError") {
-      errorMessage = "Unauthorized, token expired";
-    } else if (err.name === "JsonWebTokenError") {
-      errorMessage = "Unauthorized, invalid token";
-    }
+    let errorMessage = "Unauthorized, invalid token";
+    if (err.name === "TokenExpiredError") errorMessage = "Unauthorized, token expired";
+    else if (err.name === "JsonWebTokenError") errorMessage = "Unauthorized, invalid token";
 
     return res.status(401).json({ message: errorMessage });
   }
