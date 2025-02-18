@@ -1,49 +1,162 @@
+
+
 const asyncHandler = require("express-async-handler");
 const Payment = require("../models/paymentModel");
+const User = require("../models/userModel");
+const Vendor = require("../models/vendorModel");
 
 
-const createPayment = asyncHandler(async (req, res) => {
-    try {
-        const { userId, vendorId, amount, frequency } = req.body;
+// const createPayment = asyncHandler(async (req, res) => {
+//     try {
+//         const { userId, vendorId, amount, frequency } = req.body;
         
-        const  nextPaymentDate = new Date();
-    switch (frequency) {
-      case 'daily':
-        nextPaymentDate.setDate(nextPaymentDate.getDate() + 1);
-        break;
-      case 'weekly':
-        nextPaymentDate.setDate(nextPaymentDate.getDate() + 7);
-        break;
-      case 'bi-weekly':
-        nextPaymentDate.setDate(nextPaymentDate.getDate() + 14);
-        break;
-      case 'monthly':
-        nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
-        break;
-      default:
-        nextPaymentDate = null; // One-time payment
-    }
+//         const  nextPaymentDate = new Date();
+//     switch (frequency) {
+//       case 'daily':
+//         nextPaymentDate.setDate(nextPaymentDate.getDate() + 1);
+//         break;
+//       case 'weekly':
+//         nextPaymentDate.setDate(nextPaymentDate.getDate() + 7);
+//         break;
+//       case 'bi-weekly':
+//         nextPaymentDate.setDate(nextPaymentDate.getDate() + 14);
+//         break;
+//       case 'monthly':
+//         nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+//         break;
+//       default:
+//         nextPaymentDate = null; // One-time payment
+//     }
 
     
-        // Generate a unique transaction reference
-       // const transactionReference = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+//         // Generate a unique transaction reference
+//        // const transactionReference = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     
-        const newPayment = new Payment({
-            user: userId,
-            vendor: vendorId,
+//         const newPayment = new Payment({
+//             user: userId,
+//             vendor: vendorId,
+//             amount,
+//             frequency,
+//             nextPaymentDate
+//         });
+    
+//         await newPayment.save();
+    
+//         res.status(201).json({ message: 'Payment initiated', payment });
+//       } catch (error) {
+//         res.status(500).json({ error: 'Payment initiation failed', details: error.message });
+//       }
+//     }
+// );
+
+// 1️⃣ Create a Single Payment
+
+
+
+//create a single payment
+const createPayment = asyncHandler( async (req, res) => {
+    try {
+        const { userId, vendorId, amount, description, scheduledAt } = req.body;
+
+        // Find user
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Find vendor
+        const vendor = await Vendor.findById(vendorId);
+        if (!vendor) return res.status(404).json({ message: "Vendor not found" });
+
+        // Check wallet balance for instant payments
+        if (!scheduledAt && user.walletBalance < amount) {
+            return res.status(400).json({ message: "Insufficient wallet balance" });
+        }
+
+        // Create a new payment
+        const payment = new Payment({
+            userId,
+            vendorId,
             amount,
-            frequency,
-            nextPaymentDate
+            description,
+            scheduledAt: scheduledAt || null, // If no schedule, it will be an instant payment
+            status: scheduledAt ? "Scheduled" : "Pending"
+        });
+
+        await payment.save();
+
+        return res.status(201).json({ message: "Single payment created successfully", payment });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// 2️⃣ Create a Group Payment
+const createPayments = asyncHandler( async (req, res) => {
+    try {
+        const { user_id, payments } = req.body; // Array of payments
+    
+        const groupedPayments = { weekly: [], monthly: [] };
+    
+        // Generate unique group IDs for weekly and monthly payments
+        const weeklyGroupId = `WEEKLY_${user_id}_${Date.now()}`;
+        const monthlyGroupId = `MONTHLY_${user_id}_${Date.now()}`;
+    
+        // Group payments
+        payments.forEach(payment => {
+          if (payment.frequency === "weekly") {
+            payment.group_id = weeklyGroupId;
+            groupedPayments.weekly.push(payment);
+          } else if (payment.frequency === "monthly") {
+            payment.group_id = monthlyGroupId;
+            groupedPayments.monthly.push(payment);
+          }
         });
     
-        await newPayment.save();
+        // Save grouped payments to DB
+        const savedPayments = await Payment.insertMany([...groupedPayments.weekly, ...groupedPayments.monthly]);
     
-        res.status(201).json({ message: 'Payment initiated', payment });
+        return res.status(201).json({ message: "Payments scheduled successfully", payments: savedPayments });
       } catch (error) {
-        res.status(500).json({ error: 'Payment initiation failed', details: error.message });
+        return res.status(500).json({ error: error.message });
       }
+});
+
+const processsInstantPayment = asyncHandler(async (req, res)=>{
+    try {
+        const user = await User.findById(payment.userId);
+        const vendor = await Vendor.findById(payment.vendorId);
+
+        if (!user || !vendor) throw new Error("User or Vendor not found");
+
+        if (user.walletBalance < payment.amount) {
+            payment.status = "Failed";
+            await payment.save();
+            return { success: false, message: "Insufficient balance" };
+        }
+
+        // Deduct from user wallet
+        user.walletBalance -= payment.amount;
+        await user.save();
+
+        // Credit vendor
+        vendor.balance += payment.amount;
+        await vendor.save();
+
+        // Update payment status
+        payment.status = "Completed";
+        await payment.save();
+
+        return { success: true, message: "Payment completed successfully" };
+
+    } catch (error) {
+        console.error(error);
+        return { success: false, message: "Payment failed due to an error" };
     }
-);
+});
+
+
+
 
 
 const initiatePayment = asyncHandler(async(req, res) => {
@@ -237,4 +350,4 @@ const getPayments = asyncHandler(async(req, res)=>{
 
 
 
-module.exports = { createPayment, initiatePayment, retryPayment, makeInstantPayment};
+module.exports = { createPayment,createPayments, processsInstantPayment};
