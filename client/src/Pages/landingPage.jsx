@@ -21,10 +21,10 @@ const LandingPage = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className=' justify-center p-6 m-auto pt-40 '>
+                <div className=' justify-center p-6 pt-40 '>
 
                     {/* Hero Section */}
-                    <div className=' items-center m-auto flex-col justify-center '>
+                    <div className='  items-center m-auto flex-col justify-center '>
                         <img src={heropicture} className='w-3xl m-auto' alt="Hero" />
                         {/* <h1 className='font-medium text-5xl md:text-7xl w-full'>Pay Smarter, <span className='text-4xl md:text-5xl'>Live Better</span></h1> */}
                         <h1 className='font-medium text-5xl md:text-7xl text-center'>Pay Smarter,</h1>

@@ -11,6 +11,8 @@ import Privacy from './Pages/Privacy.jsx';
 import Loader from './components/Loader.jsx';
 import { ThemeContext } from './context/ThemeContext.jsx';
 import Header from './components/Header.jsx';
+import PaymentAnalytics from './Pages/PaymentAnalytics.jsx';
+
 
 const App = () => {
   const [loading, setLoading] =useState(true);
@@ -27,9 +29,11 @@ const App = () => {
         <Loader /> // Show loader while loading
       ) : (
         
-      )}; */}
 
+
+      )}; */}
       {/* <Header/> */}
+
         <Routes >
           <Route path="/" element={<LandingPage />}  />
           <Route path="/about" element={<LandingLayout><AboutUs /></LandingLayout>} />
@@ -37,6 +41,7 @@ const App = () => {
           <Route path="/privacy-policy" element={<LandingLayout><Privacy /></LandingLayout>} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/analytics" element={<PaymentAnalytics />} />
         </Routes>
 
 

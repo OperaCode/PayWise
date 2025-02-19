@@ -6,7 +6,7 @@ import Footer from '../components/Footer'
 // This layout should wrap the entire landing page, it includes header, main content, and footer.
 const LandingLayout = ({children}) => {
     return (
-        <div className='bg-zinc-100 w-full'>
+        <div className='flex flex-col w-full '>
            
                 <Header />
           
@@ -14,7 +14,7 @@ const LandingLayout = ({children}) => {
              {/* Main Content */}
                 {children}
             </div>
-            <div>
+            <div className='bottom-0'>
              <Footer/>
             </div>
         </div>
