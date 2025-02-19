@@ -90,12 +90,12 @@ const LandingPage = () => {
                             <img src={quote} alt="Testimonials" className=' w-16' />
                         </div>
                         <div className='grid md:grid-cols-3 gap-8 mb-8 px-12'>
-                            <div className='bg-neutral-300 p-8 rounded-xl'>The automated bill payment feature ensures that my utility bills, internet, and subscriptions are paid on time. PayWise is a game changer for anyone looking for seamless bill management!
+                            <div className='bg-neutral-300 p-8 rounded-xl text-black'>The automated bill payment feature ensures that my utility bills, internet, and subscriptions are paid on time. PayWise is a game changer for anyone looking for seamless bill management!
                             <br /><span> — David A., Digital Marketer</span></div>
-                            <div className='bg-neutral-300 p-8 rounded-xl'>PayWise solved bill payment frustrations with instant transfers—no more waiting hours or even days for money to reflect!
+                            <div className='bg-neutral-300 p-8 rounded-xl text-black'>PayWise solved bill payment frustrations with instant transfers—no more waiting hours or even days for money to reflect!
                             <br /><span> — Jessica T., Small Business Owner</span>
                             </div>
-                            <div className='bg-neutral-300 p-8 rounded-xl'>I was skeptical at first, but PayWise exceeded my expectations. Setting up my wallet was instant, and I love that I can fund it directly from my bank or card.
+                            <div className='bg-neutral-300 p-8 rounded-xl text-black'>I was skeptical at first, but PayWise exceeded my expectations. Setting up my wallet was instant, and I love that I can fund it directly from my bank or card.
                             <br /><span>— Michael R., Software Engineer</span></div>
                             </div>
                         </div>

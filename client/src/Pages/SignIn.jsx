@@ -36,6 +36,7 @@ const Login = () => {
                         <p className="hidden md:block">
                             Don't have an account? <a href="/register" className="font-bold">Sign Up</a>
                         </p>
+                        
                     </div>
 
                     {/* Left - Form Section */}
@@ -55,6 +56,7 @@ const Login = () => {
                         <p className="md:hidden">
                             Don't have an account? <a href="/register" className="font-bold">Sign Up</a>
                         </p>
+                        <p className="p-6  text-center ">Make it simple, Sign in with <span className="font-bold hover:cursor-pointer ">Gmail</span></p>
 
                     </div>
 

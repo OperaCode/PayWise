@@ -59,7 +59,7 @@ const Register = () => {
                         Already have an account? <a href="/login" className="font-bold text-cyan-900">Log in</a>
                     </p>
 
-                    <p className="p-6  text-center">Make it simple, sign up with <span className="font-bold hover:cursor-pointer ">Gmail</span></p>
+                    <p className="p-6  text-center">Make it simple, Sign up with <span className="font-bold hover:cursor-pointer ">Gmail</span></p>
 
                 </div>
 
