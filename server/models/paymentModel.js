@@ -13,10 +13,12 @@ const PaymentSchema = new mongoose.Schema({
     //     required: true,
     //     default: 'usd' // Set to 'usd' if all transactions are in dollars
     //   },
-    frequency: {
-        type: String,
-        enum: ["one-time", "weekly", "monthly"],
-        default: "one-time"
+
+    RecurringPayment: {
+        frequency: { type: String, enum: ["daily", "weekly", "monthly"], required: true },
+        nextExecution: { type: Date, required: true },
+        status: { type: String, enum: ["active", "paused", "canceled"], default: "active" },
+        
     },
     
     paymentMethod: {
@@ -25,12 +27,12 @@ const PaymentSchema = new mongoose.Schema({
         default: 'Wallet'
     },
     description: { type: String },
- 
+
     // referenceId: { type: String }, // External reference ID for the payment
-    status: { type: String, enum: ['Scheduled', 'processing', 'completed', 'failed'], default: 'scheduled' },
-   
+
+
     // scheduledAt: { type: Date, required: true }, // Date & time for payment
-    
+
     createdAt: { type: Date, default: Date.now }
 });
 

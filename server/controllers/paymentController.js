@@ -2,17 +2,18 @@
 
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel")
-
+const Payment = require("../models/paymentModel")
+const bcrypt = require("bcrypt")
 
 
 
 
 const transferFunds = asyncHandler(async (req, res) => {
   try {
-    const { senderId, receiverId, amount } = req.body;
+    const { senderId, receiverId, amount, pin } = req.body;
   
     // Validate request data
-    if (!senderId || !receiverId || !amount || amount <= 0) {
+    if (!senderId || !receiverId || !amount || amount <= 0 ) {
       return res.status(400).json({ message: "Invalid transfer request" });
     }
   
@@ -22,6 +23,17 @@ const transferFunds = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Sender not found" });
     }
   
+    // If sender has no PIN, ask them to set one
+    if (!sender.transactionPin) {
+      return res.status(400).json({ message: "You must set a transaction PIN before making transfers." });
+    }
+
+    // Validate transaction PIN
+    const isPinValid = await bcrypt.compare(pin, sender.transactionPin || "");
+    if (!isPinValid) {
+      return res.status(403).json({ message: "Invalid transaction PIN" });
+    }
+
     // Check sender balance
     if (sender.wallet.balance < amount) {
       return res.status(400).json({ message: "Insufficient balance" });
@@ -55,6 +67,55 @@ const transferFunds = asyncHandler(async (req, res) => {
 
 });
 
+const recurringTransfer = asyncHandler(async(req,res)=>{
+  try {
+    const { user, biller, amount, frequency, startDate } = req.body;
+
+
+    // // Validate amount
+    // if (typeof amount !== "number" || amount <= 0) {
+    //   return res.status(400).json({ error: "Amount must be a positive number" });
+    // }
+
+    // Validate frequency
+    const validFrequencies = ["daily", "weekly", "monthly"];
+    if (!validFrequencies.includes(frequency)) {
+      return res.status(400).json({ error: "Invalid frequency. Must be 'daily', 'weekly', or 'monthly'" });
+    }
+
+    // Validate startDate
+    const nextExecution = new Date(startDate);
+    if (isNaN(nextExecution.getTime())) {
+      return res.status(400).json({ error: "Invalid startDate format" });
+    }
+
+    // Create recurring payment
+    const recurringPayment = new Payment({
+      user,
+      biller,
+      amount,
+      frequency,
+      nextExecution,
+      isRecurring: true,
+      status: "active",
+    });
+
+    await recurringPayment.save();
+    res.status(201).json({ message: "Recurring payment scheduled", recurringPayment });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+const pauseRecurringPayment = asyncHandler(async(req, res)=>{
+  try {
+    await RecurringPayment.findByIdAndUpdate(req.params.id, { status: "paused" });
+    res.json({ message: "Recurring payment paused." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 
@@ -63,4 +124,6 @@ const transferFunds = asyncHandler(async (req, res) => {
 
 
 
-module.exports = { transferFunds};
+
+
+module.exports = { transferFunds, recurringTransfer, pauseRecurringPayment};

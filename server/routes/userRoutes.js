@@ -2,6 +2,7 @@ const express = require("express");
 const {
   registerUser,
   loginUser,
+  setTransactionPin,
   getUser,
   getUsers,
   updateUser,
@@ -15,6 +16,8 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser); 
+router.post("/set-pin", setTransactionPin); 
+
 router.get("/:userId", protectUser, getUser);
 router.get("/", protectUser, getUsers);
 router.patch("/:userId", protectUser, updateUser);

@@ -150,6 +150,26 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
+
+const setTransactionPin = asyncHandler(async(req,res)=>{
+  try {
+    const { userId, pin } = req.body;
+
+    // Validate input
+    if (!userId || !pin || pin.length !== 4) {
+      return res.status(400).json({ message: "Invalid PIN format. Must be 4 digits." });
+    }
+
+    const hashedPin = await bcrypt.hash(pin, 10);
+
+    await User.findByIdAndUpdate(userId, { transactionPin: hashedPin });
+
+    return res.status(200).json({ message: "Transaction PIN set successfully." });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error." });
+  }
+});
+
 const getUser = asyncHandler(async (req, res) => {
   try {
     const { userId } = req.params;
@@ -245,4 +265,4 @@ const LogoutUser = asyncHandler(async (req, res) => {
 
 
 
-module.exports = { registerUser, loginUser, getUser, getUsers, updateUser, deleteUser,LogoutUser};
+module.exports = { registerUser, loginUser,setTransactionPin, getUser, getUsers, updateUser, deleteUser,LogoutUser};
