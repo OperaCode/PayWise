@@ -12,8 +12,8 @@ const passport = require("passport");
 const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
 const billerRoutes = require("./routes/billerRoutes");
-//const paymentRoutes = require("./routes/paymentRoutes");
-//rsconst vendorRoutes = require("./routes/vendorRoute");
+const paymentRoutes = require("./routes/paymentRoutes");
+
 
 const app = express();
 const PORT = 3000;
@@ -50,8 +50,7 @@ app.use(passport.session());
 app.use("/user", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/biller", billerRoutes);
-
-//app.use("/payment", paymentRoutes);
+app.use("/payment", paymentRoutes);
 
 mongoose.connection.once("open", () => {
   console.log("Connected to Database");

@@ -10,7 +10,7 @@ const multer = require("multer");
 
 
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.ACCESS_TOKEN, {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "30d", // Token expires in 30 days
   });
 };
@@ -113,17 +113,6 @@ const loginUser = asyncHandler(async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials, user not found" });
     }
 
-    // // Ensure password is correctly hashed before comparing
-    // if (typeof user.password !== "string") {
-    //   console.error("Stored password is not a string:", user.password);
-    //   return res.status(500).json({ message: "Password storage error" });
-    // }
-
-
-    // Debugging password mismatch issue
-    // console.log("Input Password:", password);
-    // console.log("Stored Password:", user.password);
-
 
     // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -143,12 +132,16 @@ const loginUser = asyncHandler(async (req, res) => {
       secure: true,
     });
 
-    const { _id, firstName, lastName } = user;
+    const { _id, firstName, lastName, wallet } = user;
     res.status(200).json({
       _id,
       fullName: `${firstName} ${lastName}`,
       email,
       token,
+      wallet: {
+        walletId: wallet?.walletId || null, // Ensure wallet ID is returned safely
+        balance: wallet?.balance, // Default to 0 if undefined
+      },
     });
 
   } catch (error) {
@@ -165,8 +158,8 @@ const getUser = asyncHandler(async (req, res) => {
     const user = await userModel.findById(userId);
     if (user) {
       console.log(user)
-      const { _id, firstName,lastName, email} = user;
-      res.status(200).json({ _id, fullName: `${firstName} ${lastName}`, email});
+      const { _id, firstName,lastName, email,wallet} = user;
+      res.status(200).json({ _id, fullName: `${firstName} ${lastName}`, email,wallet});
     } else {
       res.status(404).json({ message: "User Not Found" });
     }
