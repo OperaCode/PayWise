@@ -62,9 +62,11 @@ const registerUser = asyncHandler(async (req, res) => {
       email,
       password: hashedPassword,
       wallet: {
-        balance: 0,
+        balance: 100,
+        rewards: 50,
         walletId: uuidv4(),
       },
+      
     });
 
     if (newUser) {

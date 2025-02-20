@@ -12,7 +12,8 @@ const userSchema = new mongoose.Schema(
     profilePicture: { type: String, default: null }, // Store image URL
     wallet: {
       walletId: { type: String, default: () => crypto.randomUUID() },
-      balance: { type: Number, default: 100 }, // Ensure new users get 100 tokens
+      balance: { type: Number}, // Ensure new users get 100 tokens
+      rewards: { type: Number}, // Ensure new users get 100 tokens
     },
     transactionPin: { type: String, required: false }, // Store hashed PIN
     billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Biller" }], // Reference Vendor model

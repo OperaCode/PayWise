@@ -1,5 +1,19 @@
 import mongoose from 'mongoose';
 
+
+const RecurringPaymentSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    biller: { type: mongoose.Schema.Types.ObjectId, ref: "Biller", required: true }, // Receiver
+    amount: { type: Number, required: true },
+    method:{type: Number, enum: ["wallet", "rewards"], require:true},
+    frequency: { type: String, enum: ["daily", "weekly", "monthly"], required: true },
+    nextExecution: { type: Date, required: true },
+    status: { type: String, enum: ["active", "paused", "canceled"], default: "active" },
+    createdAt: { type: Date, default: Date.now },
+  });
+
+
+
 const PaymentSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     biller: { type: mongoose.Schema.Types.ObjectId, ref: 'Biller', required: true },
@@ -14,13 +28,7 @@ const PaymentSchema = new mongoose.Schema({
     //     default: 'usd' // Set to 'usd' if all transactions are in dollars
     //   },
 
-    RecurringPayment: {
-        frequency: { type: String, enum: ["daily", "weekly", "monthly"], required: true },
-        nextExecution: { type: Date, required: true },
-        status: { type: String, enum: ["active", "paused", "canceled"], default: "active" },
-        
-    },
-    
+    RecurringPayment: RecurringPaymentSchema,  
     paymentMethod: {
         type: String,
         enum: ['Wallet', 'Stripe'],

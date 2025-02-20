@@ -12,7 +12,6 @@ mongoose.connection.once("open", () => {
 
       // Find all active recurring payments that are due
       const recurringPayments = await Payment.find({
-        isRecurring: true,
         status: "active",
         nextExecution: { $lte: now },
       });
@@ -24,7 +23,7 @@ mongoose.connection.once("open", () => {
           biller: payment.biller,
           amount: payment.amount,
           status: "completed",
-          isRecurring: false, // This is a one-time transaction
+          
         });
 
         await newPayment.save();
