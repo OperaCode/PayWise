@@ -12,8 +12,8 @@ const userSchema = new mongoose.Schema(
     profilePicture: { type: String, default: null }, // Store image URL
     wallet: {
       walletId: { type: String, default: () => crypto.randomUUID() },
-      balance: { type: Number}, // Ensure new users get 100 tokens
-      rewards: { type: Number}, // Ensure new users get 100 tokens
+      balance: { type: Number,default: 0}, // Ensure new users get 100 tokens
+      rewards: { type: Number,default: 0}, // Ensure new users get 100 tokens
     },
     transactionPin: { type: String, required: false }, // Store hashed PIN
     billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Biller" }], // Reference Vendor model
@@ -25,9 +25,9 @@ const userSchema = new mongoose.Schema(
 // **Ensure wallet gets initialized properly**
 userSchema.pre("save", function (next) {
   if (!this.wallet) {
-    this.wallet = { walletId: crypto.randomUUID(), balance: 100 };
+    this.wallet = { walletId: crypto.randomUUID(), balance};
   } else if (!this.wallet.balance) {
-    this.wallet.balance = 100; // Ensure balance is set
+    this.wallet.balance ; // Ensure balance is set
   }
   next();
 });

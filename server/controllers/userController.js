@@ -90,6 +90,7 @@ const registerUser = asyncHandler(async (req, res) => {
           email: newUser.email,
           walletId: newUser.wallet.walletId,
           balance: newUser.wallet.balance,
+          rewards: newUser.wallet.rewards,
           token,
         },
       });
@@ -105,27 +106,32 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
-
+  
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required" });
     }
-
+  
     const user = await userModel.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials, user not found" });
     }
-
-
+  
     // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       console.error("Password mismatch detected:", { inputPassword: password, storedPassword: user.password });
       return res.status(401).json({ message: "Invalid credentials" });
     }
-
+  
+    // Ensure user has a wallet (prevents balance reset issues)
+    if (!user.wallet) {
+      user.wallet = { balance: 0, walletId: generateWalletId() }; // Ensure wallet exists
+      await user.save();
+    }
+  
     // Generate JWT token
     const token = generateToken(user._id);
-
+  
     res.cookie("token", token, {
       path: "/",
       httpOnly: true,
@@ -133,23 +139,25 @@ const loginUser = asyncHandler(async (req, res) => {
       sameSite: "none",
       secure: true,
     });
-
-    const { _id, firstName, lastName, wallet } = user;
+  
+    console.log("Wallet before login response:", user.wallet.balance); // Debugging
+  
     res.status(200).json({
-      _id,
-      fullName: `${firstName} ${lastName}`,
+      _id: user._id,
+      fullName: `${user.firstName} ${user.lastName}`,
       email,
       token,
       wallet: {
-        walletId: wallet?.walletId || null, // Ensure wallet ID is returned safely
-        balance: wallet?.balance, // Default to 0 if undefined
+        walletId: user.wallet.walletId || null,
+        balance: user.wallet.balance ?? 0, // Ensure a default balance
       },
     });
-
+  
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
+  
 });
 
 

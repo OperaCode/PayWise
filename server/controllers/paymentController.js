@@ -60,34 +60,30 @@ const transferFunds = asyncHandler(async (req, res) => {
                 return res.status(400).json({ message: "Insufficient wallet balance" });
             }
             sender.wallet.balance -= amount; // Deduct amount
-            receiver.wallet.balance += amount; // Add amount to receiver
         } else if (method === "rewards") {
             if (sender.wallet.rewards < amount) {
                 await session.abortTransaction();
                 return res.status(400).json({ message: "Insufficient rewards balance" });
             }
             sender.wallet.rewards -= amount;
-            receiver.wallet.balance += amount;
         }
 
-        // Increment receiver's balance
+        // Update sender's balance
+        await sender.save({ session });
+
+        // Increment receiver's balance using `$inc`
         await User.updateOne(
             { email: receiverEmail },
             { $inc: { "wallet.balance": amount } },
             { session }
         );
 
-        // Save updated balances
-        await sender.save({ session });
-        await receiver.save({ session });
-
-
-        // Fetch updated receiver balance
-        const updatedReceiver = await User.findOne({ email: receiverEmail }).session(session);
-
         // Commit transaction
         await session.commitTransaction();
         session.endSession();
+
+        // Fetch updated receiver balance AFTER transaction
+        const updatedReceiver = await User.findOne({ email: receiverEmail });
 
         return res.status(200).json({
             message: "Transfer successful.",
