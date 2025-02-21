@@ -1,16 +1,5 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
-
-const RecurringPaymentSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    biller: { type: mongoose.Schema.Types.ObjectId, ref: "Biller", required: true }, // Receiver
-    amount: { type: Number, required: true },
-    method:{type: Number, enum: ["wallet", "rewards"], require:true},
-    frequency: { type: String, enum: ["daily", "weekly", "monthly"], required: true },
-    nextExecution: { type: Date, required: true },
-    status: { type: String, enum: ["active", "paused", "canceled"], default: "active" },
-    createdAt: { type: Date, default: Date.now },
-  });
 
 
 
@@ -22,19 +11,18 @@ const PaymentSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
-    // currency: {
-    //     type: String,
-    //     required: true,
-    //     default: 'usd' // Set to 'usd' if all transactions are in dollars
-    //   },
-
-    RecurringPayment: RecurringPaymentSchema,  
+    frequency: { type: String, enum: ["daily", "weekly", "monthly"], required: true },
+    isRecurring: {type: Boolean, default: false},  
+    method:{type: Number, enum: ["wallet", "rewards"], require:true},
+    nextExecution: { type: Date, required: true },
+    startDate: { type: Date, required: true, default: Date.now },
     paymentMethod: {
         type: String,
         enum: ['Wallet', 'Stripe'],
         default: 'Wallet'
     },
     description: { type: String },
+    
 
     // referenceId: { type: String }, // External reference ID for the payment
 
@@ -45,8 +33,7 @@ const PaymentSchema = new mongoose.Schema({
 });
 
 
-const Payment = mongoose.model('Payment', PaymentSchema);
-export default Payment;
+module.exports = mongoose.model("Payment", PaymentSchema);
 
 
 
