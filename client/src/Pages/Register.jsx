@@ -26,7 +26,7 @@ const Register = () => {
     };
 
     return (
-        <div className="flex-col justify-center h-screen p-6 ">
+        <div className="flex-col justify-center  p-4 ">
             {/* Theme Toggle Button */}
             <div className="flex justify-between px-4 items-center ">
                 <div className=" w-50">
@@ -66,7 +66,7 @@ const Register = () => {
                 {/* Right - Illustration */}
                 <div className="w-1/2  hidden md:flex flex-col justify-center items-center ">
                     <img src={image} alt="Register  Illustration" className="w-md" />
-                    <p className="hidden md:block">
+                    <p className="hidden md:block p-3">
                         Already have an account? <a href="/login" className="font-bold">Log in</a>
                     </p>
                 </div>

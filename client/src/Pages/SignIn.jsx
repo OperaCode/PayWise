@@ -13,21 +13,18 @@ const Login = () => {
     
     return (
         <>
-
-
-            <div className=" h-screen">
+            <div className="p-8 h-screen">
                 {/* Theme Toggle Button */}
-                <div className="flex justify-between px-10 pt-6 items-center ">
-                    <div className=" w-50">
-                        <Link to="/">
-                            <img src={logo} alt="signup" className=" bg-zinc-100 rounded-sm" />
-                        </Link>
-                    </div>
-
-                        <button onClick={toggleTheme} className=" h-10  p-2 bg-gray-200 dark:bg-gray-700 rounded-2xl hover:cursor-pointer">
-                            {theme === "light" ? <Moon className="text-gray-200" /> : <Sun className="text-yellow-400" />}
-                        </button>
-                </div>
+                <div className="flex justify-between px-4 items-center ">
+                                <div className=" w-50">
+                                    <Link to="/">
+                                        <img src={logo} alt="Register" className=" bg-zinc-100 w-md rounded-sm" />
+                                    </Link>
+                                </div>
+                                <button onClick={toggleTheme} className=" h-10  p-2 bg-gray-200 dark:bg-gray-700 rounded-2xl hover:cursor-pointer">
+                                    {theme === "light" ? <Moon className="text-gray-200" /> : <Sun className="text-yellow-400" />}
+                                </button>
+                            </div>
 
                 <div className="rounded-lg shadow-lg w-full  px-10 gap-4 items-center flex">
                     {/* Right - Illustration */}

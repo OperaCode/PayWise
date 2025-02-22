@@ -12,6 +12,7 @@ import Loader from './components/Loader.jsx';
 import { ThemeContext } from './context/ThemeContext.jsx';
 import Header from './components/Header.jsx';
 import PaymentAnalytics from './Pages/PaymentAnalytics.jsx';
+import SideBar from './components/SideBar.jsx';
 
 
 const App = () => {
@@ -36,6 +37,7 @@ const App = () => {
 
         <Routes >
           <Route path="/" element={<LandingPage />}  />
+          <Route path="/sidebar" element={<SideBar />}  />
           <Route path="/about" element={<LandingLayout><AboutUs /></LandingLayout>} />
           <Route path="/terms-and-conditions" element={<LandingLayout><TermsAndConditions /></LandingLayout>} />
           <Route path="/privacy-policy" element={<LandingLayout><Privacy /></LandingLayout>} />
