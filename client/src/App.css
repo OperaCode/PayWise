@@ -8,19 +8,16 @@
 
 /* Light Mode Styles */
 .app-container {
-  background-color: #f4f4f5;
+  background-color: #E4E4E7;
   color: black; 
   transition: background 0.3s ease, color 0.3s ease;
 }
 
 .app-container.dark {
-  background-color: black;
-  color: white;
+  background-color: rgb(0, 0, 0);
+  color: #E4E4E7;
   --bg-color: #121212;
   --text-color: white;
-
-
-
 }
 
 

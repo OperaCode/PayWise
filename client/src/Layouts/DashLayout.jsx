@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
-// import image from "../../assets/profileAvatar.jpeg"
+import image from "../assets/avatar.jpg"
 import { Link } from "react-router-dom";
 // import { UserContext } from "../context/UserContext";
 import { useContext } from "react";
 import { ThemeContext } from '../context/ThemeContext';
 import { Moon, Sun } from "lucide-react";
 import axios from "axios";
+
 
 
 
@@ -55,28 +56,25 @@ const DashLayout = ({ children }) => {
       <div className="flex-col w-full p-3 ">
         {/* Navbar */}
         <div className="flex items-center justify-end gap-4 p-2">
-          <h1 className="text-cyan-950 text-2xl md:text-3xl font-bold ">
+          <h1 className="text-cyan- text-2xl md:text-2xl font-bold ">
           Welcome, {username}!
           </h1>
-          <button
-                        onClick={toggleTheme}
-                        className="p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
-                    >
-                        {theme === "light" ? <Moon className="text-white" /> : <Sun className="text-yellow-400" />}
-                    </button>
-          <div className="w-12 h-12">
-            <Link to='/dashboard'>
-            {/* <img
+          <img
               src={image}
               alt="Profile"
-              className="w-full h-full rounded-full"
-            /> */}
-            </Link>
-          </div>
+              className="w-14 h-14 rounded-full border-2"
+            />
+          <button
+            onClick={toggleTheme}
+            className="p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
+            >
+          {theme === "light" ? <Moon className="text-white" /> : <Sun className="text-yellow-400" />}
+          </button>
+          
         </div>
 
         {/* Balance and Chart Section */}
-        <div className="">
+        <div className="w-full p-3 ">
           <div>{children}</div>
         </div>
       </div>

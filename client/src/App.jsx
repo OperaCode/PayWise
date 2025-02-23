@@ -14,6 +14,7 @@ import Header from './components/Header.jsx';
 import PaymentAnalytics from './Pages/PaymentAnalytics.jsx';
 import SideBar from './components/SideBar.jsx';
 import DashLayout from './Layouts/DashLayout.jsx';
+import DashBoard from './Pages/DashBoard.jsx';
 
 
 const App = () => {
@@ -38,13 +39,14 @@ const App = () => {
 
         <Routes >
           <Route path="/" element={<LandingPage />}  />
-          <Route path="/sidebar" element={<SideBar />}  />
+         
           <Route path="/about" element={<LandingLayout><AboutUs /></LandingLayout>} />
           <Route path="/terms-and-conditions" element={<LandingLayout><TermsAndConditions /></LandingLayout>} />
           <Route path="/privacy-policy" element={<LandingLayout><Privacy /></LandingLayout>} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboardLay" element={<DashLayout />} />
+          <Route path="/dashboard" element={<DashLayout><DashBoard/></DashLayout>} />
+         
           <Route path="/analytics" element={<PaymentAnalytics />} />
         </Routes>
 
