@@ -13,6 +13,7 @@ import { ThemeContext } from './context/ThemeContext.jsx';
 import Header from './components/Header.jsx';
 import PaymentAnalytics from './Pages/PaymentAnalytics.jsx';
 import SideBar from './components/SideBar.jsx';
+import DashLayout from './Layouts/DashLayout.jsx';
 
 
 const App = () => {
@@ -43,6 +44,7 @@ const App = () => {
           <Route path="/privacy-policy" element={<LandingLayout><Privacy /></LandingLayout>} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/dashboardLay" element={<DashLayout />} />
           <Route path="/analytics" element={<PaymentAnalytics />} />
         </Routes>
 
