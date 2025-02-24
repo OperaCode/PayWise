@@ -72,6 +72,9 @@ const DashLayout = ({ children }) => {
           </button>
           
         </div>
+        <div className="px-6">
+        <input type="text" className="p-2  text-cyan-950 rounded-lg w-full bg-gray-200 border-1 border-neutral-500 shadow-md" placeholder="Enter Search " />
+        </div>
 
         {/* Balance and Chart Section */}
         <div className="w-full p-3 ">

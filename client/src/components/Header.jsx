@@ -10,7 +10,7 @@ const Header = () => {
     return (
         <header className={`fixed  w-screen top-0 z-50 pt-2 header `}>
             <nav className='flex justify-between p-4 items-center md:px-12'>
-                <div className='bg-zinc-200 rounded-sm'>
+                <div className='bg-zinc-100 rounded-sm'>
                     <Link to="/">
                         <img src={Logo} alt="PayWise Logo" className='hover:cursor-pointer w-40 md:w-48'/>
                     </Link>
@@ -19,10 +19,10 @@ const Header = () => {
                 <div className='flex items-center gap-4 p-4'>
                     <ul className='flex gap-4 font-bold'>
                         <Link to="/login">
-                            <li className='hover:cursor-pointer text-black font-extrabold bg-zinc-200 p-2 w-full rounded-sm'>Sign In</li>
+                            <li className='hover:cursor-pointer text-black font-extrabold bg-zinc-100 p-2 w-full rounded-sm'>Sign In</li>
                         </Link>
                         <Link to="/register">
-                            <li className='hover:cursor-pointer text-black bg-zinc-200 font-extrabold p-2 w-full rounded-sm'>Register</li>
+                            <li className='hover:cursor-pointer text-black bg-zinc-100 font-extrabold p-2 w-full rounded-sm'>Register</li>
                         </Link>
                     </ul>
 

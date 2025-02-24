@@ -54,7 +54,7 @@ const logoutUser = async () => {
 };
 
   return (
-    <aside className=" lg:w-1/4  bg-zinc-400 t font-headerFont">
+    <aside className=" lg:w-1/4  bg-neutral-500 t font-headerFont">
       <div className="lg:p-5 lg:h-screen rounded px-3">
         <div className="flex justify-between items-center lg:flex-col">
           {/* Logo */}
