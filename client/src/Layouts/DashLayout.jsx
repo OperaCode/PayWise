@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import SideBar from "../components/SideBar";
 import image from "../assets/avatar.jpg"
 import Graph from "../components/PieChart";
+import Recent from "../components/RecentTransactions";
 import LineGraph from "../components/LineGraph";
 import { Link } from "react-router-dom";
 // import { UserContext } from "../context/UserContext";
@@ -51,14 +52,14 @@ const DashLayout = ({ children }) => {
 
 
   return (
-    <div className="lg:flex items-cent p-1 ">
+    <div className="lg:flex  p-1 ">
       <SideBar />
 
       {/* Main Content */}
-      <div className="flex-col w-full p-3 ">
+      <div className="flex-col w-full p-4 border ">
         {/* Navbar */}
         <div className="flex items-center justify-end gap-4 p-2">
-          <h1 className="text-cyan- text-2xl md:text-2xl font-bold ">
+          <h1 className="text-cyan- text-xl font-bold ">
             Welcome, {username}!
           </h1>
           <img
@@ -74,16 +75,16 @@ const DashLayout = ({ children }) => {
           </button>
 
         </div>
-        <div className="px-6">
-          <input type="text" className="p-2  text-cyan-950 rounded-lg w-full bg-gray-200 border-1 border-neutral-500 shadow-md" placeholder="Enter Search " />
+        <div className="px-10">
+          <input type="text" className="p-1  text-cyan-950 rounded-lg w-full bg-gray-100 border-1 border-neutral-500 shadow-md" placeholder="Enter Search " />
         </div>
 
         {/* Balance and Chart Section */}
-        <div className="w-full p-3 flex">
+        <div className="w-full gap-4 py-4 px-4 md:flex">
           <div className="flex-1">{children}</div>
-          <div className="flex-1">
+          <div className="flex-1 border">
             <div className="flex-1"><Graph /></div>
-            <div className="flex-1">Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus qui, exercitationem tempora totam quasi esse, saepe neque eos nulla, ad vitae minima? Itaque ut ad eligendi quos repellendus asperiores, nemo, magni totam fugit aliquam placeat quis quas iusto ullam enim expedita maiores labore voluptas mollitia dicta inventore esse molestias dignissimos.</div>
+            <div className="flex-1"><Recent/></div>
 
           </div>
         </div>

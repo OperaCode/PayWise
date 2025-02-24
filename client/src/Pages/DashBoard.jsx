@@ -66,12 +66,12 @@ const DashBoard = () => {
     //   if (isLoading) return <ClipLoader color='1a80e5' cssOverride={override} loading={isLoading} />;
 
     return (
-        <section className="flex-1 lg:flex-col p-1 lg:gap-4">
-            <div className="md:flex justify-between gap-5 items-center font-bodyFont w-full">
-                <div className="flex-1 space-y-3">
+        <section className="flex lg:flex-col lg:gap-4">
+            <div className=" justify-between items-center font-bodyFont w-full">
+                <div className="flex-1 space-y-6 border ">
 
-                    <h1 className=" font-semibold text-3xl md:text-xl p-1">Current Balance:</h1>
-                    <div className="p-4 bg-white flex justify-between rounded-lg shadow-md w-full border-3 border-neutral-500 s">
+                    <h1 className=" font-semibold text-xl md:text-xl p-1">Current Balance:</h1>
+                    <div className="p-4 bg-zinc-100 flex justify-between rounded-lg shadow-md w-full border-3 border-neutral-500 s">
                         <div>
                             <p className="text-gray-900 text-sm md:text-xs">Wallet Balance:</p>
                             <h2 className="text-lg font-bold text-gray-700">${300}</h2>
@@ -129,8 +129,10 @@ const DashBoard = () => {
                         </div>
                     </div>
 
-                   <LineGraph/>
                 </div>
+                   <div className=" w-2/3 p-3  m-auto">
+                   <LineGraph />
+                   </div>
             </div>
 
         </section>

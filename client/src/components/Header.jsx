@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { ThemeContext } from "../context/ThemeContext";
 import { Moon, Sun } from "lucide-react";
+
 import Logo from "../assets/paywise-logo.png";
 import { Link } from 'react-router-dom';
 

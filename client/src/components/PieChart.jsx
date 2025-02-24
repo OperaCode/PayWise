@@ -22,16 +22,16 @@ const config = {
   },
   options:{
     responsiveness:true,
-    cutout:50,
+    cutout:50,  
     }
 }
 const Graph = () => {
   return (
-    <div className='flex w-full justify-center rounded p-6'>
+    <div className='flex w-full justify-center rounded'>
       <div className="">
-        <div className="w-50 m-auto items-center text-center">
+        <div className="w-50 m-auto">
          <Doughnut {...config}></Doughnut>
-         <h3 className=' absolute right-72 top-63  font-bold'>Total <span className='block text-emerald-400'>${0}</span></h3>
+         <h3 className='  font-bold'>Total <span className='block text-emerald-400'>${0}</span></h3>
         </div>
         <div className="flex flex-col">
        <Label/>
