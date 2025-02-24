@@ -84,9 +84,9 @@ const options = {
   
 const Graph = () => {
   return (
-    <div className='w-full justify-center rounded border bg-zinc-100 '>
+    <div className='rounded  bg-zinc-100 '>
      
-        <div className="w-full ">
+        <div className="w-full h-80 justify-center flex">
          {/* <Radar {...config}></Radar> */}
          <Radar data={data} config={config} />
         

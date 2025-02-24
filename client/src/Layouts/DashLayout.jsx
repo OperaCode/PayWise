@@ -56,7 +56,7 @@ const DashLayout = ({ children }) => {
       <SideBar />
 
       {/* Main Content */}
-      <div className="flex-col w-full p-4 border ">
+      <div className="flex-col w-full p-4  ">
         {/* Navbar */}
         <div className="flex items-center justify-end gap-4 p-2">
           <h1 className="text-cyan- text-xl font-bold ">
@@ -82,7 +82,7 @@ const DashLayout = ({ children }) => {
         {/* Balance and Chart Section */}
         <div className="w-full gap-4 py-4 px-4 md:flex">
           <div className="flex-1">{children}</div>
-          <div className="flex-1 border">
+          <div className="flex-1  ">
             <div className="flex-1"><Graph /></div>
             <div className="flex-1"><Recent/></div>
 

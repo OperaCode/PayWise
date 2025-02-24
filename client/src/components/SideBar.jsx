@@ -54,7 +54,7 @@ const logoutUser = async () => {
 };
 
   return (
-    <aside className=" lg:w-1/4  bg-zinc-400 font-headerFont">
+    <aside className=" lg:w-1/4  bg-cyan-700 shadow-md border font-headerFont">
       <div className="lg:p-5 lg:h-screen rounded px-3">
         <div className="flex justify-between items-center lg:flex-col">
           {/* Logo */}
@@ -65,7 +65,7 @@ const logoutUser = async () => {
           </div>
 
           {/* Menu Items */}
-          <div className=" py-  font-headerFont w-full ">
+          <div className="   font-headerFont w-full ">
             <ul className="flex justify-end gap-1 text-c lg:space-y-8 lg:p-8  w-full lg:flex-col">
               <Link to="/dashboard">
                 <li className="hover:cursor-pointer  md:block hover:text-cyan-900 font-bold lg:text-">Home</li>

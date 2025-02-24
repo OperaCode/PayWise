@@ -17,7 +17,7 @@ const config = {
       ],
       hoverOffset: 4,
       borderRadius:5,
-      spacing:3
+      spacing:5
     }]
   },
   options:{
@@ -27,15 +27,30 @@ const config = {
 }
 const Graph = () => {
   return (
-    <div className='flex w-full justify-center rounded'>
-      <div className="">
-        <div className="w-50 m-auto">
-         <Doughnut {...config}></Doughnut>
-         <h3 className='  font-bold'>Total <span className='block text-emerald-400'>${0}</span></h3>
-        </div>
-        <div className="flex flex-col">
-       <Label/>
+    // <div className='flex w-full justify-center rounded p-6'>
+    //   <div className="">
+    //     <div className="w-50 m-auto items-center flex">
+    //      <Doughnut {...config}></Doughnut>
+    //      <h3 className=' absolute right-82 text-center  font-bold'>Total <span className='block text-emerald-400'>${0}</span></h3>
+    //     </div>
+    //     <div className="flex flex-col">
+    //    <Label/>
          
+    //     </div>
+    //   </div>
+    // </div>
+
+
+
+    <div className='w-full flex justify-center m-auto rounded p-6'>
+      <div className="item">
+        <div className="chart relative w-50 m-auto">
+         <Doughnut {...config}></Doughnut>
+         <h3 className='mb-4 font-bold title'>Total <span className='block text-3xl text-emerald-400'>${0}</span></h3>
+        </div>
+        <div className="flex flex-col ">
+          {/* labels */}
+          <Label></Label>
         </div>
       </div>
     </div>

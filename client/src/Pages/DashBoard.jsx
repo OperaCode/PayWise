@@ -66,9 +66,9 @@ const DashBoard = () => {
     //   if (isLoading) return <ClipLoader color='1a80e5' cssOverride={override} loading={isLoading} />;
 
     return (
-        <section className="flex lg:flex-col lg:gap-4">
+        <section className="flex lg:flex-col  p-4 lg:gap-4 w-full justify-center rounded shadow-md">
             <div className=" justify-between items-center font-bodyFont w-full">
-                <div className="flex-1 space-y-6 border ">
+                <div className="flex-1 space-y-6  ">
 
                     <h1 className=" font-semibold text-xl md:text-xl p-1">Current Balance:</h1>
                     <div className="p-4 bg-zinc-100 flex justify-between rounded-lg shadow-md w-full border-3 border-neutral-500 s">
@@ -111,26 +111,26 @@ const DashBoard = () => {
           </div> */}
                     <div className="flex items-center gap-6 justify-center ">
                         <div className="items-center rounded-md  flex flex-col ">   
-                            <HandCoins />
-                            <p className="font-bold text-sm">P2P</p>
+                            <HandCoins className="hover:text-cyan-900 font-extrabold size-8" />
+                            <p className="font-bold text-sm hover:cursor-pointer hover:text-cyan-900">P2P</p>
                         </div>
                         <div className="items-center rounded-md  flex flex-col hover:cursor-pointer">       
-                            <CalendarSync/>
-                            <p className="font-bold text-sm">SCHEDULE-PAY</p>
+                            <CalendarSync className="hover:text-cyan-900 font-extrabold size-8"/>
+                            <p className="font-bold hover:cursor-pointer text-sm">SCHEDULE-PAY</p>
                         </div>
-                        <div className="items-center flex flex-col rounded-md ">                           
-                            <SmartphoneNfc />
+                        <div className="items-center flex hover:cursor-pointer flex-col rounded-md ">                           
+                            <SmartphoneNfc className="hover:text-cyan-900 font-extrabold size-8" />
                             <p className="font-bold text-sm">AUTOPAY</p>
                         </div>
-                        <div className="items-center flex flex-col rounded-md ">
+                        <div className="items-center flex flex-col hover:cursor-pointer rounded-md ">
                             {/* <img src={analytics} alt="" /> */}
-                            <ChartNoAxesCombined/>
-                            <p className="font-bold text-sm">ANALYTICS</p>
+                            <ChartNoAxesCombined classname='hover:text-cyan-900'/>
+                            <p className="font-bold text-sm hover:text-cyan-900">ANALYTICS</p>
                         </div>
                     </div>
 
                 </div>
-                   <div className=" w-2/3 p-3  m-auto">
+                   <div className=" p-2 pt-8 m-auto">
                    <LineGraph />
                    </div>
             </div>

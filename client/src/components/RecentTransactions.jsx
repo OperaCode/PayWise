@@ -57,9 +57,9 @@ const Recent = () => {
   return (
     <div className="w-full p-6 bg-zinc-200 rounded-lg mt-4 shadow-md">
       {/* Header */}
-      <div className="flex justify-between items-center md:text-lg">
+      <div className="flex justify-between  md:text-lg">
         <div>
-          <h2 className="text-s md:text-lg font-bold text-cyan-950">
+          <h2 className=" md:text-md font-bold text-cyan-950">
             Recent Transactions
           </h2>
           {/* <p className="text-xs p-2 md:text-gray-500">Check your transaction history</p> */}
@@ -113,7 +113,7 @@ const Recent = () => {
               })
             ) : (
               <tr>
-                <td colSpan="6" className="text-center  p-4">No recent transactions found!</td>
+                <td colSpan="6" className=" p-4">No recent transactions found!</td>
               </tr>
             )}
             
