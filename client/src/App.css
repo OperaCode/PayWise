@@ -14,9 +14,10 @@
 }
 
 .app-container.dark {
-  background-color: rgba(0, 0, 0, 0.917);
+  /* background-color: rgba(0, 0, 0, 0.917); */
+  background-color:#0d1117;
   color: #E4E4E7;
-  --bg-color: #121212df;
+  --bg-color: #121212;
   --text-color: white;
 }
 

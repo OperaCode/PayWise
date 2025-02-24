@@ -10,6 +10,10 @@ import p2p from "../assets/p2p.png"
 import schedulepay from "../assets/schedulepay.png"
 import analytics from "../assets/analytics.png"
 import autopay from "../assets/autopay.png"
+import { SmartphoneNfc , HandCoins, CalendarSync,ChartNoAxesCombined } from 'lucide-react';
+import { Line } from "react-chartjs-2";
+import LineGraph from "../components/LineGraph"
+
 
 const override = {
     display: 'block',
@@ -18,15 +22,13 @@ const override = {
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+
+
 const DashBoard = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    //   const [transactions, setTransactions] = useState([]);
-
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
-
+    
     //   useEffect(() => {
     //     const fetchRecentTransaction = async () => {
     //       setIsLoading(true);
@@ -78,7 +80,7 @@ const DashBoard = () => {
                             Fund Wallet
                         </button>
                     </div>
-                    <h1 className="font-semibold  md:text-xl p-1">Quick Links</h1>
+                    <h1 className="font-semibold  md:text-lg p-1">Quick Links</h1>
                     {/* <div className="bg-white rounded-lg shadow-md text-center p-4">
             <div className="flex justify-between items-center p-2">
               <p className="text-lg md:text-sm font-semibold">Foods and Groceries</p>
@@ -107,33 +109,28 @@ const DashBoard = () => {
               </button>
             </div>
           </div> */}
-                    <div className="flex items-center ">
-                        <div className="items-center flex flex-col p-">
-                            <img src={p2p} alt="" />
+                    <div className="flex items-center gap-6 justify-center ">
+                        <div className="items-center rounded-md  flex flex-col ">   
+                            <HandCoins />
                             <p className="font-bold text-sm">P2P</p>
                         </div>
-                        <div className="items-center flex flex-col p-2">
-                            <img src={schedulepay} alt="" />
+                        <div className="items-center rounded-md  flex flex-col hover:cursor-pointer">       
+                            <CalendarSync/>
                             <p className="font-bold text-sm">SCHEDULE-PAY</p>
                         </div>
-                        <div className="items-center flex flex-col p-2">
-                            <img src={autopay} alt="" />
+                        <div className="items-center flex flex-col rounded-md ">                           
+                            <SmartphoneNfc />
                             <p className="font-bold text-sm">AUTOPAY</p>
                         </div>
-                        <div className="items-center flex flex-col p-2">
-                            <img src={analytics} alt="" />
+                        <div className="items-center flex flex-col rounded-md ">
+                            {/* <img src={analytics} alt="" /> */}
+                            <ChartNoAxesCombined/>
                             <p className="font-bold text-sm">ANALYTICS</p>
                         </div>
                     </div>
 
+                   <LineGraph/>
                 </div>
-
-
-
-                <div className=" flex-1 p-3 border">
-                    {/* <Graph /> */}
-                </div>
-                {/* </div> */}
             </div>
 
         </section>
