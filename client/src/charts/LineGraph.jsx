@@ -1,100 +1,103 @@
+import React from 'react';
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
-import React from 'react'
-import { Radar } from "react-chartjs-2";
-import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from "chart.js";
-// import Label from './Label.jsx';
-
-ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
-
-
+// Register necessary components for Line Chart
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const data = {
-    labels: [
-      'Eating',
-      'Drinking',
-      'Sleeping',
-      'Designing',
-      'Coding',
-      'Cycling',
-      'Running'
-    ],
-    datasets: [{
+  labels: [
+    'Eating',
+    'Drinking',
+    'Sleeping',
+    'Designing',
+    'Coding',
+    'Cycling',
+    'Running'
+  ],
+  datasets: [
+    {
       label: 'My First Dataset',
       data: [65, 59, 90, 81, 56, 55, 40],
-      fill: true,
-      backgroundColor: 'rgba(255, 99, 132, 0.2)',
+      fill: false,
       borderColor: 'rgb(255, 99, 132)',
+      backgroundColor: 'rgba(255, 99, 132, 0.5)',
       pointBackgroundColor: 'rgb(255, 99, 132)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgb(255, 99, 132)'
-    }, {
+      tension: 0.4, // Smooth curve
+    },
+    {
       label: 'My Second Dataset',
       data: [28, 48, 40, 19, 96, 27, 100],
-      fill: true,
-      backgroundColor: 'rgba(54, 162, 235, 0.2)',
+      fill: false,
       borderColor: 'rgb(54, 162, 235)',
+      backgroundColor: 'rgba(54, 162, 235, 0.5)',
       pointBackgroundColor: 'rgb(54, 162, 235)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgb(54, 162, 235)'
-    }]
-  };
+      tension: 0.4, // Smooth curve
+    }
+  ]
+};
 
-  const config = {
-    type: 'radar',
-    data: data,
-    options: {
-        scales: {
-            r: {
-              beginAtZero: true,
-              suggestedMin: 50,
-              suggestedMax: 600,
-            },
-          },
-      elements: {
-        line: {
-          borderWidth: 4,
-          borderColor:'rgba(0, 0, 0, 0.2)',
-          backgroundColor:'rgba(0, 0, 0, 0.2)',
-         
+const options = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: true,
+      position: "top",
+      labels: {
+        font: {
+          size: 12,
+          weight: "bold"
+        }
+      }
+    }
+  },
+  scales: {
+    x: {
+      ticks: {
+        font: {
+          size: 12,
+          weight: "bold"
         }
       }
     },
-  };
+    y: {
+      beginAtZero: true,
+      ticks: {
+        font: {
+          size: 12,
+          weight: "bold"
+        }
+      }
+    }
+  }
+};
 
-const options = {
-    scales: {
-      r: {
-        grid: {
-            color: "rgba(0, 0, 0, 0)", // Change grid line color (darker)
-            lineWidth: 5, // Make the grid lines thicker
-          },
-          angleLines: {
-            color: "rgba(0, 0, 0,)", // Darker lines for the radial spokes
-            lineWidth: 5, // Increase thickness of the radial lines
-          },
-        beginAtZero: true,
-        suggestedMin: 50,
-        suggestedMax: 600,
-      },
-    },
-  };
-
-  
 const Graph = () => {
   return (
-    <div className='rounded  bg-zinc-100 '>
-     
-        <div className="w-full h-80 justify-center flex">
-         {/* <Radar {...config}></Radar> */}
-         <Radar data={data} config={config} />
-        
-        </div>
-    
-  
+    <div className='rounded '>
+      <h3 className="text-xl font-bold text-center p-6">Activity Trends</h3>
+      <div className="w-full lg:h-80 flex justify-center">
+        <Line data={data} options={options} />
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Graph
+export default Graph;

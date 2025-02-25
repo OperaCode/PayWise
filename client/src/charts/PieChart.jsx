@@ -30,8 +30,8 @@ const Graph = () => {
    
 
     <div className=' m-auto rounded'>
-        <h2 className='font-bold text-1xl text-center '>Expense Breakdown</h2>
-      <div className="items-center flex w-2/3 justify-center m-auto ">
+        <h2 className='font-bold text-xl p-2 flex  justify-center '>Expense Breakdown</h2>
+      <div className="items-center flex w-lg justify-center m-auto ">
         <div className="chart w-60 h-60 relative m-auto">
          <Doughnut {...config}></Doughnut>
          <h3 className='mb-4 font-bold title'>Total <span className='block text-3xl text-emerald-400'>${0}</span></h3>

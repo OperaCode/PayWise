@@ -16,7 +16,8 @@ const SpendingHeatmap = () => {
 
   return (
     <div className="w-full m-auto">
-      <h3 className="font-bold text-center text-xl py-4">Spending Patterns Heatmap</h3>
+      <h3 className="font-bold text-center text-xl py-2">Spending Heatmap</h3>
+      <p className="text-center p-1">We track your spendings like a <span className="text-red-900 font-bold">HEATWAVE !!!</span> </p>
       <HeatMap
         xLabels={xLabels}
         yLabels={yLabels}

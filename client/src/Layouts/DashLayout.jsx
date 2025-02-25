@@ -57,7 +57,7 @@ const DashLayout = ({ children }) => {
       <SideBar />
 
       {/* Main Content */}
-      <div className="flex-col w-full border lg:ml-70 ">
+      <div className="flex-col w-full pt-8 lg:ml-70 ">
         <div>
           {/* Navbar */}
         <div className="flex items-center justify-end p-4 gap-2">
@@ -81,16 +81,16 @@ const DashLayout = ({ children }) => {
         {/* Search bar */}
         <div className="px-10 flex items-center">
           <input type="text" className="p-1  text-cyan-950 rounded-lg w-full bg-gray-100 border-1 border-neutral-500 shadow-md" placeholder="Enter Search " />
-          <Search className="-ml-8 size-5"/>
+          <Search className="-ml-8 size-5 text-black"/>
         </div>
         </div>
 
         {/* Balance and Chart Section */}
-        <div className="w-full">
-          <div className=" ">
+        <div className="w-full ">
+         
             <div className=" ">{children}</div>
-          </div>
-          <div className=""><Recent /></div>
+         
+          <div className="p-1"><Recent /></div>
         </div>
 
 
