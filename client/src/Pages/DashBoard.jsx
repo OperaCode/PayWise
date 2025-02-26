@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import image from "../assets/ExpenseCategory.png"
+import image2 from "../assets/category.png"
 import { SmartphoneNfc, HandCoins, CalendarSync, ChartNoAxesCombined } from 'lucide-react';
 // import { Line } from "react-chartjs-2";
 import Graph from "../charts/PieChart";

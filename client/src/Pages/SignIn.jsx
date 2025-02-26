@@ -1,6 +1,8 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../Hooks/FirebaseConfig"; // Firebase Import
 import { toast } from "react-toastify";
 import { ThemeContext } from "../context/ThemeContext";
 import { Moon, Sun } from "lucide-react";
@@ -11,6 +13,7 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 const Login = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
+    
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -24,6 +27,8 @@ const Login = () => {
         setFormData((prevData) => ({ ...prevData, [name]: value }));
     };
 
+
+    // Email and Paasword Login
     const loginUser = async (e) => {
         e.preventDefault();
         const { email, password } = formData;
@@ -47,6 +52,39 @@ const Login = () => {
             navigate("/dashboard", { state: { user: response.data } }); // Redirect to dashboard
         } catch (error) {
             toast.error(error?.response?.data?.message || "Login failed");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+
+    // Google Sign-In
+    const GoogleLogin = async () => {
+        try {
+            setIsSubmitting(true);
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+            
+            // Send user data to backend
+            const response = await axios.post(`http://localhost:3000/user/google-login`, {
+                name: user.displayName,
+                email: user.email,
+                profilePic: user.photoURL
+            });
+
+            // Simulating API call to send user details to backend for JWT auth (if needed)
+            console.log("Google Sign-In User:", user);
+
+            // toast.success("Login successful with Google");
+            // navigate("/dashboard", { state: { user } });
+
+            toast.success("Google Login successful");
+            localStorage.setItem("user", JSON.stringify(response.data));
+            navigate("/dashboard", { state: { user: response.data } });
+
+        } catch (error) {
+            console.error(error);
+            toast.error("Google sign-in failed. Try again.");
         } finally {
             setIsSubmitting(false);
         }
@@ -118,7 +156,8 @@ const Login = () => {
                         Don't have an account? <Link to="/register" className="font-bold">Sign Up</Link>
                     </p>
                     <p className="p-6 text-center">
-                        Make it simple, Sign in with <span className="font-bold hover:cursor-pointer">Gmail</span>
+                        Make it simple, Sign in with <span className="font-bold hover:cursor-pointer" onClick={GoogleLogin}>Gmail
+                        </span>
                     </p>
                 </div>
             </div>

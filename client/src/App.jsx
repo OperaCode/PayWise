@@ -16,44 +16,28 @@ import SideBar from './components/SideBar.jsx';
 import DashLayout from './Layouts/DashLayout.jsx';
 import DashBoard from './Pages/DashBoard.jsx';
 
+import { auth, googleProvider } from "./Hooks/FirebaseConfig"; // ✅ Correct import
 
 const App = () => {
-  const [loading, setLoading] =useState(true);
+  const [loading, setLoading] = useState(true);
   const { theme } = useContext(ThemeContext); // Get theme from context
 
   useEffect(() => {
-    // Simulate an API call or app initialization delay
     setTimeout(() => setLoading(false), 3000);
   }, []);
 
   return (
     <div className={`app-container ${theme}`}>
-      {/* {loading ? (
-        <Loader /> // Show loader while loading
-      ) : (
-        
-
-
-      )}; */}
-      {/* <Header /> */}
-
-        <Routes >
-          <Route path="/" element={<LandingPage />}  />
-         
-          <Route path="/about" element={<LandingLayout><AboutUs /></LandingLayout>} />
-          <Route path="/terms-and-conditions" element={<LandingLayout><TermsAndConditions /></LandingLayout>} />
-          <Route path="/privacy-policy" element={<LandingLayout><Privacy /></LandingLayout>} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<DashLayout><DashBoard/></DashLayout>} />
-         
-          <Route path="/analytics" element={<PaymentAnalytics />} />
-        </Routes>
-
-
-
-
-
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<LandingLayout><AboutUs /></LandingLayout>} />
+        <Route path="/terms-and-conditions" element={<LandingLayout><TermsAndConditions /></LandingLayout>} />
+        <Route path="/privacy-policy" element={<LandingLayout><Privacy /></LandingLayout>} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<DashLayout><DashBoard/></DashLayout>} />
+        <Route path="/analytics" element={<PaymentAnalytics />} />
+      </Routes>
     </div>
   );
 };

@@ -40,7 +40,7 @@ const DashLayout = ({ children }) => {
     const fetchTransactions = async () => {
       try {
         const UserId = localStorage.getItem("userId");
-        // const response = await axios.get(`http://localhost:3000/transactions/${UserId}`, { withCredentials: true });
+         const response = await axios.get(`http://localhost:3000/transactions/${UserId}`, { withCredentials: true });
         setTransactions(response.data); // Assuming response.data is an array of transactions
       } catch (error) {
         console.log("Error fetching transactions:", error);
