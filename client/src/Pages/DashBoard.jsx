@@ -1,21 +1,17 @@
-import React, { useEffect, useState } from "react";
-// import Graph from "../Layouts/Graph";
-// import { IoAddCircle } from "react-icons/io5";
-// import Recent from "../Layouts/Recent";
-// import AddExpenseModal from "../Modals/AddExpenseModal";
-//  import { ClipLoader } from 'react-spinners';
-import { toast } from "react-toastify";
-import axios from "axios";
-import p2p from "../assets/p2p.png"
-import schedulepay from "../assets/schedulepay.png"
-import analytics from "../assets/analytics.png"
+import React, { useEffect, useState, useContext } from "react";
 import image from "../assets/ExpenseCategory.png"
 import { SmartphoneNfc, HandCoins, CalendarSync, ChartNoAxesCombined } from 'lucide-react';
 // import { Line } from "react-chartjs-2";
 import Graph from "../charts/PieChart";
 import Line from "../charts/LineGraph"
-import Heatmap from "../charts/HeatMap"
-// import { useNavigate } from "react-router-dom";
+import {Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import axios from "axios";
+
+
+
+
+
 
 
 const override = {
