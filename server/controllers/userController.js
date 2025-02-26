@@ -52,15 +52,15 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Hash password before saving
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // const salt = await bcrypt.genSalt(10);
+    // const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create a new user with a transaction wallet
     const newUser = await userModel.create({
       firstName,
       lastName,
       email,
-      password: hashedPassword,
+      password,
       wallet: {
         balance: 100,
         rewards: 50,
@@ -121,7 +121,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       console.error("Password mismatch detected:", { inputPassword: password, storedPassword: user.password });
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Password mismatch detected" });
     }
   
     // Ensure user has a wallet (prevents balance reset issues)
@@ -151,6 +151,7 @@ const loginUser = asyncHandler(async (req, res) => {
       wallet: {
         walletId: user.wallet.walletId || null,
         balance: user.wallet.balance ?? 0, // Ensure a default balance
+        rewards: user.wallet.rewards ?? 0, // Ensure a default balance
       },
     });
   

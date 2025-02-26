@@ -9,14 +9,13 @@ const bcrypt = require("bcrypt")
 
 
 
-
 const transferFunds = asyncHandler(async (req, res) => {
   try {
     const { senderEmail, receiverEmail, amount, method, pin } = req.body;
     //console.log(req.body)
 
     // Validate data
-    if (!senderEmail || !receiverEmail || !amount || !amount <= 0 || !method) {
+    if (!senderEmail || !receiverEmail || !amount || amount <= 0 || !method) {
       return res.status(400).json({ message: "Invalid transfer request" });
     }
 
@@ -91,27 +90,22 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
     const { senderEmail, receiverEmail, amount, frequency, isRecurring, startDate, transactionPin } = req.body;
 
-    // console.log("Request Body:", req.body);
-
     // Validate required fields
-    if (!senderEmail || !receiverEmail || !amount || amount <= 0||!startDate || !transactionPin || !frequency) {
+    if (!senderEmail || !receiverEmail || !amount || amount <= 0 || !startDate || !transactionPin || !frequency) {
       return res.status(400).json({ message: "Invalid transfer request. Missing required fields." });
     }
 
     // Fetch sender (user initiating the scheduled transfer)
     const sender = await User.findOne({ email: senderEmail });
-    console.log(sender)
     if (!sender) {
       return res.status(404).json({ message: "Sender not found" });
     }
 
     // Fetch receiver (PayWise user receiving the transfer)
     const receiver = await User.findOne({ email: receiverEmail });
-    console.log(receiver)
     if (!receiver) {
       return res.status(404).json({ message: "Receiver not found" });
     }
-
 
     // Validate frequency
     const validFrequencies = ["daily", "weekly", "monthly"];
@@ -120,17 +114,13 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     }
 
     // Validate start date for recurring payments
-    if (isRecurring) {
-      const currentDate = new Date();
-      const startDateDate = new Date(startDate);
+    const nextExecution = new Date(startDate);
+    if (isNaN(nextExecution.getTime())) {
+      return res.status(400).json({ error: "Invalid startDate format." });
+    }
 
-      if (isNaN(startDateDate.getTime())) {
-        return res.status(400).json({ error: "Invalid startDate format." });
-      }
-
-      if (startDateDate < currentDate) {
-        return res.status(400).json({ error: "Start date must be in the future." });
-      }
+    if (nextExecution < new Date()) {
+      return res.status(400).json({ error: "Start date must be in the future." });
     }
 
     // Ensure sender has set a transaction PIN
@@ -144,48 +134,23 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
       return res.status(403).json({ message: "Invalid transaction PIN" });
     }
 
-
-    // Schedule the recurring payment without deducting balance yet
-    // const nextExecution = new Date(startDate);
-
-    // const recurringPayment = new Payment({
-    //   sender: sender._id,
-    //   receiver: receiver._id,
-    //   amount,
-    //   frequency,
-    //   startDate,
-    //   nextExecution,
-    //   status: "active",
-    //   isRecurring: true,
-    // });
-
-
-    const nextExecution = new Date(startDate);
-
-    if (isNaN(nextExecution.getTime())) {
-      return res.status(400).json({ error: "Invalid startDate format." });
-    }
-
-    // Ensure startDate is in the future
-    if (nextExecution < new Date()) {
-      return res.status(400).json({ error: "Start date must be in the future." });
-    }
-
-    // Create recurring payment
+    // Save the recurring payment in the database
     const recurringPayment = new Payment({
-      user: sender._id,
-      biller: receiver._id,
+      user: sender._id,  // Sender of the payment
+      biller: receiver._id,  // Receiver of the payment
       amount,
       frequency,
-      nextExecution, // This will be updated after each transaction
+      nextExecution, // Scheduler will update this
       status: "active",
       isRecurring: true,
     });
 
     await recurringPayment.save();
-    // await recurringPayment.save();
 
-    res.status(201).json({ message: "Recurring payment scheduled successfully", recurringPayment });
+    res.status(201).json({
+      message: "Recurring payment scheduled successfully",
+      recurringPayment,
+    });
 
   } catch (error) {
     console.error("Error scheduling transfer:", error);
