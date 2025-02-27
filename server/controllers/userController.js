@@ -2,13 +2,15 @@ const User = require("../models/userModel");
 const asyncHandler = require('express-async-handler');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { OAuth2Client } = require("google-auth-library");
 const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 
+ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Initialize Google client
 
-
+// GOOGLE_CLIENT_ID="345493382219-9ancu2on81977erh7re38brdjo11qj43.apps.googleusercontent.com"
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "30d", // Token expires in 30 days
@@ -163,6 +165,79 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 
+const googleSignUp = asyncHandler(async(req, res)=>{
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: "Token is required" });
+
+    console.log("Received Google ID Token:", token); // ✅ Debugging log
+    console.log("🟢 Received Google Token:", req.body.token);
+
+
+    // ✅ Verify the token using Firebase Admin SDK
+    const decodedToken = await user.auth().verifyIdToken(token);
+    console.log("Decoded Token:", decodedToken);
+
+    // ✅ Check if user exists in DB
+    let user = await User.findOne({ email: decodedToken.email });
+    if (!user) {
+        user = new User({ email: decodedToken.email, name: decodedToken.name });
+        await user.save();
+    }
+
+    // ✅ Generate Auth Token
+    const authToken = generateAuthToken(user);
+
+    res.status(200).json({ message: "User authenticated", user, token: authToken });
+
+} catch (error) {
+    console.error("Google Sign-Up Error:", error);
+    res.status(401).json({ error: "Invalid Google token" });
+}
+ 
+});
+
+const googleSignIn =asyncHandler(async(req, res)=>{
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({ error: "No token provided" });
+    }
+
+    // Verify Google ID token
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+
+    // Check if user exists, otherwise create a new user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({ email, name, provider: "google" });
+      await user.save();
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({ token, user });
+
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ error: "Google login failed, please try again" });
+  }
+});
+
+
 const setTransactionPin = asyncHandler(async(req,res)=>{
   try {
     const { userId, pin } = req.body;
@@ -182,24 +257,24 @@ const setTransactionPin = asyncHandler(async(req,res)=>{
   }
 });
 
+
 const getUser = asyncHandler(async (req, res) => {
   try {
-    const { userId } = req.params;
-    console.log("req user Id =", req.userId);
-    // find user by id
-    const user = await userModel.findById(userId);
-    if (user) {
-      console.log(user)
-      const { _id, firstName,lastName, email,wallet} = user;
-      res.status(200).json({ _id, fullName: `${firstName} ${lastName}`, email,wallet});
-    } else {
-      res.status(404).json({ message: "User Not Found" });
+    const userId = req.userId;  // Get ID from authenticated user
+    const user = await User.findById(userId);
+    
+    if(!user) {
+      return res.status(404).json({message: 'User Not Found!'})
     }
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error: " + err);
+    
+    const {_id, firstName, lastName, email} = user;
+    return res.status(200).json({_id, firstName, lastName, email});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({message: 'Internal Server Error'})
   }
 });
+
 
 const getUsers = asyncHandler(async(req, res) => {
   try {
@@ -277,4 +352,4 @@ const LogoutUser = asyncHandler(async (req, res) => {
 
 
 
-module.exports = { registerUser, loginUser,setTransactionPin, getUser, getUsers, updateUser, deleteUser,LogoutUser};
+module.exports = { registerUser, loginUser,googleSignUp,googleSignIn ,setTransactionPin, getUser, getUsers, updateUser, deleteUser,LogoutUser};

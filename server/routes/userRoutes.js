@@ -2,6 +2,8 @@ const express = require("express");
 const {
   registerUser,
   loginUser,
+  googleSignUp,
+  googleSignIn,
   setTransactionPin,
   getUser,
   getUsers,
@@ -16,6 +18,8 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser); 
+router.post("/google-signup", googleSignUp); 
+router.post("/google-login", googleSignIn); 
 router.post("/set-pin", setTransactionPin); 
 
 router.get("/:userId", protectUser, getUser);

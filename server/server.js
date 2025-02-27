@@ -30,13 +30,15 @@ app.use(cookieParser());
 // Set up CORS with proper configuration
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-    optionsSuccessStatus: 200,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: "http://localhost:5173", // Allow frontend origin
+    credentials: true, // Allow sending cookies (if needed)
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Allowed HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
   })
 );
+
+// Explicitly handle preflight requests
+app.options("*", cors());
 
 // Configure passport
 initializePassport(passport);
