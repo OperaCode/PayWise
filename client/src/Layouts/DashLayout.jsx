@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 // import { UserContext } from "../context/UserContext";
 import { useContext } from "react";
 import { ThemeContext } from '../context/ThemeContext';
+import { UserContext } from "../context/UserContext";
 import { Moon, Sun, Search } from "lucide-react";
 import axios from "axios";
 
@@ -16,8 +17,8 @@ import axios from "axios";
 
 
 const DashLayout = ({ children }) => {
-  // const { user } = useContext(UserContext);
-  const [username, setUserName] = useState("Guest");
+  const { user } = useContext(UserContext);
+  const [username, setUserName] = useState("");
   const { theme, toggleTheme } = useContext(ThemeContext); // Get theme & toggle function
   // const [profilePhoto, setProfilePhoto] = useState(image)
   // const [transactions, setTransactions] = useState([]);
@@ -30,25 +31,22 @@ const DashLayout = ({ children }) => {
         const response = await axios.get(`http://localhost:3000/user/${UserId}`, { withCredentials: true });
         const data = response.data;
 
-        setUserName(data.firstName);
-        setProfilePhoto(data.profilePhoto || image);
+        const capitalizeFirstLetter = (name) => {
+          return name.charAt(0).toUpperCase() + name.slice(1);
+        };
+
+    setUserName(capitalizeFirstLetter(data.firstName));
+        // setProfilePhoto(data.profilePhoto || image);
       } catch (error) {
+        // toast.error(error.message)
         console.log("Error fetching user:", error);
       }
-    };
+  };
+  
 
-    const fetchTransactions = async () => {
-      try {
-        const UserId = localStorage.getItem("userId");
-         const response = await axios.get(`http://localhost:3000/transactions/${UserId}`, { withCredentials: true });
-        setTransactions(response.data); // Assuming response.data is an array of transactions
-      } catch (error) {
-        console.log("Error fetching transactions:", error);
-      }
-    };
 
     fetchUser();
-    fetchTransactions();
+  
   }, []);
 
 
@@ -60,9 +58,9 @@ const DashLayout = ({ children }) => {
       <div className="flex-col w-full pt-8 lg:ml-70 ">
         <div>
           {/* Navbar */}
-        <div className="flex items-center justify-end p-4 gap-2">
+        <div className="flex items-center justify-end px-10 py-4 gap-2">
           <h1 className="text-cyan- text-xl font-bold ">
-            Welcome, {username}!
+            Welcome, {username }!
           </h1>
           <img
             src={image}

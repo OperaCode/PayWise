@@ -89,12 +89,14 @@ const Register = () => {
 
 
 
-    const googleReg = async (googleResponse) => {
+    const googleReg = async () => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const googleToken = await result.user.getIdToken();
 
             console.log("Google Token:", googleToken); // Debugging
+            console.log("🔵 Sending Google Token:", googleToken);
+
 
             const response = await axios.post(
                 `http://localhost:3000/user/google-signup`,

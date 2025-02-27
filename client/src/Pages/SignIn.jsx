@@ -5,6 +5,7 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../Hooks/FirebaseConfig"; // Firebase Import
 import { toast } from "react-toastify";
 import { ThemeContext } from "../context/ThemeContext";
+import { UserContext } from "../context/UserContext";
 import { Moon, Sun } from "lucide-react";
 import image from "../assets/Register.png";
 import logo from "../assets/paywise-logo.png";
@@ -13,6 +14,7 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 const Login = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
+   
     
     const [formData, setFormData] = useState({
         email: "",

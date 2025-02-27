@@ -73,16 +73,16 @@ const DashBoard = () => {
                 {/* Wallet Balance Section */}
                 <div className=" flex-1 h-full font-bodyFont w-full ">
                     <h1 className=" font-bold mb-4 text-xl py-2">Current Balance:</h1>
-                    <div className="p-4 bg-zinc-100 flex w-100 justify-between rounded-lg shadow-md  border-4 border-neutral-500">
+                    <div className="p-4 bg-zinc-100 flex w-100 justify-between rounded-lg shadow-md items-center border-4 border-neutral-500">
                         <div className="p-2">
                             <p className="text-gray-900 text-sm md:text-sm">Wallet Balance:</p>
                             <h2 className="text-xl font-bold text-gray-700">${300}</h2>
                         </div>
-                        <button className=" hover:cursor-pointer bg-cyan-800 text-white flex p-2 items-center rounded-xl text-xs font-semibold hover:bg-cyan-600 transition hover:cursor">
+                        <button className=" hover:cursor-pointer h-10 bg-cyan-800 text-white flex p-2 items-center rounded-xl text-xs font-semibold hover:bg-cyan-600 transition hover:cursor">
                             Add Money
                         </button>
                       
-                        <button className=" hover:cursor-pointer text-white p-2 bg-cyan-800 rounded-xl text-xs font-semibold hover:bg-cyan-500 transition hover:cursor">
+                        <button className=" hover:cursor-pointer h-10 text-white p-2 bg-cyan-800 rounded-xl text-xs font-semibold hover:bg-cyan-500 transition hover:cursor">
                             Manage Tokens
                         </button>
 
