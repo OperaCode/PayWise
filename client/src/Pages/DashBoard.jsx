@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import image from "../assets/ExpenseCategory.png"
-import image2 from "../assets/category.png"
+import { UserContext } from "../context/UserContext";
 import { SmartphoneNfc, HandCoins, CalendarSync, ChartNoAxesCombined } from 'lucide-react';
 // import { Line } from "react-chartjs-2";
 import Graph from "../charts/PieChart";
@@ -8,11 +8,6 @@ import Line from "../charts/LineGraph"
 import {Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
-
-
-
-
-
 
 
 const override = {
@@ -25,7 +20,8 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
 const DashBoard = () => {
-
+    const { user } = useContext(UserContext);
+    console.log(user)
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -75,8 +71,8 @@ const DashBoard = () => {
                     <h1 className=" font-bold mb-4 text-xl py-2">Current Balance:</h1>
                     <div className="p-4 bg-zinc-100 flex w-100 justify-between rounded-lg shadow-md items-center border-4 border-neutral-500">
                         <div className="p-2">
-                            <p className="text-gray-900 text-sm md:text-sm">Wallet Balance:</p>
-                            <h2 className="text-xl font-bold text-gray-700">${300}</h2>
+                            <p className="text-gray-900 text-sm md:text-md font-bold">Wallet Balance:</p>
+                            <h2 className="text-xl font-bold text-gray-700">${user?.wallet?.balance || 0}</h2>
                         </div>
                         <button className=" hover:cursor-pointer h-10 bg-cyan-800 text-white flex p-2 items-center rounded-xl text-xs font-semibold hover:bg-cyan-600 transition hover:cursor">
                             Add Money
