@@ -1,20 +1,22 @@
 import React, { createContext, useEffect, useState } from "react";
-import axios from "axios"; // ✅ Import axios
+import axios from "axios";
 
 export const UserContext = createContext();
 
 const UserProvider = ({ children }) => {
-  const savedUser = localStorage.getItem("user"); // ✅ Fetch from local storage
-  const [user, setUser] = useState(savedUser ? JSON.parse(savedUser) : null); // ✅ Initialize state
+//   const savedUser = localStorage.getItem("user");
+//   const [user, setUser] = useState(savedUser ? JSON.parse(savedUser) : null);
+
+const [user, setUser] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userId = localStorage.getItem("userId"); // ✅ Get user ID
-        if (userId && !user) { // ✅ Only fetch if user doesn't exist in state
+        const userId = localStorage.getItem("userId"); // Get user ID from storage
+        if (userId ) { // Fetch only if user is not already set
           const response = await axios.get(`http://localhost:3000/user/${userId}`);
+          console.log("Fetched User Data:", response.data); // Debugging
           setUser(response.data);
-          localStorage.setItem("user", JSON.stringify(response.data)); // ✅ Save user data
         }
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -22,7 +24,14 @@ const UserProvider = ({ children }) => {
     };
 
     fetchUser();
-  }, []); // ✅ Run once when component mounts
+  }, []); // Runs only once on mount
+
+  // ✅ Keep localStorage updated when user data changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+  }, [user]);
 
   return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
 };

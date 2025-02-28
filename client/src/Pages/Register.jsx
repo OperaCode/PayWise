@@ -72,6 +72,7 @@ const Register = () => {
 
         try {
             const response = await axios.post(`http://localhost:3000/user/register`, formData, { withCredentials: true });
+            console.log(response)
 
             if (response?.data) {
                 toast.success("Registration successful! Redirecting to login...");

@@ -21,7 +21,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const DashBoard = () => {
     const { user } = useContext(UserContext);
-    console.log(user)
+    // console.log(user)
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 

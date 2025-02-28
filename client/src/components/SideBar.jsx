@@ -71,21 +71,21 @@ const logoutUser = async () => {
                 <li className="hover:cursor-pointer  md:block hover:text-cyan-900 font-bold lg:text-">Home</li>
               </Link>
 
-              <Link to="/history">
+              <Link to="/payment">
               <li className="hover:cursor-pointer hidden lg:block hover:text-cyan-900 font-bold lg:text-md">Make Payment</li>
               </Link>
 
-              <Link to="/profile-setting">
+              <Link to="/billers">
                 <li className="hover:cursor-pointer hidden lg:block font-bold lg:text-md">
                   Manage Billers
                 </li>
               </Link>
-              <Link to="/profile-setting">
+              <Link to="/analytics">
                 <li className="hover:cursor-pointer hidden lg:block  font-bold w-full lg:text-md">
                  Rewards and Analytics
                 </li>
               </Link>
-              <Link to="/profile-setting">
+              <Link to="/inbox">
                 <li className="hover:cursor-pointer hidden lg:block  font-bold lg:text-md">
                   Messages
                 </li>

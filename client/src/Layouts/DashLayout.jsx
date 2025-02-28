@@ -1,21 +1,68 @@
-import React, { useContext } from "react";
+import React, { useContext,useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import image from "../assets/avatar.jpg";
 import Recent from "../components/RecentTransactions";
 import { ThemeContext } from "../context/ThemeContext";
-import { UserContext } from "../context/UserContext";
+
 import { Moon, Sun, Search } from "lucide-react";
+import axios from "axios";
 
 const DashLayout = ({ children }) => {
-  const { user } = useContext(UserContext);
-  const { theme, toggleTheme } = useContext(ThemeContext);
+ 
+ const { theme, toggleTheme } = useContext(ThemeContext); // Get theme & toggle function
+  const [username, setUserName] = useState(" ")
+  const [profilePicture, setprofilePicture] = useState(image)
 
-  function formatName(fullName) {
-    if (!fullName) return "Guest"; // Handle empty or undefined names
+  // const [transactions, setTransactions] = useState([]);
+
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      // try {
+      //   const UserId = localStorage.getItem("userId"); // Assuming you store userId in local storage
+      //   const response = await axios.get(`http://localhost:3000/user/${UserId}`, { withCredentials: true });
+      //   const data = response.data;
+      //   console.log(data.user)
+      //   const user = data.user
+      //   setUserName(user.firstName);
+      //   console.log(username)
+      //   setprofilePicture(data.profilePicture || image);
+      // } catch (error) {
+      //   console.log("Error fetching user:", error);
+      // }
+
+      try {
+        const UserId = localStorage.getItem("userId"); // Assuming you store userId in local storage
+        const response = await axios.get(`http://localhost:3000/user/${UserId}`, { withCredentials: true });
+        
+        const fetchedUser = response?.data?.user;
+        console.log(fetchedUser)
+        setUserName(fetchedUser.firstName);
+        setprofilePicture(fetchedUser.profilePicture || image);
+      } catch (error) {
+        console.log("Error fetching user:", error);
+      }
+    };
+
+    // const fetchTransactions = async () => {
+    //   try {
+    //     const UserId = localStorage.getItem("userId");
+    //     const response = await axios.get(`http://localhost:3000/transactions/${UserId}`, { withCredentials: true });
+    //     setTransactions(response.data); // Assuming response.data is an array of transactions
+    //   } catch (error) {
+    //     console.log("Error fetching transactions:", error);
+    //   }
+    // };
+
+    fetchUser();
+    // fetchTransactions();
+  }, []);
+
+
+
+
   
-    const firstName = fullName.split(' ')[0]; // Get the first name
-    return firstName.charAt(0).toUpperCase() + firstName.slice(1); // Capitalize first letter
-  }
+  
   
   return (
     <div className="lg:flex">
@@ -27,10 +74,11 @@ const DashLayout = ({ children }) => {
           {/* Navbar */}
           <div className="flex items-center justify-end px-10 py-4 gap-2">
             <h1 className="text-cyan- text-xl font-bold">
-              Welcome, {formatName(user.fullName)}!
+              Welcome, {username.charAt(0).toUpperCase() + username.slice(1)}!
             </h1>
             <img
-              src={user?.profilePicture || image}
+              // src={user?.profilePicture ? user.profilePicture : image}
+               src={profilePicture ? profilePicture : image}
               alt="Profile"
               className="w-14 h-14 rounded-full border-2"
             />

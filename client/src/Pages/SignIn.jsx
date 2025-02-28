@@ -5,6 +5,7 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../Hooks/FirebaseConfig"; // Firebase Import
 import { toast } from "react-toastify";
 import { ThemeContext } from "../context/ThemeContext";
+
 import { UserContext } from "../context/UserContext";
 import { Moon, Sun } from "lucide-react";
 import image from "../assets/Register.png";
@@ -14,7 +15,7 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 const Login = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
-   
+    const { setUser } = useContext(UserContext);
     
     const [formData, setFormData] = useState({
         email: "",
@@ -51,6 +52,7 @@ const Login = () => {
 
             toast.success("Login successful");
             localStorage.setItem("user", JSON.stringify(response.data)); // Store user data in local storage
+            setUser(response.data.user); // ✅ Update UserContext immediately
             navigate("/dashboard", { state: { user: response.data } }); // Redirect to dashboard
         } catch (error) {
             toast.error(error?.response?.data?.message || "Login failed");
