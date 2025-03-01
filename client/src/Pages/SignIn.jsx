@@ -50,8 +50,8 @@ const Login = () => {
                 { withCredentials: true }
             );
 
-            toast.success("Login successful");
             localStorage.setItem("user", JSON.stringify(response.data)); // Store user data in local storage
+            toast.success("Login successful");
             setUser(response.data.user); // ✅ Update UserContext immediately
             navigate("/dashboard", { state: { user: response.data } }); // Redirect to dashboard
         } catch (error) {

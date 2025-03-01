@@ -15,76 +15,76 @@ const BASE_URL = import.meta.env.VITE_BASE_URL; // Ensure this matches your .env
 
 const Register = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
-    const navigate = useNavigate();
-
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
         email: "",
         password: "",
         confirmPassword: "",
-    });
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [formValidMessage, setFormValidMessage] = useState("");
-    const [loading, setLoading] = useState(false);
-
-    // Handle input changes
-    const handleChange = (e) => {
+      });
+    
+      const [isChecked, setIsChecked] = useState(false);
+      const [loading, setLoading] = useState(false);
+      const [isSubmitting, setIsSubmitting] = useState(false)
+      const [error, setError] = useState('')
+      const [user, setUser] = useState(null)
+      const navigate = useNavigate();
+    
+      const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
-    };
-
-    // Password validation
-    const [uCase, setUCase] = useState(false);
-    const [num, setNum] = useState(false);
-    const [sChar, setSChar] = useState(false);
-    const [passwordLength, setPasswordLength] = useState(false);
-
-    useEffect(() => {
-        const { password } = formData;
-        setUCase(/[A-Z]/.test(password));
-        setNum(/\d/.test(password));
-        setSChar(/[!@#$%^&*(),.?":{}|<>]/.test(password));
-        setPasswordLength(password.length > 5);
-    }, [formData.password]);
-
-    // Handle form submission
-    const handleSubmit = async (e) => {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        setError(""); // Clear the error when the user types
+      };
+    
+      const handleCheckboxChange = () => {
+        setIsChecked(!isChecked);
+      };
+    
+      const handlePastePassword = (e) => {
         e.preventDefault();
-
-        const { firstName, lastName, email, password, confirmPassword } = formData;
-
-        if (!firstName || !lastName || !email || !password || !confirmPassword) {
-            setFormValidMessage("All fields are required");
-            toast.error("All fields are required");
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            setFormValidMessage("Passwords do not match");
-            toast.error("Passwords do not match");
-            return;
-        }
-
-        setIsSubmitting(true);
+        toast.error("Cannot paste into this field");
+        return;
+      };
+    
+      const handleSubmit = async (e) => {
+        e.preventDefault();
         setLoading(true);
-
+        setIsSubmitting(true);
+        setError(""); // Reset error before validation
+    
         try {
-            const response = await axios.post(`http://localhost:3000/user/register`, formData, { withCredentials: true });
-            console.log(response)
-
-            if (response?.data) {
-                toast.success("Registration successful! Redirecting to login...");
-                setTimeout(() => {
-                    navigate("/login");
-                }, 2000); // Delay navigation for better user experience
-            }
+          const { firstName, lastName, email, password, confirmPassword } = formData;
+    
+          if (!firstName || !lastName || !email || !password || !confirmPassword) {
+            setError("Oops, all fields are required");
+            throw new Error("All fields are required");
+          }
+    
+          if (password !== confirmPassword) {
+            setError("Passwords do not match");
+            throw new Error("Passwords do not match");
+          }
+    
+          const response = await axios.post(
+           "http://localhost:3000/user/register",
+            formData,
+            { withCredentials: true }
+          );
+    
+          if (response?.data) {
+            console.log(response.data);
+            setUser(response.data);
+            toast.success("Registration Successful");
+            navigate("/dashboard");
+          }
         } catch (error) {
-            toast.error(error?.response?.data?.msg || "Internal Server Error");
+          const errorMessage =
+            error?.response?.data?.message || error.message || "Internal server error";
+          setError(errorMessage); // Set error message
+          toast.error(errorMessage);
         } finally {
-            setIsSubmitting(false);
-            setLoading(false);
+          setLoading(false);
+          setIsSubmitting(false);
         }
     };
 
@@ -233,12 +233,13 @@ const Register = () => {
                         />
 
                         {/* Display error message */}
-                        {formValidMessage && <p className="text-red-600">{formValidMessage}</p>}
+                        {/* {formValidMessage && <p className="text-red-600">{formValidMessage}</p>} */}
 
                         <div className="flex justify-center">
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
+                                onClick={handleSubmit}
                                 className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition"
                             >
                                 {loading ? "Registering..." : "Let's get started"}

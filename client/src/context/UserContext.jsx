@@ -13,15 +13,17 @@ const [user, setUser] = useState(null);
     const fetchUser = async () => {
       try {
         const userId = localStorage.getItem("userId"); // Get user ID from storage
-        if (userId ) { // Fetch only if user is not already set
+        if (userId) {
           const response = await axios.get(`http://localhost:3000/user/${userId}`);
           console.log("Fetched User Data:", response.data); // Debugging
+          console.log(response.data); // Debugging
           setUser(response.data);
-        }
-      } catch (error) {
+        } 
+  
+      
+    }catch (error) {
         console.error("Error fetching user:", error);
-      }
-    };
+      }}
 
     fetchUser();
   }, []); // Runs only once on mount
@@ -29,7 +31,7 @@ const [user, setUser] = useState(null);
   // ✅ Keep localStorage updated when user data changes
   useEffect(() => {
     if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("userId", JSON.stringify(user._id));
     }
   }, [user]);
 

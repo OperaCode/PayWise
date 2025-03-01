@@ -1,69 +1,120 @@
-import React, { useContext,useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import image from "../assets/avatar.jpg";
 import Recent from "../components/RecentTransactions";
 import { ThemeContext } from "../context/ThemeContext";
-
+import { UserContext } from "../context/UserContext";
 import { Moon, Sun, Search } from "lucide-react";
 import axios from "axios";
 
 const DashLayout = ({ children }) => {
- 
- const { theme, toggleTheme } = useContext(ThemeContext); // Get theme & toggle function
-  const [username, setUserName] = useState(" ")
-  const [profilePicture, setprofilePicture] = useState(image)
+  const { theme, toggleTheme } = useContext(ThemeContext); // Get theme & toggle function
+  const [user,setUser ] = useState(UserContext); // ✅ Use user from context
+  //console.log(user)
+  const [username, setUserName] = useState("");
+  const [profilePicture, setProfilePicture] = useState(image);
+  const [loading, setLoading] = useState(false); 
 
-  // const [transactions, setTransactions] = useState([]);
+ // ✅ Fixed: Use `user` from context instead of calling `useContext` inside the function
+ const handleChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+
+
+// Update user in state and context
+const User = JSON.parse(localStorage.getItem("user"));
+
+  // ✅ Ensure user exists
+  if (!user) {
+    console.error("User is null, fetching user data...");
+    return;
+  }
+
+
+  // Check if user is authenticated
+  if (!User) {
+    console.error("User is not authenticated, fetching user data...");
+    return;
+  }
+  
+
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("user", User);
+
+  setLoading(true); // Show loading indicator
+
+  try {
+    const response = await axios.post("http://localhost:3000/user/upload-photo", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: true,
+    });
+
+    console.log("Upload success:", response.data);
+
+    // ✅ Update profile picture in state and context
+    setProfilePicture(response.data.profilePicture);
+    setUser({ ...user, profilePicture: response.data.profilePicture });
+  } catch (error) {
+    console.error("Upload error:");
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   useEffect(() => {
     const fetchUser = async () => {
-      // try {
-      //   const UserId = localStorage.getItem("userId"); // Assuming you store userId in local storage
-      //   const response = await axios.get(`http://localhost:3000/user/${UserId}`, { withCredentials: true });
-      //   const data = response.data;
-      //   console.log(data.user)
-      //   const user = data.user
-      //   setUserName(user.firstName);
-      //   console.log(username)
-      //   setprofilePicture(data.profilePicture || image);
-      // } catch (error) {
-      //   console.log("Error fetching user:", error);
-      // }
-
       try {
-        const UserId = localStorage.getItem("userId"); // Assuming you store userId in local storage
-        const response = await axios.get(`http://localhost:3000/user/${UserId}`, { withCredentials: true });
-        
+        const UserId = localStorage.getItem("userId");
+        const response = await axios.get(`http://localhost:3000/user/${UserId}`, {
+          withCredentials: true,
+        });
+
         const fetchedUser = response?.data?.user;
-        console.log(fetchedUser)
+        console.log(fetchedUser);
+        setUser(fetchedUser);
         setUserName(fetchedUser.firstName);
-        setprofilePicture(fetchedUser.profilePicture || image);
+        // setProfilePicture(fetchedUser.profilePicture || image);
+
       } catch (error) {
         console.log("Error fetching user:", error);
       }
     };
 
-    // const fetchTransactions = async () => {
-    //   try {
-    //     const UserId = localStorage.getItem("userId");
-    //     const response = await axios.get(`http://localhost:3000/transactions/${UserId}`, { withCredentials: true });
-    //     setTransactions(response.data); // Assuming response.data is an array of transactions
-    //   } catch (error) {
-    //     console.log("Error fetching transactions:", error);
-    //   }
-    // };
+    const uploadPhoto = async(e)=>{
+
+      const file = e.target.files[0];
+      if (!file) return;
+
+
+
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("userId", UserId);
+      try {
+        const user = localStorage.getItem("user");
+        const response = await axios.post(`http://localhost:3000/user/upload-photo`, { userId: UserId }, {
+          withCredentials: true,
+        });
+        if (!user) {
+          console.error("User ID is missing.");
+          return;
+        }
+    
+
+        console.log("Upload photo success:", response.data);
+
+      } catch (error) {
+        console.error("Upload photo error:", error.response?.data || error.message);
+      }
+    }
 
     fetchUser();
-    // fetchTransactions();
+     uploadPhoto();
   }, []);
 
-
-
-
-  
-  
-  
   return (
     <div className="lg:flex">
       <SideBar />
@@ -76,12 +127,27 @@ const DashLayout = ({ children }) => {
             <h1 className="text-cyan- text-xl font-bold">
               Welcome, {username.charAt(0).toUpperCase() + username.slice(1)}!
             </h1>
-            <img
-              // src={user?.profilePicture ? user.profilePicture : image}
-               src={profilePicture ? profilePicture : image}
-              alt="Profile"
-              className="w-14 h-14 rounded-full border-2"
-            />
+
+            {/* Clickable Profile Picture */}
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleChange} 
+                className="hidden"
+                id="profileUpload"
+              />
+              <label htmlFor="profileUpload">
+                <img
+                  src={profilePicture}
+                  alt="Profile"
+                  className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
+                />
+              </label>
+            </div>
+            
+            {loading && <span className="text-sm text-gray-500">Uploading...</span>}
+
             <button
               onClick={toggleTheme}
               className="p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
