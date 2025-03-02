@@ -15,6 +15,7 @@ import PaymentAnalytics from './Pages/PaymentAnalytics.jsx';
 import SideBar from './components/SideBar.jsx';
 import DashLayout from './Layouts/DashLayout.jsx';
 import DashBoard from './Dashboards/DashBoard.jsx';
+import Payment from "./Dashboards/MakePayment.jsx"
 
 import { auth, googleProvider } from "./Hooks/FirebaseConfig"; // ✅ Correct import
 import ManageBillers from './Dashboards/ManageBillers.jsx';
@@ -38,6 +39,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<DashLayout><DashBoard/></DashLayout>} />
+        <Route path="/payment" element={<DashLayout><Payment/></DashLayout>} />
         <Route path="/billers" element={<DashLayout><ManageBillers/></DashLayout>} />
         <Route path="/analytics" element={<PaymentAnalytics />} />
       </Routes>

@@ -122,23 +122,23 @@ const logoutUser = async () => {
             {/* Modal Menu Items */}
             <ul className="leading-10 text-2xl p-4">
 
-              <Link to="/history">
+              <Link to="/payment">
                 <li className="hover:text-cyan-900 font-bold  cursor-pointer">Make Payment</li>
               </Link>
 
-              <Link to="/profile-setting">
+              <Link to="/billers">
                 <li className="hover:text-cyan-900  font-bold cursor-pointer">Manage Billers</li>
               </Link>
-              <Link to="/profile-setting">
+              <Link to="/analytics">
                 <li className="hover:text-cyan-900 font-bold  cursor-pointer">Rewards and Analytics</li>
               </Link>
-              <Link to="/profile-setting">
+              <Link to="/inbox">
                 <li className="hover:text-cyan-900 font-bold  cursor-pointer">Messages</li>
               </Link>
-              <Link to="/profile-setting">
+              {/* <Link to="/profile-setting">
                 <li className="hover:text-cyan-900 font-bold  cursor-pointer">Settings</li>
               </Link>
-              
+               */}
             
            
             </ul>
