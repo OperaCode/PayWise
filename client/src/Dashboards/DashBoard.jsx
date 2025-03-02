@@ -2,12 +2,12 @@ import React, { useEffect, useState, useContext } from "react";
 import image from "../assets/category.png"
 import { UserContext } from "../context/UserContext";
 import { SmartphoneNfc, HandCoins, CalendarSync, ChartNoAxesCombined } from 'lucide-react';
-// import { Line } from "react-chartjs-2";
-import Graph from "../charts/PieChart";
 import Line from "../charts/LineGraph"
 import {Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
+import LineGraph from "../charts/LineGraph";
+import Graph from "../charts/PieChart";
 
 
 const override = {
@@ -27,28 +27,19 @@ const DashBoard = () => {
 
 
     useEffect(() => {
+
+        //To fetch user information
         const fetchUser = async () => {
-          // try {
-          //   const UserId = localStorage.getItem("userId"); // Assuming you store userId in local storage
-          //   const response = await axios.get(`http://localhost:3000/user/${UserId}`, { withCredentials: true });
-          //   const data = response.data;
-          //   console.log(data.user)
-          //   const user = data.user
-          //   setUserName(user.firstName);
-          //   console.log(username)
-          //   setprofilePicture(data.profilePicture || image);
-          // } catch (error) {
-          //   console.log("Error fetching user:", error);
-          // }
     
           try {
-            const UserId = localStorage.getItem("userId"); // Assuming you store userId in local storage
+            const UserId = localStorage.getItem("userId"); 
             const response = await axios.get(`http://localhost:3000/user/${UserId}`, { withCredentials: true });
             
             const fetchedUser = response?.data?.user;
             console.log(fetchedUser)
             setWalletBalance(fetchedUser.wallet.balance);
           } catch (error) {
+            toast.error("Error Fetching User")
             console.log("Error fetching user:", error);
           }
         };
@@ -66,11 +57,6 @@ const DashBoard = () => {
         fetchUser();
         // fetchTransactions();
       }, []);
-
-
-
-
-
 
 
     //   useEffect(() => {
@@ -158,13 +144,9 @@ const DashBoard = () => {
 
                 {/* Line Graph Section */}
                 <div className="flex-1 w-full lg:w-50 ">
-                    {/* <Heatmap /> */}
                     <Line />
                 </div>
             </div>
-
-
-
 
             {/* Pie Chart Section */}
             <div className=" md:flex justify-center  ">
