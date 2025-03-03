@@ -8,112 +8,90 @@ import { Moon, Sun, Search } from "lucide-react";
 import axios from "axios";
 
 const DashLayout = ({ children }) => {
-  const { theme, toggleTheme } = useContext(ThemeContext); // Get theme & toggle function
-  const [user,setUser ] = useState(UserContext); // ✅ Use user from context
-  //console.log(user)
+  const { theme, toggleTheme } = useContext(ThemeContext); // Get 
+   const { user, setUser } = useContext(UserContext); // ✅ Use user from context
   const [username, setUserName] = useState("");
-  const [profilePicture, setProfilePicture] = useState(image);
-  const [loading, setLoading] = useState(false); 
+  const [res, setRes] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState(null);
+  const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
 
- // ✅ Fixed: Use `user` from context instead of calling `useContext` inside the function
- const handleChange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-
-
-// Update user in state and context
-const User = JSON.parse(localStorage.getItem("user"));
-
-  // ✅ Ensure user exists
-  if (!user) {
-    console.error("User is null, fetching user data...");
-    return;
+  // ✅ Handle file selection
+  const handleSelectFile = (e) => {
+    const selectedFile = e.target.files[0];
+  if (selectedFile) {
+    setFile(selectedFile); 
+    uploadPhoto(selectedFile); // Pass selectedFile directly
   }
+  };
 
+  // ✅ Upload Profile Picture
+  // const uploadPhoto = async (selectedFile) => {
+  //   try {
+  //     setLoading(true);
+  //     const data = new FormData();
+  //     data.append("my_file", file);
+  //     const res = await axios.post("http://localhost:3000/upload", data);
+  //     setRes(res.data);
+  //   } catch (error) {
+  //     alert(error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  // Check if user is authenticated
-  if (!User) {
-    console.error("User is not authenticated, fetching user data...");
-    return;
-  }
-  
+  const uploadPhoto = async (selectedFile) => {
+    if (!selectedFile) return alert("Please select an image");
 
   const formData = new FormData();
-  formData.append("image", file);
-  formData.append("user", User);
-
-  setLoading(true); // Show loading indicator
-
+  formData.append("my_file", selectedFile); // Send the selected file
   try {
-    const response = await axios.post("http://localhost:3000/user/upload-photo", formData, {
+    setLoading(true);
+    const res = await axios.post("http://localhost:3000/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
-      withCredentials: true,
     });
 
-    console.log("Upload success:", response.data);
+    console.log("Cloudinary Response:", res.data);
+    
+    // Update the profile picture state
+    // if (res.data.secure_url) {
+    //   setProfilePicture(res.data.secure_url); 
+    //   // Optionally, update user profile in DB
+    // }
 
-    // ✅ Update profile picture in state and context
-    setProfilePicture(response.data.profilePicture);
-    setUser({ ...user, profilePicture: response.data.profilePicture });
+    // ✅ Check if the response contains a URL and update the state
+    if (res.data.url) {
+      setProfilePicture(res.data.url); // ✅ Update profile picture
+    }
   } catch (error) {
-    console.error("Upload error:");
+    console.error("Upload error:", error);
   } finally {
     setLoading(false);
   }
-};
+  };
 
-
+  // ✅ Fetch User Data
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const UserId = localStorage.getItem("userId");
-        const response = await axios.get(`http://localhost:3000/user/${UserId}`, {
+        const userId = localStorage.getItem("userId");
+        if (!userId) return;
+
+        const response = await axios.get(`http://localhost:3000/user/${userId}`, {
           withCredentials: true,
         });
 
         const fetchedUser = response?.data?.user;
-        console.log(fetchedUser);
         setUser(fetchedUser);
-        setUserName(fetchedUser.firstName);
-        // setProfilePicture(fetchedUser.profilePicture || image);
-
+        setUserName(fetchedUser?.firstName || "User");
+        // setProfilePicture(fetchedUser?.profilePicture || image);
       } catch (error) {
-        console.log("Error fetching user:", error);
+        console.error("Error fetching user:", error);
       }
     };
 
-    const uploadPhoto = async(e)=>{
-
-      const file = e.target.files[0];
-      if (!file) return;
-
-
-
-      const formData = new FormData();
-      formData.append("image", file);
-      formData.append("userId", UserId);
-      try {
-        const user = localStorage.getItem("user");
-        const response = await axios.post(`http://localhost:3000/user/upload-photo`, { userId: UserId }, {
-          withCredentials: true,
-        });
-        if (!user) {
-          console.error("User ID is missing.");
-          return;
-        }
-    
-
-        console.log("Upload photo success:", response.data);
-
-      } catch (error) {
-        console.error("Upload photo error:", error.response?.data || error.message);
-      }
-    }
-
     fetchUser();
-     uploadPhoto();
-  }, []);
+  }, [setUser]);
 
   return (
     <div className="lg:flex">
@@ -133,19 +111,20 @@ const User = JSON.parse(localStorage.getItem("user"));
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleChange} 
+                onChange={handleSelectFile}
                 className="hidden"
                 id="profileUpload"
+                multiple={false}
               />
               <label htmlFor="profileUpload">
                 <img
-                  src={profilePicture}
+                  src={profilePicture || image}
                   alt="Profile"
                   className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
                 />
               </label>
             </div>
-            
+
             {loading && <span className="text-sm text-gray-500">Uploading...</span>}
 
             <button

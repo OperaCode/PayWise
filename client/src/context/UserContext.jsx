@@ -9,24 +9,24 @@ const UserProvider = ({ children }) => {
 
 const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userId = localStorage.getItem("userId"); // Get user ID from storage
-        if (userId) {
-          const response = await axios.get(`http://localhost:3000/user/${userId}`);
-          console.log("Fetched User Data:", response.data); // Debugging
-          console.log(response.data); // Debugging
-          setUser(response.data);
-        } 
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const userId = localStorage.getItem("userId"); // Get user ID from storage
+  //       if (userId) {
+  //         const response = await axios.get(`http://localhost:3000/user/${userId}`);
+  //         console.log("Fetched User Data:", response.data); // Debugging
+  //         console.log(response.data); // Debugging
+  //         setUser(response.data);
+  //       } 
   
       
-    }catch (error) {
-        console.error("Error fetching user:", error);
-      }}
+  //   }catch (error) {
+  //       console.error("Error fetching user:", error);
+  //     }}
 
-    fetchUser();
-  }, []); // Runs only once on mount
+  //   fetchUser();
+  // }, []); // Runs only once on mount
 
   // ✅ Keep localStorage updated when user data changes
   useEffect(() => {

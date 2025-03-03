@@ -36,7 +36,7 @@ const DashBoard = () => {
             const response = await axios.get(`http://localhost:3000/user/${UserId}`, { withCredentials: true });
             
             const fetchedUser = response?.data?.user;
-            console.log(fetchedUser)
+            // console.log(fetchedUser)
             setWalletBalance(fetchedUser.wallet.balance);
           } catch (error) {
             toast.error("Error Fetching User")
