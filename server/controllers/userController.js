@@ -114,7 +114,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
   
     const user = await userModel.findOne({ email });
-    console.log(user)
+    // console.log(user)
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials, user not found" });
     }
@@ -143,10 +143,12 @@ const loginUser = asyncHandler(async (req, res) => {
       secure: true,
     });
   
-    console.log("Wallet before login response:", user.wallet.balance); // Debugging
+    //console.log("Wallet before login response:", user.wallet.balance); // Debugging
   
     res.status(200).json({
       _id: user._id,
+      firstName:user.firstName,
+      lastname:user.lastName,
       fullName: `${user.firstName} ${user.lastName}`,
       email,
       token,
@@ -163,7 +165,6 @@ const loginUser = asyncHandler(async (req, res) => {
   }
   
 });
-
 
 const googleSignUp = asyncHandler(async(req, res)=>{
   try {
@@ -258,6 +259,37 @@ const setTransactionPin = asyncHandler(async(req,res)=>{
 });
 
 
+const uploadProfilePicture= asyncHandler(async (req,res)=>{
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: "User ID is required" });
+
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+    // ✅ Upload image to Cloudinary
+    const result = await cloudinary.v2.uploader.upload_stream(
+      { folder: "profile_pictures", resource_type: "image" },
+      async (error, result) => {
+        if (error) return res.status(500).json({ error: "Cloudinary upload failed" });
+
+        // ✅ Update user's profile picture in MongoDB
+        const updatedUser = await User.findByIdAndUpdate(
+          userId,
+          { profilePicture: result.secure_url },
+          { new: true }
+        );
+
+        res.json({ message: "Upload successful", profilePicture: result.secure_url, user: updatedUser });
+      }
+    );
+
+    result.end(req.file.buffer);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 const getUser = asyncHandler(async (req, res) => {
   try {
     const userId = req.userId;  // Get ID from authenticated user
@@ -267,8 +299,8 @@ const getUser = asyncHandler(async (req, res) => {
       return res.status(404).json({message: 'User Not Found!'})
     }
     
-    const {_id, firstName, lastName, email} = user;
-    return res.status(200).json({_id, firstName, lastName, email});
+ 
+    return res.status(200).json({user});
   } catch (error) {
     console.error(error);
     res.status(500).json({message: 'Internal Server Error'})
@@ -352,4 +384,4 @@ const LogoutUser = asyncHandler(async (req, res) => {
 
 
 
-module.exports = { registerUser, loginUser,googleSignUp,googleSignIn ,setTransactionPin, getUser, getUsers, updateUser, deleteUser,LogoutUser};
+module.exports = { registerUser, loginUser,googleSignUp,googleSignIn ,uploadProfilePicture,setTransactionPin, getUser, getUsers, updateUser, deleteUser,LogoutUser};

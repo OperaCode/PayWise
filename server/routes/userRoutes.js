@@ -4,6 +4,7 @@ const {
   loginUser,
   googleSignUp,
   googleSignIn,
+  uploadProfilePicture,
   setTransactionPin,
   getUser,
   getUsers,
@@ -21,6 +22,7 @@ router.post("/login", loginUser);
 router.post("/google-signup", googleSignUp); 
 router.post("/google-login", googleSignIn); 
 router.post("/set-pin", setTransactionPin); 
+router.post("/upload-photo", uploadProfilePicture); 
 
 router.get("/:userId", protectUser, getUser);
 router.get("/", protectUser, getUsers);
