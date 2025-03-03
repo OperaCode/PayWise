@@ -12,7 +12,7 @@ const DashLayout = ({ children }) => {
    const { user, setUser } = useContext(UserContext); // ✅ Use user from context
   const [username, setUserName] = useState("");
   const [res, setRes] = useState({});
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
 
@@ -46,7 +46,7 @@ const DashLayout = ({ children }) => {
   const formData = new FormData();
   formData.append("my_file", selectedFile); // Send the selected file
   try {
-    setLoading(true);
+    // setLoading(true);
     const res = await axios.post("http://localhost:3000/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -62,11 +62,16 @@ const DashLayout = ({ children }) => {
     // ✅ Check if the response contains a URL and update the state
     if (res.data.url) {
       setProfilePicture(res.data.url); // ✅ Update profile picture
+      await axios.put(`http://localhost:3000/user/${user._id}/update-profile-picture`, {
+        profilePicture: res.data.url, // ✅ Save to database
+      }, { withCredentials: true });
+    } else {
+      toast.sucess("Error uploading profile picture. Please try again.");
     }
   } catch (error) {
     console.error("Upload error:", error);
   } finally {
-    setLoading(false);
+    // setLoading(false);
   }
   };
 
@@ -84,7 +89,7 @@ const DashLayout = ({ children }) => {
         const fetchedUser = response?.data?.user;
         setUser(fetchedUser);
         setUserName(fetchedUser?.firstName || "User");
-        // setProfilePicture(fetchedUser?.profilePicture || image);
+         setProfilePicture(fetchedUser?.profilePicture || image);
       } catch (error) {
         console.error("Error fetching user:", error);
       }
@@ -125,7 +130,7 @@ const DashLayout = ({ children }) => {
               </label>
             </div>
 
-            {loading && <span className="text-sm text-gray-500">Uploading...</span>}
+            {/* {loading && <span className="text-sm text-gray-500">Uploading...</span>} */}
 
             <button
               onClick={toggleTheme}

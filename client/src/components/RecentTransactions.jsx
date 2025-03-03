@@ -11,28 +11,28 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const Transactions = [
   {
-    sender: "Alice Johnson",
-    receiver: "Bob Smith",
-    amount: 120.5,
+    recipient: "Bob Smith",
     date: "2025-02-20T14:30:00Z",
+    amount: 120.5,
+    status:"Scheduled",
   },
   {
-    sender: "Charlie Brown",
-    receiver: "David Wilson",
-    amount: 250.75,
+    recipient: "David Wilson",
     date: "2025-02-21T10:15:00Z",
+    amount: 250.75,
+    status:"Scheduled",
   },
   {
-    sender: "Emma Williams",
-    receiver: "Fiona Davis",
-    amount: 89.99,
+    recipient: "Fiona Davis",
     date: "2025-02-22T08:45:00Z",
+    amount: 89.99,
+    status:"Scheduled",
   },
   {
-    sender: "George Miller",
-    receiver: "Hannah Lee",
-    amount: 310.2,
+    recipient: "Hannah Lee",
     date: "2025-02-23T16:00:00Z",
+    amount: 310.2,
+    status:"Scheduled",
   },
 ];
 
@@ -67,7 +67,7 @@ const Recent = () => {
             <Search className="-ml-8 size-5 text-black" />
           </div>
           <Link to="/history">
-            <button className="text-sm p-3  bg-cyan-700 text-white rounded hover:bg-blue-900 mb-2">See all</button>
+            <button className="text-md flex  p-3 rounded-md hover:cursor-pointer  text-white  bg-cyan-800 font-bold   hover:bg-cyan-500 transition hover:cursor">See all</button>
           </Link>
 
         </div>
@@ -78,11 +78,12 @@ const Recent = () => {
         <table className="w-full text-lg">
           <thead>
             <tr className="">
-              <th className=" p-2">Sender</th>
-              <th className=" p-2 ">Receiver</th>
-              <th className=" p-2 ">Amount</th>
+             
+              <th className=" p-2 ">Recipient</th>
               <th className=" p-2 ">Date</th>
-              <th className=" p-2  md:hidden">Action</th>
+              <th className=" p-2 ">Amount</th>
+              <th className=" p-2  ">Status</th>
+              <th className=" p-2  ">Action</th>
             </tr>
           </thead>
 
@@ -98,18 +99,21 @@ const Recent = () => {
                     className={`${index % 4 === 0} hover:bg-gray-100 leading-10`}
                   >
                     <td className=" ">
-                      {transaction.sender}
-                    </td>
-                    <td className="   ">
-                      {transaction.receiver}
-                    </td>
-                    <td className=" text-base  ">
-                      ${transaction.amount.toLocaleString()}
+                      {transaction.recipient}
                     </td>
                     <td className=" text-base  ">
                       {formattedDate}
                     </td>
-                    <td className="p-2 md:px-6 text-base md:hidden  ">
+
+                    <td className=" text-base  ">
+                      ${transaction.amount.toLocaleString()}
+                    </td>
+                    <td className="   ">
+                      {transaction.status.toLocaleString()}
+                    </td>
+                    
+                    
+                    <td className="p-2 md:px-6 text-base   ">
                       <Ellipsis className="m-auto" />
                     </td>
                   </tr>

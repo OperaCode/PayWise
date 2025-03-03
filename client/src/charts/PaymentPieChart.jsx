@@ -30,7 +30,7 @@ const PieChart = () => {
    
 
     <div className=' m-auto rounded'>
-        <h2 className='font-bold text-xl p-2 flex  justify-center '>Expense Breakdown</h2>
+        <h2 className='font-bold text-xl p-2 flex  justify-center '>Payment Breakdown by Category</h2>
       <div className="items-center flex w-lg justify-center m-auto ">
         <div className="chart w-60 h-60 relative m-auto">
          <Doughnut {...config}></Doughnut>
