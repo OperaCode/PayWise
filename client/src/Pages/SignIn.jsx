@@ -1,8 +1,8 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "../Hooks/FirebaseConfig"; // Firebase Import
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../Hooks/FirebaseConfig"; // Ensure this is set up correctly
 import { toast } from "react-toastify";
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -61,38 +61,64 @@ const Login = () => {
         }
     };
 
+    const GoogleLogin = async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+          console.log("User Info:", user);
+        } catch (error) {
+          console.error("Google Sign-In Error:", error.message);
+        }
+      };
+
 
     // Google Sign-In
-    const GoogleLogin = async () => {
-        try {
-            setIsSubmitting(true);
-            const result = await signInWithPopup(auth, googleProvider);
-            const user = result.user;
+    // const GoogleLogin = async () => {
+       
+    //     const handleGoogleLogin = async () => {
+    //         try {
+    //           const result = await signInWithPopup(auth, provider);
+    //           const user = result.user;
+    //           console.log("User Info:", user);
+    //           // Send user details to backend for account creation
+    //         } catch (error) {
+    //           console.error("Google Login Error:", error);
+    //         }
+    //       };
+       
+       
+       
+       
+    //     // try {
+    //     //     setIsSubmitting(true);
+    //     //     const result = await signInWithPopup(auth, googleProvider);
+    //     //     const user = result.user;
             
-            // Send user data to backend
-            const response = await axios.post(`http://localhost:3000/user/google-login`, {
-                name: user.displayName,
-                email: user.email,
-                profilePic: user.photoURL
-            });
+    //     //     // Send user data to backend
+    //     //     const response = await axios.post(`http://localhost:3000/user/google-login`, {
+    //     //         name: user.displayName,
+    //     //         email: user.email,
+    //     //         profilePic: user.photoURL
+    //     //     });
 
-            // Simulating API call to send user details to backend for JWT auth (if needed)
-            console.log("Google Sign-In User:", user);
+    //     //     // Simulating API call to send user details to backend for JWT auth (if needed)
+    //     //     console.log("Google Sign-In User:", user);
 
-            // toast.success("Login successful with Google");
-            // navigate("/dashboard", { state: { user } });
+    //     //     // toast.success("Login successful with Google");
+    //     //     // navigate("/dashboard", { state: { user } });
 
-            toast.success("Google Login successful");
-            localStorage.setItem("user", JSON.stringify(response.data));
-            navigate("/dashboard", { state: { user: response.data } });
+    //     //     toast.success("Google Login successful");
+    //     //     localStorage.setItem("user", JSON.stringify(response.data));
+    //     //     navigate("/dashboard", { state: { user: response.data } });
 
-        } catch (error) {
-            console.error(error);
-            toast.error("Google sign-in failed. Try again.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    //     // } catch (error) {
+    //     //     console.error(error);
+    //     //     toast.error("Google sign-in failed. Try again.");
+    //     // } finally {
+    //     //     setIsSubmitting(false);
+    //     // }
+    // };
 
     return (
         <div className="p-8 h-screen">

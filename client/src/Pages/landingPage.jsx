@@ -79,7 +79,7 @@ const LandingPage = () => {
                             <h1 className='text-3xl font-bold md:text-5xl '>Earn rewards for every automated payment</h1>
                             <p className='mt-2'>Every time you use our platform for automated payments, you’ll earn reward-based tokens. These tokens can be redeemed for discounts and exclusive perks, making financial discipline more rewarding than ever.</p>
                             <Link to="/about">
-                       <button className='bg-cyan-700  text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Learn MORE...!</button>
+                       <button className='bg-cyan-700  text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Learn More...</button>
                        </Link>
                         </div>
                     </div>
