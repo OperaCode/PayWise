@@ -7,7 +7,7 @@ const billerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    category: {
+    billerType: {
       type: String,
       enum: ["vendor", "beneficiary"], // Only two allowed categories
       required: true,

@@ -5,8 +5,11 @@ const bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
 const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
+
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
+
+const admin = require("../middleware/firebaseAdminAuth");
 
  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Initialize Google client
 
@@ -167,34 +170,51 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const googleSignUp = asyncHandler(async(req, res)=>{
-  try {
-    const { token } = req.body;
-    if (!token) return res.status(400).json({ error: "Token is required" });
+try {
+    const { token } = req.body; // Get Firebase token from frontend
 
-    console.log("Received Google ID Token:", token); // ✅ Debugging log
-    console.log("🟢 Received Google Token:", req.body.token);
-
-
-    // ✅ Verify the token using Firebase Admin SDK
-    const decodedToken = await user.auth().verifyIdToken(token);
-    console.log("Decoded Token:", decodedToken);
-
-    // ✅ Check if user exists in DB
-    let user = await User.findOne({ email: decodedToken.email });
-    if (!user) {
-        user = new User({ email: decodedToken.email, name: decodedToken.name });
-        await user.save();
+    if (!token) {
+      return res.status(400).json({ message: "No token provided" });
     }
 
-    // ✅ Generate Auth Token
-    const authToken = generateAuthToken(user);
+    // Verify Firebase ID token
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const { uid, email, name, picture } = decodedToken;
 
-    res.status(200).json({ message: "User authenticated", user, token: authToken });
+    // Check if user already exists in MongoDB
+    let user = await User.findOne({ email });
 
-} catch (error) {
-    console.error("Google Sign-Up Error:", error);
-    res.status(401).json({ error: "Invalid Google token" });
-}
+    if (!user) {
+      // Create a new user in MongoDB
+      user = new User({
+        firebaseId: uid,
+        email,
+        name,
+        profilePicture: picture,
+      });
+      await user.save();
+      console.log(user)
+
+      // ✅ Create a Wallet for the new user
+      const wallet = new Wallet({
+        userId: user._id,
+        balance: 0, // New users start with $0
+        walletId: `PW-${user._id.toString().slice(-6)}`, // Example Wallet ID
+      });
+      await wallet.save();
+
+      // Attach wallet to user
+      user.wallet = wallet._id;
+      await user.save();
+    }
+
+    res.status(200).json({ message: "✅ Google Sign-In Successful", user });
+    console.log({"Google Sign-In Successful":user})
+
+  } catch (error) {
+    console.error("❌ Google Auth Error:", error.message);
+    res.status(500).json({ error: error.message });
+  }
  
 });
 
@@ -259,36 +279,36 @@ const setTransactionPin = asyncHandler(async(req,res)=>{
 });
 
 
-const uploadProfilePicture= asyncHandler(async (req,res)=>{
-  try {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ error: "User ID is required" });
+// const uploadProfilePicture= asyncHandler(async (req,res)=>{
+//   try {
+//     const { userId } = req.body;
+//     if (!userId) return res.status(400).json({ error: "User ID is required" });
 
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+//     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-    // ✅ Upload image to Cloudinary
-    const result = await cloudinary.v2.uploader.upload_stream(
-      { folder: "profile_pictures", resource_type: "image" },
-      async (error, result) => {
-        if (error) return res.status(500).json({ error: "Cloudinary upload failed" });
+//     // ✅ Upload image to Cloudinary
+//     const result = await cloudinary.v2.uploader.upload_stream(
+//       { folder: "profile_pictures", resource_type: "image" },
+//       async (error, result) => {
+//         if (error) return res.status(500).json({ error: "Cloudinary upload failed" });
 
-        // ✅ Update user's profile picture in MongoDB
-        const updatedUser = await User.findByIdAndUpdate(
-          userId,
-          { profilePicture: result.secure_url },
-          { new: true }
-        );
+//         // ✅ Update user's profile picture in MongoDB
+//         const updatedUser = await User.findByIdAndUpdate(
+//           userId,
+//           { profilePicture: result.secure_url },
+//           { new: true }
+//         );
 
-        res.json({ message: "Upload successful", profilePicture: result.secure_url, user: updatedUser });
-      }
-    );
+//         res.json({ message: "Upload successful", profilePicture: result.secure_url, user: updatedUser });
+//       }
+//     );
 
-    result.end(req.file.buffer);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+//     result.end(req.file.buffer);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// });
 
 const getUser = asyncHandler(async (req, res) => {
   try {
@@ -384,4 +404,4 @@ const LogoutUser = asyncHandler(async (req, res) => {
 
 
 
-module.exports = { registerUser, loginUser,googleSignUp,googleSignIn ,uploadProfilePicture,setTransactionPin, getUser, getUsers, updateUser, deleteUser,LogoutUser};
+module.exports = { registerUser, loginUser,googleSignUp,googleSignIn ,setTransactionPin, getUser, getUsers, updateUser, deleteUser,LogoutUser};

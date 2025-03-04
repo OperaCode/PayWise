@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "paywise-2025",
+  "private_key_id": "f4eb3b4fa36251dcb09fd29737df3b34c615bb25",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDTzaoGEakXQm67\n7pbGtJ91cPs2UrzgigHRxP/YlfFgwXIBVZMVgqGJEN08noL6l30oWi1CMqWq7PLQ\nOfHu5Wx8kBQsOMnAg46ZyJZC2VqL1ART8bYr/8STqIoE42jFdFQ+hIssN5twxZuI\nLKuUQhOfGKPLruS1Qe+6aS7HepW4zQVveZYkJVDLWe1e8Xu3vhNg+4c8y81+ajK7\n+a3D79vJw8AJq+AwkJL5uXY530LL4FjVz7XtQQVOt9rpBEigf0bomI7LXrUu88XC\n3EkGesnQ25g2M1AM2eCf2Xb8zVy7/xIl/qc/e2nIUYoXD66A6WvJ81+JYCt2wJJG\nkJrb8Q/nAgMBAAECggEAYE5yYosSN1TKNCLjJRwJK6YBXCyX3IN0G1V3vhxD4qpj\nM88c75lz6PalmkQ7K0XJr5j9Xk3YPZW7PMo0Q1vHjgYXXho+Ro6rPyrRhDj/rnfr\ntd3A51XHpRpsE5fx0mK4UasD+0mXoNoBhBRHukSnVl6mT93I+dAu+LSOBD8tqBah\ncjJ24wiUvE2ghPVB0eMx2aB8iXnk5yIfZj6AWKWjTxUK6mjzjolrdYHMPVenTeR6\nC5+CRnx2cCD5KfmcPqoWlb2Yol0nhruFxKStG0LY05kXspaj6qSunSmb7aczjBUZ\ngfC3/PCEELUCtD3iWc8s7c4bbgXfr470g3o8xKMiiQKBgQDuVBh2JWbUmfJ2jNQw\nDUBmggzjOt9ejQTL4eMlowYNkbOqI2UpHuH5lv7g2Ajpyu5x1MrhnnLiD+edwIlY\nx9AIaB1fYtqvZNS++Nr1GIIvh15tQuTShCQe+54nW6DNp6iIqEC+Y3uYmVp9Pvlq\niTXJPoFwvHesN1oN826gTUMWLwKBgQDjghLvgS+v+YbdZvN5MhmczI/xhJJ/dEI9\nU0u1LEHs7u5anyISUfIAkMKZ0ogaFJKHRamrYsbT3baFHVttrmx97K81IUqoqZm6\naV9k9y9hfn2BK37rsNUM4Ffxd+uQWkzBd9i9N44eV/jqRdMOE38wz9yIjETPuwzY\nlnGBZzFryQKBgQCBhPJGQs0/fOpnwuENvCXjj4mxc60wlTKmGnx3V8FSXnxlWhb/\n4eis24Jobv9pDv/GnP4k3xdQA5S8Boad2PkVmH9d9zshVorHvjZAPLGDYu3OMyxn\nu6hlrhilCwa4vQS6P7XvweDJbY3fwvmJDEhOtclimwnubaZjLohQVay/wQKBgHp8\niV1RHC+OFEIXL3ZMtuVobQcG7SiZmyARPG1qSoQZj1JS4rEiVTxgs6TFaGlCMjGK\nG/Md1xYyBBZe296NTfPt/daI+f0ccpueJ7HgMy42P7PPiyGxrsKj9jUW70hklXaD\n47jbtDQ6ANWAikTF0nChOIZ7noCIoD3roWid+kmhAoGAWAizBRq3/nwh0ZZ1bHOO\neG/B25xGe6BwNCi9RR6gS8ywokBgutP5yzKXzPnETbTE1JVwnm7WdcW4LqlT5RDo\nP5/NT4/DFTiJk0XCUpnm6SE5/ekv+46gxsvPApw+3si1efzvJqyCQZJMMNwu2CML\nocnduARo1jT6LEleyUnOG/E=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@paywise-2025.iam.gserviceaccount.com",
+  "client_id": "102096297249756936829",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40paywise-2025.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

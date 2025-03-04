@@ -9,11 +9,11 @@ const createBiller = asyncHandler(async (req, res) => {
       return res.status(401).json({ message: "Unauthorized: No user found" });
     }
   
-    const { name, category, accountNumber, bankName, serviceType, phone, email } = req.body;
+    const { name, billerType, accountNumber, bankName, serviceType, phone, email } = req.body;
 
     if (
       !name ||
-      !category ||
+      !billerType ||
       !accountNumber ||
       !bankName ||
       !serviceType ||
@@ -39,22 +39,22 @@ const createBiller = asyncHandler(async (req, res) => {
     // Count user's billers
     const userBillers = await Biller.find({ user: req.user._id });
 
-    const vendorCount = userBillers.filter(b => b.category === "vendor").length;
-    const beneficiaryCount = userBillers.filter(b => b.category === "beneficiary").length;
+    const vendorCount = userBillers.filter(b => b.billerType === "vendor").length;
+    const beneficiaryCount = userBillers.filter(b => b.billerType === "beneficiary").length;
 
-    // Restriction function based on category
-    if (category === "vendor" && vendorCount >= 5) {
+    // Restriction function based on billerType
+    if (billerType === "vendor" && vendorCount >= 5) {
         return res.status(400).json({ message: "You can only have up to 5 vendors, Upgrade to get more." });
     }
 
-    if (category === "beneficiary" && beneficiaryCount >= 1) {
+    if (billerType === "beneficiary" && beneficiaryCount >= 1) {
         return res.status(400).json({ message: "You can only have 1 beneficiary,Upgrade to get more." });
     }
   
     const biller = await Biller.create({
       user: req.user._id,
       name,
-      category,
+      billerType,
       accountNumber,
       bankName,
       serviceType,
