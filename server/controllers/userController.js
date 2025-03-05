@@ -170,52 +170,167 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const googleSignUp = asyncHandler(async(req, res)=>{
-try {
-    const { token } = req.body; // Get Firebase token from frontend
+// try {
+//     const { token } = req.body; // Get Firebase token from frontend
 
-    if (!token) {
-      return res.status(400).json({ message: "No token provided" });
-    }
+//     if (!token) {
+//       return res.status(400).json({ message: "No token provided" });
+//     }
 
-    // Verify Firebase ID token
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const { uid, email, name, picture } = decodedToken;
+//     // Verify Firebase ID token
+//     const decodedToken = await admin.auth().verifyIdToken(token);
+//     const { uid, email, name, picture } = decodedToken;
 
-    // Check if user already exists in MongoDB
+//     // Check if user already exists in MongoDB
+//     let user = await User.findOne({ email });
+
+//     if (!user) {
+//       // Create a new user in MongoDB
+//       user = new User({
+//         firebaseId: uid,
+//         email,
+//         name,
+//         profilePicture: picture,
+//       });
+//       await user.save();
+//       console.log(user)
+
+//       // ✅ Create a Wallet for the new user
+//       const wallet = new Wallet({
+//         userId: user._id,
+//         balance: 0, // New users start with $0
+//         walletId: `PW-${user._id.toString().slice(-6)}`, // Example Wallet ID
+//       });
+//       await wallet.save();
+
+//       // Attach wallet to user
+//       user.wallet = wallet._id;
+//       await user.save();
+//     }
+
+//     res.status(200).json({ message: "✅ Google Sign-In Successful", user });
+//     console.log({"Google Sign-In Successful":user})
+
+//   } catch (error) {
+//     console.error("❌ Google Auth Error:", error.message);
+//     res.status(500).json({ error: error.message });
+//   }
+ 
+// try {
+//   const { token } = req.body; // Get Firebase token from frontend
+
+//   if (!token) {
+//     return res.status(400).json({ message: "No token provided" });
+//   }
+
+//   // ✅ Verify Firebase ID token
+//   const decodedToken = await admin.auth().verifyIdToken(token);
+//   const { uid, email, name, picture, displayName } = decodedToken;
+
+//   if (!email) {
+//     return res.status(400).json({ message: "Google account must have an email" });
+//   }
+
+//   // ✅ Use name from either `name` or `displayName`
+//   const fullName = name || displayName || "Google User";
+
+//   // ✅ Check if user already exists in MongoDB
+//   let user = await User.findOne({ email });
+
+//   if (!user) {
+//     // ✅ Create new user
+//     user = new User({
+//       firebaseId: uid,
+//       email,
+//       name: fullName,
+//       profilePicture: picture || "default-avatar.jpg",
+//     });
+//     await user.save();
+//     console.log("New User Created:", user);
+
+//     // ✅ Create a Wallet for the new user
+//     const wallet = new Wallet({
+//       userId: user._id,
+//       balance: 0, // New users start with $0
+//       walletId: `PW-${user._id.toString().substring(0, 8)}`, // Unique Wallet ID
+//     });
+//     await wallet.save();
+//     console.log("New Wallet Created:", wallet);
+
+//     // ✅ Attach wallet to user
+//     user.wallet = wallet._id;
+//     await user.save();
+//   }
+
+//   // ✅ Return success with user data
+//   res.status(200).json({
+//     message: "✅ Google Sign-Up Successful",
+//     user,
+//     token, // ✅ Send back Firebase token for frontend storage
+//   });
+
+//   console.log({ "Google Sign-Up Successful": user });
+// } catch (error) {
+//   console.error("❌ Google Auth Error:", error.message);
+//   res.status(500).json({ error: error.message });
+// }
+
+const { firebaseUID, email, name, profilePicture } = req.body;
+
+  try {
     let user = await User.findOne({ email });
 
     if (!user) {
-      // Create a new user in MongoDB
-      user = new User({
-        firebaseId: uid,
+      // Split name into first and last name (Google only provides full name)
+      const nameParts = name.split(" ");
+      const firstName = nameParts[0];
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+      // Create new user with wallet
+      user = await User.create({
+        firebaseUID,
+        firstName,
+        lastName,
         email,
-        name,
-        profilePicture: picture,
+        profilePicture,
+        wallet: {
+          balance: 100,
+          rewards: 50,
+          walletId: uuidv4(),
+        },
       });
-      await user.save();
-      console.log(user)
-
-      // ✅ Create a Wallet for the new user
-      const wallet = new Wallet({
-        userId: user._id,
-        balance: 0, // New users start with $0
-        walletId: `PW-${user._id.toString().slice(-6)}`, // Example Wallet ID
-      });
-      await wallet.save();
-
-      // Attach wallet to user
-      user.wallet = wallet._id;
-      await user.save();
     }
 
-    res.status(200).json({ message: "✅ Google Sign-In Successful", user });
-    console.log({"Google Sign-In Successful":user})
+    // Generate JWT token
+    const token = generateToken(user._id);
 
+    // Set authentication cookie
+    res.cookie("token", token, {
+      path: "/",
+      httpOnly: true,
+      expires: new Date(Date.now() + 86400000), // 1 day
+      sameSite: "none",
+      secure: true,
+    });
+
+    res.status(201).json({
+      message: "User authenticated successfully",
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        profilePicture: user.profilePicture,
+        walletId: user.wallet.walletId,
+        balance: user.wallet.balance,
+        rewards: user.wallet.rewards,
+        token,
+      },
+    });
   } catch (error) {
-    console.error("❌ Google Auth Error:", error.message);
     res.status(500).json({ error: error.message });
   }
- 
+
 });
 
 const googleSignIn =asyncHandler(async(req, res)=>{
@@ -311,20 +426,62 @@ const setTransactionPin = asyncHandler(async(req,res)=>{
 // });
 
 const getUser = asyncHandler(async (req, res) => {
-  try {
-    const userId = req.userId;  // Get ID from authenticated user
-    const user = await User.findById(userId);
+  // try {
+  //   const userId = req.userId;  // Get ID from authenticated user
+  //   const user = await User.findById(userId);
     
-    if(!user) {
-      return res.status(404).json({message: 'User Not Found!'})
-    }
+  //   if(!user) {
+  //     return res.status(404).json({message: 'User Not Found!'})
+  //   }
     
  
-    return res.status(200).json({user});
+  //   return res.status(200).json({user});
+  // } catch (error) {
+  //   console.error(error);
+  //   res.status(500).json({message: 'Internal Server Error'})
+  // }
+
+  // try {
+  //   const token = localStorage.getItem('token'); // Retrieve the token from local storage
+  //   if (!token) {
+  //     console.error('No token found');
+  //     return;
+  //   }
+
+  //   const response = await axios.get(`http://localhost:3000/user/${userId}`, {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`, // Send the token in the header
+  //     },
+  //   });
+
+  //   console.log('User data:', response.data);
+  // } catch (error) {
+  //   console.error('Error fetching user:', error);
+  // }
+
+
+  try {
+    const token = localStorage.getItem("authToken"); // ✅ Use stored token
+  
+    if (!token) {
+      console.log("No auth token found. User is not authenticated.");
+      return;
+    }
+  
+    const response = await axios.get("http://localhost:3000/user/profile", {
+      headers: {
+        "Content-Type": "application/json", // ✅ Ensures correct data format
+        Authorization: `Bearer ${token}`, // ✅ Correct token format
+      },
+    });
+  
+    setUser(response.data.user);
+    localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Persist user data
+  
   } catch (error) {
-    console.error(error);
-    res.status(500).json({message: 'Internal Server Error'})
+    console.error("Error fetching user:", error.response?.data || error.message);
   }
+  
 });
 
 
