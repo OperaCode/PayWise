@@ -16,6 +16,8 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 const Login = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
     const { setUser } = useContext(UserContext);
+    const auth = getAuth();
+        const provider = new GoogleAuthProvider();
     
     const [formData, setFormData] = useState({
         email: "",
@@ -61,65 +63,65 @@ const Login = () => {
         }
     };
 
+    // const GoogleLogin = async () => {
+    //     const auth = getAuth();
+    //     const provider = new GoogleAuthProvider();
+    //     try {
+    //       const result = await signInWithPopup(auth, provider);
+    //       const user = auth.currentUser;
+    //       const token = user.accessToken
+    //       console.log("User Info:", user);
+    //       // Send token to backend for verification
+    //     const response = await axios.post("http://localhost:3000/user/google-signup", { token });
+    //     console.log("User Info:", response.data)
+    //     // localStorage.setItem("user", JSON.stringify(response.data)); // Store user data in local storage
+    //     toast.success("Login successful");
+    //     setUser(response.data.user); // ✅ Update UserContext immediately
+    //     navigate("/dashboard", { state: { user: response.data } }); // Redirect to dashboard
+    //       console.log("✅ Google Sign-In Successful:", response.user);
+    //       console.log("User Info:", user);
+    //     } catch (error) {
+    //         toast.error("Google Sign-In Error")
+    //       console.error("Google Sign-In Error:", error.message);
+    //     }
+    //   };
+
+
+
     const GoogleLogin = async () => {
-        const provider = new GoogleAuthProvider();
+        
         try {
           const result = await signInWithPopup(auth, provider);
           const user = result.user;
-          console.log("User Info:", user);
+      
+          // ✅ Get Firebase ID token
+          const token = await user.getIdToken();
+      
+          console.log("User Info from Firebase:", user);
+      
+          // ✅ Send token to backend for verification
+          const response = await axios.post("http://localhost:3000/user/google-login", { token });
+      
+          console.log("User Info from Backend:", response.data);
+      
+          // ✅ Store user data in local storage
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+      
+          // ✅ Update UserContext immediately
+          setUser(response.data.user);
+      
+          // ✅ Redirect to dashboard
+          navigate("/dashboard", { state: { user: response.data.user } });
+      
+          toast.success("Login successful");
         } catch (error) {
+          toast.error("Google Sign-In Error");
           console.error("Google Sign-In Error:", error.message);
         }
       };
 
 
-    // Google Sign-In
-    // const GoogleLogin = async () => {
-       
-    //     const handleGoogleLogin = async () => {
-    //         try {
-    //           const result = await signInWithPopup(auth, provider);
-    //           const user = result.user;
-    //           console.log("User Info:", user);
-    //           // Send user details to backend for account creation
-    //         } catch (error) {
-    //           console.error("Google Login Error:", error);
-    //         }
-    //       };
-       
-       
-       
-       
-    //     // try {
-    //     //     setIsSubmitting(true);
-    //     //     const result = await signInWithPopup(auth, googleProvider);
-    //     //     const user = result.user;
-            
-    //     //     // Send user data to backend
-    //     //     const response = await axios.post(`http://localhost:3000/user/google-login`, {
-    //     //         name: user.displayName,
-    //     //         email: user.email,
-    //     //         profilePic: user.photoURL
-    //     //     });
-
-    //     //     // Simulating API call to send user details to backend for JWT auth (if needed)
-    //     //     console.log("Google Sign-In User:", user);
-
-    //     //     // toast.success("Login successful with Google");
-    //     //     // navigate("/dashboard", { state: { user } });
-
-    //     //     toast.success("Google Login successful");
-    //     //     localStorage.setItem("user", JSON.stringify(response.data));
-    //     //     navigate("/dashboard", { state: { user: response.data } });
-
-    //     // } catch (error) {
-    //     //     console.error(error);
-    //     //     toast.error("Google sign-in failed. Try again.");
-    //     // } finally {
-    //     //     setIsSubmitting(false);
-    //     // }
-    // };
-
+    
     return (
         <div className="p-8 h-screen">
             {/* Theme Toggle Button */}
