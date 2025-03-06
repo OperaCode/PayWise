@@ -90,94 +90,6 @@ const Register = () => {
     }
   };
 
-//   const googleReg = async (e) => {
-//     const auth = getAuth();
-//     const provider = new GoogleAuthProvider();
-//     try {
-//       const result = await signInWithPopup(auth, provider);
-//       const user = result.user;
-//       // const token = user.accessToken
-
-//       // Get Firebase ID token
-//       const token = await user.getIdToken();
-//       console.log(token)
-//       console.log(user)
-
-//       // Send user details to backend
-//       // await axios.post('http://localhost:3000/user/google-signup', {
-//       //   uid: user.uid, // Firebase UID
-//       //   email: user.email,
-//       //   name: user.displayName,
-//       //   profilePic: user.photoURL,
-//       // }, {
-//       //   headers: { Authorization: `Bearer ${token}` }
-//       // });
-
-//       console.log("User registered in backend!");
-//       await axios.post("http://localhost:3000/user/google-signup", 
-//         { idToken: token }, 
-//         { headers: { "Content-Type": "application/json" } }
-//       );
-//       if (response?.data) {
-//         console.log(response.data);
-//         // ✅ Store user data in local storage
-//         localStorage.setItem("user", JSON.stringify(response.data.user));
-
-//         setUser(response.data.user);
-//         // ✅ Redirect to dashboard
-//         navigate("/dashboard", { state: { user: response.data.user } });
-//         toast.success("✅ Google Sign-In Successful:");
-//       }
-//       console.log("✅ Google Sign-In Successful:", response.data);
-//       console.log("User Info:", user);
-//     } catch (error) {
-//       toast.error("Google Sign-In Error");
-//       console.error("Google Sign-In Error:", error.message);
-//     }
-//   };
-
-  // const googleReg = async (e) => {
-  //     e.preventDefault();
-  //     try {
-
-  //         // const idToken = googleResponse.credential; // This contains the ID token
-
-  //         // console.log("Sending Google ID Token:", idToken); // Debugging
-
-  //         // const response = await fetch("http://localhost:3000/user/google-signup", {
-  //         //     method: "POST",
-  //         //     headers: { "Content-Type": "application/json" },
-  //         //     body: JSON.stringify({ idToken }),
-  //         // });
-
-  //         // console.log("SignUp Success:", response.data);
-  //         // toast.success("Sign-Up Successful!");
-  //         // console.log(data);
-
-  //         // const result = await signInWithPopup(auth, googleProvider);
-  //         // const googleToken = await result.user.getIdToken();
-
-  //         // console.log("Google Token:", googleToken); // Debugging
-
-  //         // const response = await axios.post(
-  //         //     "http://localhost:3000/user/google-signup",
-  //         //     { token: googleToken }, // Send in request body
-  //         //     {
-  //         //         headers: {
-  //         //             Authorization: `Bearer ${googleToken}`, // Send in headers
-  //         //         },
-  //         //         withCredentials: true, // Allow cookies if needed
-  //         //     }
-  //         // );
-
-  //         console.log("SignUp Success:", response.data);
-  //         toast.success("Sign-Up Successful!");
-  //     } catch (error) {
-  //         console.error("Google Sign-Up Error:", error);
-  //         toast.error("Failed to sign-up with Google. Please try again.");
-  //     }
-  // };
-
 
   const googleReg = async (e) => {
     const auth = getAuth();
@@ -218,6 +130,8 @@ const Register = () => {
       console.error("Google Sign-In Error:", error.message);
     }
   };
+
+  
   return (
     <div className="flex-col justify-center p-4">
       {/* Theme Toggle Button */}
