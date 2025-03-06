@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
     wallet: {
       walletId: { type: String, default: () => crypto.randomUUID() },
       balance: { type: Number,default: 0}, // Ensure new users get 100 tokens
-      rewards: { type: Number,default: 0}, // Ensure new users get 100 tokens
+      cowries: { type: Number,default: 0}, // Ensure new users get 100 tokens
     },
     transactionPin: { type: String, required: false }, // Store hashed PIN
     billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Biller" }], // Reference Vendor model

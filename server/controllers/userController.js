@@ -1,5 +1,5 @@
 const User = require("../models/userModel");
-const asyncHandler = require('express-async-handler');
+const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
@@ -11,7 +11,7 @@ const multer = require("multer");
 
 const admin = require("../middleware/firebaseAdminAuth");
 
- const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Initialize Google client
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Initialize Google client
 
 // GOOGLE_CLIENT_ID="345493382219-9ancu2on81977erh7re38brdjo11qj43.apps.googleusercontent.com"
 const generateToken = (userId) => {
@@ -20,13 +20,11 @@ const generateToken = (userId) => {
   });
 };
 
-
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 
 // Configure Multer for Local Storage
 const storage = multer.diskStorage({
@@ -48,7 +46,9 @@ const registerUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
     if (password.length < 8 || password.length > 20) {
-      return res.status(400).json({ message: "Password must be between 8 and 20 characters" });
+      return res
+        .status(400)
+        .json({ message: "Password must be between 8 and 20 characters" });
     }
 
     const userExist = await userModel.findOne({ email });
@@ -68,10 +68,9 @@ const registerUser = asyncHandler(async (req, res) => {
       password,
       wallet: {
         balance: 100,
-        rewards: 50,
+        cowries: 50,
         walletId: uuidv4(),
       },
-      
     });
 
     if (newUser) {
@@ -95,7 +94,7 @@ const registerUser = asyncHandler(async (req, res) => {
           email: newUser.email,
           walletId: newUser.wallet.walletId,
           balance: newUser.wallet.balance,
-          rewards: newUser.wallet.rewards,
+          cowries: newUser.wallet.cowries,
           token,
         },
       });
@@ -108,36 +107,48 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-const loginUser = asyncHandler(async (req, res) => {
+const googleSignUp = asyncHandler(async (req, res) => {
+  const { firebaseUID, email, name, profilePicture } = req.body;
+
+  if (!firebaseUID) {
+    return res.status(400).json({ error: "firebaseUID is required" });
+  }
+
   try {
-    const { email, password } = req.body;
-  
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+    // 🔹 Verify Firebase Token
+    const decodedToken = await admin.auth().verifyIdToken(firebaseUID);
+    if (decodedToken.uid !== firebaseUID) {
+      return res.status(401).json({ error: "Invalid Firebase ID Token" });
     }
-  
-    const user = await userModel.findOne({ email });
-    // console.log(user)
+
+    // 🔹 Check if user already exists
+    let user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials, user not found" });
+      // Split name into first and last name
+      const nameParts = name.split(" ");
+      const firstName = nameParts[0];
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+      // 🔹 Create new user with wallet
+      user = await User.create({
+        firebaseUID,
+        firstName,
+        lastName,
+        email,
+        profilePicture,
+        wallet: {
+          balance: 100,
+          cowries: 50,
+          walletId: uuidv4(),
+        },
+      });
     }
-  
-    // Verify password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      console.error("Password mismatch detected:", { inputPassword: password, storedPassword: user.password });
-      return res.status(401).json({ message: "Password mismatch detected" });
-    }
-  
-    // Ensure user has a wallet (prevents balance reset issues)
-    if (!user.wallet) {
-      user.wallet = { balance: 0, walletId: generateWalletId() }; // Ensure wallet exists
-      await user.save();
-    }
-  
-    // Generate JWT token
+
+    // 🔹 Generate JWT token
     const token = generateToken(user._id);
-  
+
+    // 🔹 Set authentication cookie
     res.cookie("token", token, {
       path: "/",
       httpOnly: true,
@@ -145,34 +156,101 @@ const loginUser = asyncHandler(async (req, res) => {
       sameSite: "none",
       secure: true,
     });
-  
+
+    res.status(201).json({
+      message: "User authenticated successfully",
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        profilePicture: user.profilePicture,
+        wallet: {
+          walletId: user.wallet.walletId,
+          balance: user.wallet.balance,
+          cowries: user.wallet.cowries,
+        },
+        token,
+      },
+    });
+  } catch (error) {
+    console.error("Google Signup Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+const loginUser = asyncHandler(async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
+    const user = await userModel.findOne({ email });
+    // console.log(user)
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "Invalid credentials, user not found" });
+    }
+
+    // Verify password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      console.error("Password mismatch detected:", {
+        inputPassword: password,
+        storedPassword: user.password,
+      });
+      return res.status(401).json({ message: "Password mismatch detected" });
+    }
+
+    // Ensure user has a wallet (prevents balance reset issues)
+    if (!user.wallet) {
+      user.wallet = { balance: 0, walletId: generateWalletId() }; // Ensure wallet exists
+      await user.save();
+    }
+
+    // Generate JWT token
+    const token = generateToken(user._id);
+
+    res.cookie("token", token, {
+      path: "/",
+      httpOnly: true,
+      expires: new Date(Date.now() + 86400000), // 1 day
+      sameSite: "none",
+      secure: true,
+    });
+
     //console.log("Wallet before login response:", user.wallet.balance); // Debugging
-  
+
     res.status(200).json({
       _id: user._id,
-      firstName:user.firstName,
-      lastname:user.lastName,
+      firstName: user.firstName,
+      lastname: user.lastName,
       fullName: `${user.firstName} ${user.lastName}`,
       email,
       token,
       wallet: {
         walletId: user.wallet.walletId || null,
         balance: user.wallet.balance ?? 0, // Ensure a default balance
-        rewards: user.wallet.rewards ?? 0, // Ensure a default balance
+        cowries: user.wallet.cowries ?? 0, // Ensure a default balance
       },
     });
-  
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-  
 });
 
-const googleSignUp = asyncHandler(async(req, res)=>{
 
 
-const { firebaseUID, email, name, profilePicture } = req.body;
+const googleSignIn = asyncHandler(async (req, res) => {
+  const { firebaseUID, email, name, profilePicture } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -192,9 +270,10 @@ const { firebaseUID, email, name, profilePicture } = req.body;
         profilePicture,
         wallet: {
           balance: 100,
-          rewards: 50,
+          cowries:50,
           walletId: uuidv4(),
         },
+        
       });
     }
 
@@ -218,78 +297,42 @@ const { firebaseUID, email, name, profilePicture } = req.body;
         lastName: user.lastName,
         email: user.email,
         profilePicture: user.profilePicture,
-        walletId: user.wallet.walletId,
-        balance: user.wallet.balance,
-        rewards: user.wallet.rewards,
+        wallet: {
+          walletId: user.wallet.walletId,
+          balance: user.wallet.balance,
+          cowries: user.wallet.cowries,
+        },
+        
         token,
       },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-
 });
 
-const googleSignIn =asyncHandler(async(req, res)=>{
-  try {
-    const { idToken } = req.body;
-
-    if (!idToken) {
-      return res.status(400).json({ error: "No token provided" });
-    }
-
-    // Verify Google ID token
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-    const { email, name } = payload;
-
-    // Check if user exists, otherwise create a new user
-    let user = await User.findOne({ email });
-
-    if (!user) {
-      user = new User({ email, name, provider: "google" });
-      await user.save();
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.json({ token, user });
-
-  } catch (error) {
-    console.error("Google login error:", error);
-    res.status(500).json({ error: "Google login failed, please try again" });
-  }
-});
-
-
-const setTransactionPin = asyncHandler(async(req,res)=>{
+const setTransactionPin = asyncHandler(async (req, res) => {
   try {
     const { userId, pin } = req.body;
 
     // Validate input
     if (!userId || !pin || pin.length !== 4) {
-      return res.status(400).json({ message: "Invalid PIN format. Must be 4 digits." });
+      return res
+        .status(400)
+        .json({ message: "Invalid PIN format. Must be 4 digits." });
     }
 
     const hashedPin = await bcrypt.hash(pin, 10);
 
     await User.findByIdAndUpdate(userId, { transactionPin: hashedPin });
 
-    return res.status(200).json({ message: "Transaction PIN set successfully." });
+    return res
+      .status(200)
+      .json({ message: "Transaction PIN set successfully." });
   } catch (error) {
     return res.status(500).json({ message: "Server error." });
   }
 });
-
 
 // const uploadProfilePicture= asyncHandler(async (req,res)=>{
 //   try {
@@ -326,12 +369,11 @@ const getUser = asyncHandler(async (req, res) => {
   // try {
   //   const userId = req.userId;  // Get ID from authenticated user
   //   const user = await User.findById(userId);
-    
+
   //   if(!user) {
   //     return res.status(404).json({message: 'User Not Found!'})
   //   }
-    
- 
+
   //   return res.status(200).json({user});
   // } catch (error) {
   //   console.error(error);
@@ -356,37 +398,34 @@ const getUser = asyncHandler(async (req, res) => {
   //   console.error('Error fetching user:', error);
   // }
 
-
   try {
-    const token = localStorage.getItem("authToken"); // ✅ Use stored token
-  
+    // const token = localStorage.getItem("authToken"); // ✅ Use stored token
+
     if (!token) {
       console.log("No auth token found. User is not authenticated.");
       return;
     }
-  
+
     const response = await axios.get("http://localhost:3000/user/profile", {
       headers: {
         "Content-Type": "application/json", // ✅ Ensures correct data format
         Authorization: `Bearer ${token}`, // ✅ Correct token format
       },
     });
-  
+
     setUser(response.data.user);
-    localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Persist user data
-  
+    // localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Persist user data
   } catch (error) {
-    console.error("Error fetching user:", error.response?.data || error.message);
+    console.error(
+      "Error fetching user:",
+      error.response?.data || error.message
+    );
   }
-  
 });
 
-
-const getUsers = asyncHandler(async(req, res) => {
+const getUsers = asyncHandler(async (req, res) => {
   try {
-    const users = await userModel.find()
-      .sort("-createAt")
-      .select("-password");
+    const users = await userModel.find().sort("-createAt").select("-password");
 
     if (!users) {
       return res.status(404).json({ message: "No user found" });
@@ -427,7 +466,6 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
-
 const deleteUser = asyncHandler(async (req, res) => {
   try {
     const { userId } = req.params;
@@ -446,9 +484,10 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 // function to log out user
 const LogoutUser = asyncHandler(async (req, res) => {
-  
   try {
-    await axios.get("http://localhost:3000/user/logout", { withCredentials: true });
+    await axios.get("http://localhost:3000/user/logout", {
+      withCredentials: true,
+    });
 
     // ✅ Clear local storage or session storage
     localStorage.removeItem("user");
@@ -463,6 +502,15 @@ const LogoutUser = asyncHandler(async (req, res) => {
   }
 });
 
-
-
-module.exports = { registerUser, loginUser,googleSignUp,googleSignIn ,setTransactionPin, getUser, getUsers, updateUser, deleteUser,LogoutUser};
+module.exports = {
+  registerUser,
+  loginUser,
+  googleSignUp,
+  googleSignIn,
+  setTransactionPin,
+  getUser,
+  getUsers,
+  updateUser,
+  deleteUser,
+  LogoutUser,
+};
