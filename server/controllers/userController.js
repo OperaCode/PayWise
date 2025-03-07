@@ -56,9 +56,9 @@ const registerUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password before saving
-    // const salt = await bcrypt.genSalt(10);
-    // const hashedPassword = await bcrypt.hash(password, salt);
+    //Hash password before saving
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create a new user with a transaction wallet
     const newUser = await userModel.create({
@@ -92,9 +92,11 @@ const registerUser = asyncHandler(async (req, res) => {
           firstName: newUser.firstName,
           lastName: newUser.lastName,
           email: newUser.email,
-          walletId: newUser.wallet.walletId,
-          balance: newUser.wallet.balance,
-          cowries: newUser.wallet.cowries,
+          wallet: {
+            balance: newUser.wallet.balance,
+            cowries: newUser.wallet.cowries,
+            walletId: newUser.wallet.walletId,
+          },
           token,
         },
       });
@@ -250,65 +252,66 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
 const googleSignIn = asyncHandler(async (req, res) => {
-  const { firebaseUID, email, name, profilePicture } = req.body;
+//   const { firebaseUID, email, name, profilePicture } = req.body;
 
-  try {
-    let user = await User.findOne({ email });
+//   try {
+//     let user = await User.findOne({ email });
 
-    if (!user) {
-      // Split name into first and last name (Google only provides full name)
-      const nameParts = name.split(" ");
-      const firstName = nameParts[0];
-      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+//     if (!user) {
+//       // Split name into first and last name (Google only provides full name)
+//       const nameParts = name.split(" ");
+//       const firstName = nameParts[0];
+//       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
-      // Create new user with wallet
-      user = await User.create({
-        firebaseUID,
-        firstName,
-        lastName,
-        email,
-        profilePicture,
-        wallet: {
-          balance: 100,
-          cowries:50,
-          walletId: uuidv4(),
-        },
+//       // Create new user with wallet
+//       user = await User.create({
+//         firebaseUID,
+//         firstName,
+//         lastName,
+//         email,
+//         profilePicture,
+//         wallet: {
+//           balance: 100,
+//           cowries:50,
+//           walletId: uuidv4(),
+//         },
         
-      });
-    }
+//       });
+//     }
 
-    // Generate JWT token
-    const token = generateToken(user._id);
+//     // Generate JWT token
+//     const token = generateToken(user._id);
 
-    // Set authentication cookie
-    res.cookie("token", token, {
-      path: "/",
-      httpOnly: true,
-      expires: new Date(Date.now() + 86400000), // 1 day
-      sameSite: "none",
-      secure: true,
-    });
+//     // Set authentication cookie
+//     res.cookie("token", token, {
+//       path: "/",
+//       httpOnly: true,
+//       expires: new Date(Date.now() + 86400000), // 1 day
+//       sameSite: "none",
+//       secure: true,
+//     });
 
-    res.status(201).json({
-      message: "User authenticated successfully",
-      user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        profilePicture: user.profilePicture,
-        wallet: {
-          walletId: user.wallet.walletId,
-          balance: user.wallet.balance,
-          cowries: user.wallet.cowries,
-        },
+//     res.status(201).json({
+//       message: "User authenticated successfully",
+//       user: {
+//         _id: user._id,
+//         firstName: user.firstName,
+//         lastName: user.lastName,
+//         email: user.email,
+//         profilePicture: user.profilePicture,
+//         wallet: {
+//           walletId: user.wallet.walletId,
+//           balance: user.wallet.balance,
+//           cowries: user.wallet.cowries,
+//         },
         
-        token,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+//         token,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 });
 
 const setTransactionPin = asyncHandler(async (req, res) => {
@@ -334,93 +337,79 @@ const setTransactionPin = asyncHandler(async (req, res) => {
   }
 });
 
-// const uploadProfilePicture= asyncHandler(async (req,res)=>{
-//   try {
-//     const { userId } = req.body;
-//     if (!userId) return res.status(400).json({ error: "User ID is required" });
+const uploadProfilePicture= asyncHandler(async (req,res)=>{
+  try {
+    const { profilePicture } = req.body;
+    const userId = req.params.id;
 
-//     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    const updatedUser = await User.findByIdAndUpdate(userId, { profilePicture }, { new: true });
 
-//     // ✅ Upload image to Cloudinary
-//     const result = await cloudinary.v2.uploader.upload_stream(
-//       { folder: "profile_pictures", resource_type: "image" },
-//       async (error, result) => {
-//         if (error) return res.status(500).json({ error: "Cloudinary upload failed" });
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-//         // ✅ Update user's profile picture in MongoDB
-//         const updatedUser = await User.findByIdAndUpdate(
-//           userId,
-//           { profilePicture: result.secure_url },
-//           { new: true }
-//         );
-
-//         res.json({ message: "Upload successful", profilePicture: result.secure_url, user: updatedUser });
-//       }
-//     );
-
-//     result.end(req.file.buffer);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Server error" });
-//   }
-// });
+    res.json({ message: "Profile picture updated", user: updatedUser });
+  } catch (error) {
+    console.error("Error updating profile picture:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 const getUser = asyncHandler(async (req, res) => {
-  // try {
-  //   const userId = req.userId;  // Get ID from authenticated user
-  //   const user = await User.findById(userId);
+  try {
+    const userId = req.userId;  // Get ID from authenticated user
+    const user = await User.findById(userId);
 
-  //   if(!user) {
-  //     return res.status(404).json({message: 'User Not Found!'})
-  //   }
+    if(!user) {
+      return res.status(404).json({message: 'User Not Found!'})
+    }
 
-  //   return res.status(200).json({user});
-  // } catch (error) {
-  //   console.error(error);
-  //   res.status(500).json({message: 'Internal Server Error'})
-  // }
-
-  // try {
-  //   const token = localStorage.getItem('token'); // Retrieve the token from local storage
-  //   if (!token) {
-  //     console.error('No token found');
-  //     return;
-  //   }
-
-  //   const response = await axios.get(`http://localhost:3000/user/${userId}`, {
-  //     headers: {
-  //       Authorization: `Bearer ${token}`, // Send the token in the header
-  //     },
-  //   });
-
-  //   console.log('User data:', response.data);
-  // } catch (error) {
-  //   console.error('Error fetching user:', error);
-  // }
+    return res.status(200).json({user});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({message: 'Internal Server Error'})
+  }
 
   try {
-    // const token = localStorage.getItem("authToken"); // ✅ Use stored token
-
+    const token = localStorage.getItem('token'); // Retrieve the token from local storage
     if (!token) {
-      console.log("No auth token found. User is not authenticated.");
+      console.error('No token found');
       return;
     }
 
-    const response = await axios.get("http://localhost:3000/user/profile", {
+    const response = await axios.get(`http://localhost:3000/user/${userId}`, {
       headers: {
-        "Content-Type": "application/json", // ✅ Ensures correct data format
-        Authorization: `Bearer ${token}`, // ✅ Correct token format
+        Authorization: `Bearer ${token}`, // Send the token in the header
       },
     });
 
-    setUser(response.data.user);
-    // localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Persist user data
+    console.log('User data:', response.data);
   } catch (error) {
-    console.error(
-      "Error fetching user:",
-      error.response?.data || error.message
-    );
+    console.error('Error fetching user:', error);
   }
+
+  // try {
+  
+  //   if (!token) {
+  //     console.log("No auth token found. User is not authenticated.");
+  //     return;
+  //   }
+
+  //   const response = await axios.get("http://localhost:3000/user/profile", {
+  //     headers: {
+  //       "Content-Type": "application/json", // ✅ Ensures correct data format
+  //       Authorization: `Bearer ${token}`, // ✅ Correct token format
+  //     },
+  //   });
+
+  //   setUser(response.data.user);
+  //   // localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Persist user data
+  // } catch (error) {
+  //   console.error(
+  //     "Error fetching user:",
+  //     error.response?.data || error.message
+  //   );
+  // }
 });
 
 const getUsers = asyncHandler(async (req, res) => {
@@ -505,12 +494,13 @@ const LogoutUser = asyncHandler(async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
-  googleSignUp,
-  googleSignIn,
+  uploadProfilePicture,
+  // googleSignUp,
+  // googleSignIn,
   setTransactionPin,
   getUser,
   getUsers,
   updateUser,
   deleteUser,
-  LogoutUser,
-};
+  LogoutUser
+}
