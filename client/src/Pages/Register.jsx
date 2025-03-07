@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged} from "firebase/auth";
+import AuthContext from "../context/AuthContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL; 
 
@@ -21,7 +22,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
-
+  const { googleSignIn, user, logout } = useContext(AuthContext);
   
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -106,7 +107,7 @@ const Register = () => {
       console.log("Firebase Token:", token);
   
       // Send user details to backend
-      const response = await axios.post("http://localhost:3000/user/google-signup", {
+      const response = await axios.post("http://localhost:3000/user/google-auth", {
         uid: user.uid, // Firebase UID
         email: user.email,
         name: user.displayName,
