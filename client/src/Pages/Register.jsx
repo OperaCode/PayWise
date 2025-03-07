@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import { ThemeContext } from "../context/ThemeContext";
+import { UserContext } from "../context/UserContext";
 import { Moon, Sun } from "lucide-react";
 import image from "../assets/signup.png";
 import logo from "../assets/paywise-logo.png";
@@ -8,11 +9,10 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged} from "firebase/auth";
 
-// import { signInWithPopup, auth, googleProvider } from "firebase/auth"; // Ensure correct import
-
-const BASE_URL = import.meta.env.VITE_BASE_URL; // Ensure this matches your .env variable
+const BASE_URL = import.meta.env.VITE_BASE_URL; 
 
 const Register = () => {
+
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -22,12 +22,13 @@ const Register = () => {
     confirmPassword: "",
   });
 
-  const [isChecked, setIsChecked] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [user, setUser] = useState(null);
+
   const navigate = useNavigate();
+  const { setUser } = useContext(UserContext);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,15 +36,12 @@ const Register = () => {
     setError(""); // Clear the error when the user types
   };
 
-  const handleCheckboxChange = () => {
-    setIsChecked(!isChecked);
-  };
 
-  const handlePastePassword = (e) => {
-    e.preventDefault();
-    toast.error("Cannot paste into this field");
-    return;
-  };
+//   const handlePastePassword = (e) => {
+//     e.preventDefault();
+//     toast.error("Cannot paste into this field");
+//     return;
+//   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,19 +63,21 @@ const Register = () => {
         throw new Error("Passwords do not match");
       }
 
+      
       const response = await axios.post(
-        "http://localhost:3000/user/register",
+        `${BASE_URL}/user/register`,
         formData,
         { withCredentials: true }
       );
 
       if (response?.data) {
-        console.log(response.data);
-        setUser(response.data);
+          const userInfo = response.data;
+          console.log(userInfo);
+        setUser(userInfo);
         toast.success("Registration Successful");
-        navigate("/dashboard");
-      }
-    } catch (error) {
+        navigate("/dashboard", { state: { user: response.data } })} 
+    
+    }catch (error) {
       const errorMessage =
         error?.response?.data?.message ||
         error.message ||
@@ -88,10 +88,12 @@ const Register = () => {
       setLoading(false);
       setIsSubmitting(false);
     }
-  };
+  
 
 
-  const googleReg = async (e) => {
+};
+
+ const googleReg = async (e) => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
   
@@ -130,8 +132,8 @@ const Register = () => {
       console.error("Google Sign-In Error:", error.message);
     }
   };
+ 
 
-  
   return (
     <div className="flex-col justify-center p-4">
       {/* Theme Toggle Button */}
@@ -223,25 +225,25 @@ const Register = () => {
                 type="submit"
                 disabled={isSubmitting}
                 onClick={handleSubmit}
-                className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition"
+                className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
                 {loading ? "Registering..." : "Let's get started"}
               </button>
             </div>
           </form>
 
-          <p className="md:hidden">
+          <p className="md:hidden p-2 flex justify-center">
             Already have an account?{" "}
             <Link to="/login" className="font-bold text-cyan-900">
               Log in
             </Link>
           </p>
 
-          <p className="p-6 text-center">
+          <p className="md:p-6 p-2 text-center">
             Make it simple, Sign up with{" "}
             <span
               className="font-bold hover:cursor-pointer"
-              onClick={googleReg}
+               onClick={googleReg}
             >
               Gmail
             </span>
@@ -261,6 +263,8 @@ const Register = () => {
       </div>
     </div>
   );
-};
+}
+
+
 
 export default Register;

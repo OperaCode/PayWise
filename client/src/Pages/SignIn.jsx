@@ -11,7 +11,7 @@ import { Moon, Sun } from "lucide-react";
 import image from "../assets/Register.png";
 import logo from "../assets/paywise-logo.png";
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Login = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -52,8 +52,9 @@ const Login = () => {
       );
 
       localStorage.setItem("user", JSON.stringify(response.data)); // Store user data in local storage
+      console.log(response)
       toast.success("Login successful");
-      setUser(response.data.user); // ✅ Update UserContext immediately
+      setUser(response.data); // ✅ Update UserContext immediately
       navigate("/dashboard", { state: { user: response.data } }); // Redirect to dashboard
     } catch (error) {
       toast.error(error?.response?.data?.message || "Login failed");
@@ -106,45 +107,45 @@ const Login = () => {
     }
   };
 
-  //   const GoogleLogin = async () => {
-  //     const auth = getAuth();
-  //     // const provider = new GoogleAuthProvider();
-  //     try {
-  //         signInWithPopup(auth, provider)
-  //         .then((result) => {
-  //           // This gives you a Google Access Token. You can use it to access the Google API.
-  //           const credential = GoogleAuthProvider.credentialFromResult(result);
-  //           const token = credential.accessToken;
-  //           // The signed-in user info.
-  //           const user = result.user;
-  //           // IdP data available using getAdditionalUserInfo(result)
-  //           // ...
-  //         }).
-  //       console.log("User Info from Firebase:", user);
+    // const GoogleLogin = async () => {
+    //   const auth = getAuth();
+    //   // const provider = new GoogleAuthProvider();
+    //   try {
+    //       signInWithPopup(auth, provider)
+    //       .then((result) => {
+    //         // This gives you a Google Access Token. You can use it to access the Google API.
+    //         const credential = GoogleAuthProvider.credentialFromResult(result);
+    //         const token = credential.accessToken;
+    //         // The signed-in user info.
+    //         const user = result.user;
+    //         // IdP data available using getAdditionalUserInfo(result)
+    //         // ...
+    //       }).
+    //     console.log("User Info from Firebase:", user);
 
-  //       // ✅ Send token to backend for verification
-  //       const response = await axios.post(
-  //         "http://localhost:3000/user/google-login",
-  //         { token }
-  //       );
+    //     // ✅ Send token to backend for verification
+    //     const response = await axios.post(
+    //       "http://localhost:3000/user/google-login",
+    //       { token }
+    //     );
 
-  //       console.log("User Info from Backend:", response.data);
+    //     console.log("User Info from Backend:", response.data);
 
-  //       // ✅ Store user data in local storage
-  //       localStorage.setItem("user", JSON.stringify(response.data.user));
+    //     // ✅ Store user data in local storage
+    //     localStorage.setItem("user", JSON.stringify(response.data.user));
 
-  //       // ✅ Update UserContext immediately
-  //       setUser(response.data.user);
+    //     // ✅ Update UserContext immediately
+    //     setUser(response.data.user);
 
-  //       // ✅ Redirect to dashboard
-  //       navigate("/dashboard", { state: { user: response.data.user } });
+    //     // ✅ Redirect to dashboard
+    //     navigate("/dashboard", { state: { user: response.data.user } });
 
-  //       toast.success("Login successful");
-  //     } catch (error) {
-  //       toast.error("Google Sign-In Error");
-  //       console.error("Google Sign-In Error:", error.message);
-  //     }
-  //   };
+    //     toast.success("Login successful");
+    //   } catch (error) {
+    //     toast.error("Google Sign-In Error");
+    //     console.error("Google Sign-In Error:", error.message);
+    //   }
+    // };
 
   return (
     <div className="p-8 h-screen">
@@ -214,37 +215,24 @@ const Login = () => {
             />
 
             <div className="flex-col space-y-4 items-center justify-center">
+              
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
-                {isSubmitting ? "Logging in with Email..." : "Email"}
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
-              >
-                {isSubmitting ? "Logging in with Wallet..." : "Wallet"}{" "}
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
-              >
-                {isSubmitting ? "Logging in with Gmail..." : "Gmail"}
+                {isSubmitting ? "Logging in..." : "Log in"}
               </button>
             </div>
           </form>
 
-          <p className="md:hidden">
+          <p className="md:hidden p-2">
             Don't have an account?{" "}
             <Link to="/register" className="font-bold">
               Sign Up
             </Link>
           </p>
-          <p className="p-6 text-center">
+          <p className="md:p-6 p-2 text-center">
             Make it simple, Sign in with{" "}
             <span
               className="font-bold hover:cursor-pointer"

@@ -7,6 +7,9 @@ import { UserContext } from "../context/UserContext";
 import { Moon, Sun, Search } from "lucide-react";
 import axios from "axios";
 
+
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 const DashLayout = ({ children }) => {
   const { theme, toggleTheme } = useContext(ThemeContext); // Get 
    const { user, setUser } = useContext(UserContext); // ✅ Use user from context
@@ -25,21 +28,7 @@ const DashLayout = ({ children }) => {
   }
   };
 
-  // ✅ Upload Profile Picture
-  // const uploadPhoto = async (selectedFile) => {
-  //   try {
-  //     setLoading(true);
-  //     const data = new FormData();
-  //     data.append("my_file", file);
-  //     const res = await axios.post("http://localhost:3000/upload", data);
-  //     setRes(res.data);
-  //   } catch (error) {
-  //     alert(error.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
+ 
   const uploadPhoto = async (selectedFile) => {
     if (!selectedFile) return alert("Please select an image");
 
@@ -82,14 +71,15 @@ const DashLayout = ({ children }) => {
         const userId = localStorage.getItem("userId");
         if (!userId) return;
 
-        const response = await axios.get(`http://localhost:3000/user/${userId}`, {
+        const response = await axios.get(`${BASE_URL}/user/${userId}`, {
           withCredentials: true,
         });
 
         const fetchedUser = response?.data?.user;
         setUser(fetchedUser);
+        console.log(fetchedUser)
         setUserName(fetchedUser?.firstName || "User");
-         setProfilePicture(fetchedUser?.profilePicture || image);
+         setProfilePicture(fetchedUser?.profilePicture);
       } catch (error) {
         console.error("Error fetching user:", error);
       }
@@ -123,7 +113,7 @@ const DashLayout = ({ children }) => {
               />
               <label htmlFor="profileUpload">
                 <img
-                  src={profilePicture || image}
+                  src={profilePicture}
                   alt="Profile"
                   className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
                 />
