@@ -109,7 +109,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-const googleSignUp = asyncHandler(async (req, res) => {
+const googleAuth = asyncHandler(async (req, res) => {
   const { firebaseUID, email, name, profilePicture } = req.body;
 
   if (!firebaseUID) {
@@ -250,69 +250,6 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 
-
-const googleSignIn = asyncHandler(async (req, res) => {
-//   const { firebaseUID, email, name, profilePicture } = req.body;
-
-//   try {
-//     let user = await User.findOne({ email });
-
-//     if (!user) {
-//       // Split name into first and last name (Google only provides full name)
-//       const nameParts = name.split(" ");
-//       const firstName = nameParts[0];
-//       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-
-//       // Create new user with wallet
-//       user = await User.create({
-//         firebaseUID,
-//         firstName,
-//         lastName,
-//         email,
-//         profilePicture,
-//         wallet: {
-//           balance: 100,
-//           cowries:50,
-//           walletId: uuidv4(),
-//         },
-        
-//       });
-//     }
-
-//     // Generate JWT token
-//     const token = generateToken(user._id);
-
-//     // Set authentication cookie
-//     res.cookie("token", token, {
-//       path: "/",
-//       httpOnly: true,
-//       expires: new Date(Date.now() + 86400000), // 1 day
-//       sameSite: "none",
-//       secure: true,
-//     });
-
-//     res.status(201).json({
-//       message: "User authenticated successfully",
-//       user: {
-//         _id: user._id,
-//         firstName: user.firstName,
-//         lastName: user.lastName,
-//         email: user.email,
-//         profilePicture: user.profilePicture,
-//         wallet: {
-//           walletId: user.wallet.walletId,
-//           balance: user.wallet.balance,
-//           cowries: user.wallet.cowries,
-//         },
-        
-//         token,
-//       },
-//     });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-});
 
 const setTransactionPin = asyncHandler(async (req, res) => {
   try {
@@ -495,7 +432,7 @@ module.exports = {
   registerUser,
   loginUser,
   uploadProfilePicture,
-  // googleSignUp,
+  googleAuth,
   // googleSignIn,
   setTransactionPin,
   getUser,

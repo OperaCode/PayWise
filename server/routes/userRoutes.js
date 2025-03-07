@@ -4,9 +4,8 @@ const {
   registerUser,
   loginUser,
   uploadProfilePicture,
-  googleSignUp,
-  googleSignIn,
- // uploadProfilePicture,
+  googleAuth,
+  
   setTransactionPin,
   getUser,
   getUsers,
@@ -21,8 +20,8 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser); 
-// router.post("/google-signup", googleSignUp); 
-// router.post("/google-login", googleSignIn); 
+router.post("/google-auth", googleAuth); 
+
 router.post("/set-pin", setTransactionPin); 
 
 router.put("/:id/update-profile-picture", uploadProfilePicture);
