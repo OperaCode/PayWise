@@ -33,7 +33,7 @@ const DashBoard = () => {
       try {
         const UserId = localStorage.getItem("userId");
         const response = await axios.get(
-          `${BASE_URL}/${UserId}`,
+          `${BASE_URL}/user/${UserId}`,
           { withCredentials: true }
         );
 

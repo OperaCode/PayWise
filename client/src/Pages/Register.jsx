@@ -76,7 +76,7 @@ const Register = () => {
           console.log(userInfo);
         setUser(userInfo);
         toast.success("Registration Successful");
-        navigate("/dashboard", { state: { user: response.data } })} 
+        navigate("/dashboard", { state: { user: user } })} 
     
     }catch (error) {
       const errorMessage =

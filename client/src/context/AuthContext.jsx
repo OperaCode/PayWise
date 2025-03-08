@@ -67,32 +67,32 @@ export const AuthProvider = ({ children }) => {
   };
 
   // 🔹 Monitor Auth State Changes
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // 🔹 Get Firebase ID Token
-        const idToken = await firebaseUser.getIdToken();
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+//       if (firebaseUser) {
+//         // 🔹 Get Firebase ID Token
+//         const idToken = await firebaseUser.getIdToken();
 
-        // 🔹 Validate the user session with the backend
-        try {
-          const res = await axios.post(
-            "http://localhost:3000/user/validate-session",
-            { idToken }, // 🔹 Send token to backend for verification
-            { withCredentials: true }
-          );
-          setUser(res.data.user);
-        } catch (error) {
-          console.error("Session validation failed:", error);
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
+//         // 🔹 Validate the user session with the backend
+//         try {
+//           const res = await axios.post(
+//             "http://localhost:3000/user/validate-session",
+//             { idToken }, // 🔹 Send token to backend for verification
+//             { withCredentials: true }
+//           );
+//           setUser(res.data.user);
+//         } catch (error) {
+//           console.error("Session validation failed:", error);
+//           setUser(null);
+//         }
+//       } else {
+//         setUser(null);
+//       }
+//       setLoading(false);
+//     });
 
-    return () => unsubscribe();
-  }, []);
+//     return () => unsubscribe();
+//   }, []);
 
   return (
     <AuthContext.Provider value={{ user, googleSignIn, logout, loading }}>

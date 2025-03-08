@@ -7,61 +7,24 @@ import { UserContext } from "../context/UserContext";
 import { Moon, Sun, Search } from "lucide-react";
 import axios from "axios";
 
-
-
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const DashLayout = ({ children }) => {
-  const { theme, toggleTheme } = useContext(ThemeContext); // Get 
-   const { user, setUser } = useContext(UserContext); // ✅ Use user from context
+  const { theme, toggleTheme } = useContext(ThemeContext); // Get
+  const { setUser } = useContext(UserContext); // ✅ Use user from context
   const [username, setUserName] = useState("");
   const [res, setRes] = useState({});
   // const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
+  const [isUploading, setIsUploading] = useState(false);
 
   // ✅ Handle file selection
   const handleSelectFile = (e) => {
     const selectedFile = e.target.files[0];
-  if (selectedFile) {
-    setFile(selectedFile); 
-    uploadPhoto(selectedFile); // Pass selectedFile directly
-  }
-  };
-
- 
-  const uploadPhoto = async (selectedFile) => {
-    if (!selectedFile) return alert("Please select an image");
-
-  const formData = new FormData();
-  formData.append("my_file", selectedFile); // Send the selected file
-  try {
-    // setLoading(true);
-    const res = await axios.post("http://localhost:3000/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    console.log("Cloudinary Response:", res.data);
-    
-    // Update the profile picture state
-    // if (res.data.secure_url) {
-    //   setProfilePicture(res.data.secure_url); 
-    //   // Optionally, update user profile in DB
-    // }
-
-    // ✅ Check if the response contains a URL and update the state
-    if (res.data.url) {
-      setProfilePicture(res.data.url); // ✅ Update profile picture
-      await axios.put(`http://localhost:3000/user/${user._id}/update-profile-picture`, {
-        profilePicture: res.data.url, // ✅ Save to database
-      }, { withCredentials: true });
-    } else {
-      toast.sucess("Error uploading profile picture. Please try again.");
+    if (selectedFile) {
+      setFile(selectedFile);
+      uploadPhoto(selectedFile); // Pass selectedFile directly
     }
-  } catch (error) {
-    console.error("Upload error:", error);
-  } finally {
-    // setLoading(false);
-  }
   };
 
   // ✅ Fetch User Data
@@ -71,15 +34,17 @@ const DashLayout = ({ children }) => {
         const userId = localStorage.getItem("userId");
         if (!userId) return;
 
+        setIsUploading(true); // 🔹 Start loading
+
         const response = await axios.get(`${BASE_URL}/user/${userId}`, {
           withCredentials: true,
         });
 
         const fetchedUser = response?.data?.user;
         setUser(fetchedUser);
-        console.log(fetchedUser)
+        // console.log(fetchedUser)
         setUserName(fetchedUser?.firstName || "User");
-         setProfilePicture(fetchedUser?.profilePicture);
+        setProfilePicture(fetchedUser?.profilePicture || image);
       } catch (error) {
         console.error("Error fetching user:", error);
       }
@@ -87,6 +52,45 @@ const DashLayout = ({ children }) => {
 
     fetchUser();
   }, [setUser]);
+
+  const uploadPhoto = async (selectedFile) => {
+    // if (!selectedFile) return toast.eroor("Please select an image");
+
+    const formData = new FormData();
+    formData.append("my_file", selectedFile); // Send the selected file
+    try {
+      // setLoading(true);
+      const res = await axios.post("http://localhost:3000/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      console.log("Cloudinary Response:", res.data);
+
+      // Update the profile picture state
+      // if (res.data.secure_url) {
+      //   setProfilePicture(res.data.secure_url);
+      //   // Optionally, update user profile in DB
+      // }
+
+      // ✅ Check if the response contains a URL and update the state
+      if (res.data.url) {
+        setProfilePicture(res.data.url); // ✅ Update profile picture
+        await axios.put(
+          `http://localhost:3000/user/${user._id}/update-profile-picture`,
+          {
+            profilePicture: res.data.url, // ✅ Save to database
+          },
+          { withCredentials: true }
+        );
+      } else {
+        toast.sucess("Error uploading profile picture. Please try again.");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+    } finally {
+      // setLoading(false);
+    }
+  };
 
   return (
     <div className="lg:flex">
@@ -103,6 +107,14 @@ const DashLayout = ({ children }) => {
 
             {/* Clickable Profile Picture */}
             <div className="relative">
+              <div>
+                {isUploading && (
+                  <div className="spinner-overlay">
+                    <div className="spinner"></div>
+                  </div>
+                )}
+              </div>
+
               <input
                 type="file"
                 accept="image/*"
@@ -126,7 +138,11 @@ const DashLayout = ({ children }) => {
               onClick={toggleTheme}
               className="p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
             >
-              {theme === "light" ? <Moon className="text-white" /> : <Sun className="text-yellow-400" />}
+              {theme === "light" ? (
+                <Moon className="text-white" />
+              ) : (
+                <Sun className="text-yellow-400" />
+              )}
             </button>
           </div>
 
