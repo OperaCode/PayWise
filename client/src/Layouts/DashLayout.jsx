@@ -5,15 +5,26 @@ import Recent from "../components/RecentTransactions";
 import { ThemeContext } from "../context/ThemeContext";
 import { UserContext } from "../context/UserContext";
 import { Moon, Sun, Search } from "lucide-react";
+import ClipLoader from "react-spinners/ClipLoader";
+
 import axios from "axios";
 
+
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+
+const override = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "red",
+};
+
 const DashLayout = ({ children }) => {
   const { theme, toggleTheme } = useContext(ThemeContext); // Get
-  const { setUser } = useContext(UserContext); // ✅ Use user from context
+  const { user, setUser } = useContext(UserContext); // ✅ Use user from context
   const [username, setUserName] = useState("");
   const [res, setRes] = useState({});
-  // const [loading, setLoading] = useState(false);
+   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
   const [isUploading, setIsUploading] = useState(false);
@@ -34,7 +45,7 @@ const DashLayout = ({ children }) => {
         const userId = localStorage.getItem("userId");
         if (!userId) return;
 
-        setIsUploading(true); // 🔹 Start loading
+       
 
         const response = await axios.get(`${BASE_URL}/user/${userId}`, {
           withCredentials: true,
@@ -59,7 +70,7 @@ const DashLayout = ({ children }) => {
     const formData = new FormData();
     formData.append("my_file", selectedFile); // Send the selected file
     try {
-      // setLoading(true);
+       setLoading(true);
       const res = await axios.post("http://localhost:3000/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -88,7 +99,7 @@ const DashLayout = ({ children }) => {
     } catch (error) {
       console.error("Upload error:", error);
     } finally {
-      // setLoading(false);
+       setLoading(false);
     }
   };
 
@@ -107,13 +118,16 @@ const DashLayout = ({ children }) => {
 
             {/* Clickable Profile Picture */}
             <div className="relative">
-              <div>
-                {isUploading && (
-                  <div className="spinner-overlay">
-                    <div className="spinner"></div>
-                  </div>
-                )}
-              </div>
+              {/* <div>
+                <ClipLoader
+                  // color={color}
+                  loading={loading}
+                  cssOverride={override}
+                  size={150}
+                  aria-label="Loading Spinner"
+                  data-testid="loader"
+                />
+              </div> */}
 
               <input
                 type="file"
@@ -132,7 +146,7 @@ const DashLayout = ({ children }) => {
               </label>
             </div>
 
-            {/* {loading && <span className="text-sm text-gray-500">Uploading...</span>} */}
+            {loading && <span className="text-sm text-gray-500">Uploading...</span>}
 
             <button
               onClick={toggleTheme}
