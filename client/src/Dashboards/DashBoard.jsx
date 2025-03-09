@@ -74,17 +74,26 @@ const DashBoard = () => {
           <div>
             <h1 className="font-semibold py-4 md:text-lg">Quick Links</h1>
             <div className="flex items-center gap-6 justify-around px-6 ">
-              <div className="items-center rounded-md space-y-2 flex flex-col hover:scale-105 hover:text-cyan-900  " onClick={() => setP2pModalOpen(true)}>
+              <div
+                className="items-center rounded-md space-y-2 flex flex-col hover:scale-105 hover:text-cyan-900  "
+                onClick={() => setP2pModalOpen(true)}
+              >
                 <HandCoins className="font-extrabold" />
-                <p className="font-bold text-sm hover:cursor-pointer " >P2P</p>
+                <p className="font-bold text-sm hover:cursor-pointer ">P2P</p>
               </div>
-              <div className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105" onClick={() => setSchedulePayModalOpen(true)}>
+              <div
+                className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105"
+                onClick={() => setSchedulePayModalOpen(true)}
+              >
                 <CalendarSync className="hover:text-cyan-900 font-extrabold" />
                 <p className="font-bold hover:cursor-pointer text-sm">
                   SCHEDULE-PAY
                 </p>
               </div>
-              <div className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105" onClick={() => setAutoPayModalOpen(true)}>
+              <div
+                className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105"
+                onClick={() => setAutoPayModalOpen(true)}
+              >
                 <SmartphoneNfc className="hover:text-cyan-900 font-extrabold" />
                 <p className="font-bold text-sm">AUTOPAY</p>
               </div>
@@ -117,11 +126,14 @@ const DashBoard = () => {
       {/* Fund Wallet Modal */}
       {fundModalOpen && (
         <div className="fixed inset-0 text-black flex items-center justify-center z-50  bg-opacity-50">
-            {/* Animated Background  */}
-          <div className="absolute inset-0 animate-moving-bg bg-cover bg-center" style={{ backgroundImage: `url(${blkchain5})` }}></div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-lg w-2/3 md:w-1/3">
-            <h2 className="text-xl font-bold mb-4">Fund Wallet</h2>
+          {/* Animated Background  */}
+          <div
+            className="absolute inset-0 animate-waves bg-cover bg-center"
+            style={{ backgroundImage: `url(${blkchain5})` }}
+          ></div>
+
+          <div className="bg-zinc-200 relative p-4 rounded-lg shadow-lg w-2/3 md:w-1/3">
+            <h2 className="text-xl font-bold mb-4 m-auto">Fund Wallet</h2>
             <p>Enter the amount you want to add to your wallet.</p>
             <div className="flex justify-between">
               <button
@@ -163,13 +175,16 @@ const DashBoard = () => {
           ></div>
           <div className="stars"></div>
 
-          <div className="bg-zinc-200 p-6 rounded-lg shadow-lg w-2/3 lg:w-2xl relative">
-            <h2 className="text-xl font-bold mb-4">Manage Tokens</h2>
-            <p>Here you can manage your tokens.</p>
-            <div className="flex justify-between w-full">
-              <button
-                className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md"
-                >
+          <div className="bg-zinc-200 p-4 rounded-lg shadow-lg w-2/3 lg:w-lg relative m-auto">
+            <div className="flex-col justify-center flex m-auto text-center">
+              <h2 className="text-xl font-bold ">Manage Tokens</h2>
+              <p>Here you can manage your tokens, Connect to your wallets</p>
+            </div>
+            <div className="flex justify-around w-full">
+              <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md">
+                Connect Wallet
+              </button>
+              <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md">
                 Check your WiseCoin
               </button>
             </div>
@@ -208,15 +223,10 @@ const DashBoard = () => {
             <h2 className="text-xl font-bold mb-4">Manage Tokens</h2>
             <p>Here you can manage your tokens.</p>
             <div className="flex justify-between w-full">
-              <button
-                className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md"
-          
-              >
+              <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md">
                 Connect Wallet
               </button>
-              <button
-                className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md"
-             >
+              <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md">
                 Check your WiseCoin
               </button>
             </div>
@@ -255,14 +265,10 @@ const DashBoard = () => {
             <h2 className="text-xl font-bold mb-4">Manage Tokens</h2>
             <p>Here you can manage your tokens.</p>
             <div className="flex justify-between w-full">
-              <button
-                className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md"
-                >
+              <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md">
                 Connect Wallet
               </button>
-              <button
-                className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md"
-                >
+              <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md">
                 Check your WiseCoin
               </button>
             </div>
@@ -278,7 +284,6 @@ const DashBoard = () => {
       {/* AutoPay Modal */}
       {autoPayModalOpen && (
         <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-         
           <div
             className="absolute inset-0 animate-moving-bg bg-cover bg-center"
             style={{ backgroundImage: `url(${blkchain5})` }}
@@ -289,14 +294,10 @@ const DashBoard = () => {
             <h2 className="text-xl font-bold mb-4">Manage Tokens</h2>
             <p>Here you can manage your tokens.</p>
             <div className="flex justify-between w-full">
-              <button
-                className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md"
-                >
+              <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md">
                 Connect Wallet
               </button>
-              <button
-                className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md"
-                >
+              <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md">
                 Check your WiseCoin
               </button>
             </div>
@@ -310,15 +311,8 @@ const DashBoard = () => {
         </div>
       )}
 
-
-
-
-
-
-
-
-       {/* P2P Modal */}
-       {/* {p2pModalOpen && (
+      {/* P2P Modal */}
+      {/* {p2pModalOpen && (
         <div className="fixed inset-0 text-black flex items-center justify-center z-50 bg-neutral-500 bg-opacity-50">
             <div
             className="absolute inset-0 animate-moving-bg bg-cover bg-center"

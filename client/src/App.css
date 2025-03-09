@@ -49,8 +49,8 @@
 }
 
 .animate-moving-bg {
-  background-size: 200% 200%;
-  animation: moveBackground 100s infinite linear;
+  background-size: 120% 120%;
+  animation: moveBackground 80s infinite linear;
 }
 
 @keyframes waveEffect {
@@ -61,7 +61,7 @@
 
 .animate-waves {
   background-size: cover;
-  animation: waveEffect 8s infinite ease-in-out;
+  animation: waveEffect 50s infinite ease-in-out;
 }
 
 @keyframes rotateGalaxy {
