@@ -30,9 +30,37 @@
   margin-right: auto;
 } 
 
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientMove 5s infinite linear;
+}
 
+@keyframes moveBackground {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
 
+.animate-moving-bg {
+  background-size: 200% 200%;
+  animation: moveBackground 10s infinite linear;
+}
 
+@keyframes waveEffect {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-waves {
+  background-size: cover;
+  animation: waveEffect 8s infinite ease-in-out;
+}
 
 
