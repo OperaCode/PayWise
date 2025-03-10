@@ -109,78 +109,122 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-const googleAuth = asyncHandler(async (req, res) => {
-  const { firebaseUID, email, name, profilePicture } = req.body;
+// const googleAuth = asyncHandler(async (req, res) => {
+//   const { firebaseUID, email, name, profilePicture } = req.body;
 
-  if (!firebaseUID) {
-    return res.status(400).json({ error: "firebaseUID is required" });
-  }
+//   if (!firebaseUID) {
+//     return res.status(400).json({ error: "firebaseUID is required" });
+//   }
+
+//   try {
+//     // 🔹 Verify Firebase Token
+//     const decodedToken = await admin.auth().verifyIdToken(firebaseUID);
+//     if (decodedToken.uid !== firebaseUID) {
+//       return res.status(401).json({ error: "Invalid Firebase ID Token" });
+//     }
+
+//     // 🔹 Check if user already exists
+//     let user = await User.findOne({ email });
+
+//     if (!user) {
+//       // Split name into first and last name
+//       const nameParts = name.split(" ");
+//       const firstName = nameParts[0];
+//       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+//       // 🔹 Create new user with wallet
+//       user = await User.create({
+//         firebaseUID,
+//         firstName,
+//         lastName,
+//         email,
+//         profilePicture,
+//         wallet: {
+//           balance: 100,
+//           cowries: 50,
+//           walletId: uuidv4(),
+//         },
+//       });
+//     }
+
+//     // 🔹 Generate JWT token
+//     const token = generateToken(user._id);
+
+//     // 🔹 Set authentication cookie
+//     res.cookie("token", token, {
+//       path: "/",
+//       httpOnly: true,
+//       expires: new Date(Date.now() + 86400000), // 1 day
+//       sameSite: "none",
+//       secure: true,
+//     });
+
+//     res.status(201).json({
+//       message: "User authenticated successfully",
+//       user: {
+//         _id: user._id,
+//         firstName: user.firstName,
+//         lastName: user.lastName,
+//         email: user.email,
+//         profilePicture: user.profilePicture,
+//         wallet: {
+//           walletId: user.wallet.walletId,
+//           balance: user.wallet.balance,
+//           cowries: user.wallet.cowries,
+//         },
+//         token,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Google Signup Error:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+
+const googleAuth = asyncHandler(async(req,res)=>{
+  const { idToken } = req.body;
+  if (!idToken) return res.status(400).json({ error: "ID Token required" });
 
   try {
-    // 🔹 Verify Firebase Token
-    const decodedToken = await admin.auth().verifyIdToken(firebaseUID);
-    if (decodedToken.uid !== firebaseUID) {
-      return res.status(401).json({ error: "Invalid Firebase ID Token" });
-    }
+    // 🔹 Verify Firebase token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { uid, email, name, picture } = decodedToken;
 
-    // 🔹 Check if user already exists
     let user = await User.findOne({ email });
 
     if (!user) {
-      // Split name into first and last name
-      const nameParts = name.split(" ");
-      const firstName = nameParts[0];
-      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-
-      // 🔹 Create new user with wallet
+      // 🔹 Create new user
       user = await User.create({
-        firebaseUID,
-        firstName,
-        lastName,
+        firebaseUID: uid,
+        firstName: name?.split(" ")[0] || "",
+        lastName: name?.split(" ").slice(1).join(" ") || "",
         email,
-        profilePicture,
-        wallet: {
-          balance: 100,
-          cowries: 50,
-          walletId: uuidv4(),
-        },
+        profilePicture: picture,
+        wallet: { balance: 100, cowries: 50, walletId: uid },
       });
     }
 
-    // 🔹 Generate JWT token
-    const token = generateToken(user._id);
+    // 🔹 Generate JWT
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    // 🔹 Set authentication cookie
-    res.cookie("token", token, {
-      path: "/",
-      httpOnly: true,
-      expires: new Date(Date.now() + 86400000), // 1 day
-      sameSite: "none",
-      secure: true,
-    });
-
-    res.status(201).json({
-      message: "User authenticated successfully",
+    res.status(200).json({
+      message: "Authentication successful",
       user: {
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         profilePicture: user.profilePicture,
-        wallet: {
-          walletId: user.wallet.walletId,
-          balance: user.wallet.balance,
-          cowries: user.wallet.cowries,
-        },
-        token,
+        wallet: user.wallet,
       },
+      token,
     });
   } catch (error) {
-    console.error("Google Signup Error:", error);
-    res.status(500).json({ error: error.message });
+    console.error("Google Auth Error:", error);
+    res.status(500).json({ error: "Authentication failed" });
   }
-});
-
+})
 
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -248,8 +292,6 @@ const loginUser = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
-
 
 const setTransactionPin = asyncHandler(async (req, res) => {
   try {
@@ -433,7 +475,6 @@ module.exports = {
   loginUser,
   uploadProfilePicture,
   googleAuth,
-  // googleSignIn,
   setTransactionPin,
   getUser,
   getUsers,

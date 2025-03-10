@@ -5,7 +5,6 @@ const {
   loginUser,
   uploadProfilePicture,
   googleAuth,
-  
   setTransactionPin,
   getUser,
   getUsers,
