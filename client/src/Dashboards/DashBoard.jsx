@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Line from "../charts/LineGraph";
 import DashPieChart from "../charts/PieChart";
+import FwPay from "../Hooks/FlutterWave";
 import { toast } from "react-toastify";
 import axios from "axios";
 
@@ -142,12 +143,14 @@ const DashBoard = () => {
               >
                 Cancel
               </button>
-              <button
+
+              <FwPay />
+              {/* <button
                 className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-800 text-white rounded"
                 onClick={() => setFundModalOpen(false)}
               >
                 Pay Now
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
