@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "../Hooks/FirebaseConfig"; // Ensure this is set up correctly
+
 import { toast } from "react-toastify";
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -63,92 +63,130 @@ const Login = () => {
     }
   };
 
-//   const GoogleLogin = async () => {
-//     const auth = getAuth();
-//     const provider = new GoogleAuthProvider();
+  const GoogleLogin = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
 
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Get Firebase ID token
+      const token = await user.getIdToken();
+      console.log("Firebase Token:", token);
+
+      // Send user details to backend
+      const response = await axios.post(
+        "http://localhost:3000/user/google",
+        {
+          uid: user.uid, // Firebase UID
+          email: user.email,
+          name: user.displayName,
+          profilePic: user.photoURL,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response?.data) {
+        console.log("Backend Response:", response.data);
+
+        // ✅ Store user data in local storage (only on client-side)
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+        }
+
+        setUser(response.data.user);
+        navigate("/dashboard", { state: { user: response.data.user } });
+        toast.success("✅ Google Sign-In Successful!");
+      }
+    } catch (error) {
+      toast.error("Google Sign-In Error");
+      console.error("Google Sign-In Error:", error.message);
+    }
+  };
+
+
+//  const GoogleLogin = async () => {
+//       const auth = getAuth();
+//        const provider = new GoogleAuthProvider();
+//       try {
+//           signInWithPopup(auth, provider)
+//           .then((result) => {
+//             // This gives you a Google Access Token. You can use it to access the Google API.
+//             const credential = GoogleAuthProvider.credentialFromResult(result);
+//             const token = credential.accessToken;
+//             // The signed-in user info.
+//             const user = result.user;
+//             // IdP data available using getAdditionalUserInfo(result)
+//             // ...
+//           }).
+//         console.log("User Info from Firebase:", user);
+
+//         // ✅ Send token to backend for verification
+//         const response = await axios.post(
+//           "http://localhost:3000/user/google-auth",
+//           { token }
+//         );
+
+//         console.log("User Info from Backend:", response.data);
+
+//         // ✅ Store user data in local storage
+//         localStorage.setItem("user", JSON.stringify(response.data.user));
+
+//         // ✅ Update UserContext immediately
+//         setUser(response.data.user);
+
+//         // ✅ Redirect to dashboard
+//         navigate("/dashboard", { state: { user: response.data.user } });
+
+//         toast.success("Login successful");
+//       } catch (error) {
+//         toast.error("Google Sign-In Error");
+//         console.error("Google Sign-In Error:", error.message);
+//       }
+//     };
+
+   
+
+// const GoogleLogin = async () => {
+  
 //     try {
 //       const result = await signInWithPopup(auth, provider);
+  
+//       // Extract Google access token
+//       const credential = GoogleAuthProvider.credentialFromResult(result);
+//       if (!credential) throw new Error("No credential returned from Google");
+  
+//       const token = credential.accessToken;
 //       const user = result.user;
-
-//       // Get Firebase ID token
-//       const token = await user.getIdToken();
-//       console.log("Firebase Token:", token);
-
-//       // Send user details to backend
-//       const response = await axios.post(
-//         "http://localhost:3000/user/google-login",
-//         {
-//           uid: user.uid, // Firebase UID
-//           email: user.email,
-//           name: user.displayName,
-//           profilePic: user.photoURL,
-//         },
-//         {
-//           headers: { Authorization: `Bearer ${token}` },
-//         }
-//       );
-
-//       if (response?.data) {
-//         console.log("Backend Response:", response.data);
-
-//         // ✅ Store user data in local storage (only on client-side)
-//         if (typeof window !== "undefined") {
-//           localStorage.setItem("user", JSON.stringify(response.data.user));
-//         }
-
-//         setUser(response.data.user);
-//         navigate("/dashboard", { state: { user: response.data.user } });
-//         toast.success("✅ Google Sign-In Successful!");
-//       }
+  
+//       console.log("User Info from Firebase:", user);
+  
+//       // ✅ Send token to backend for verification
+//       const response = await axios.post("http://localhost:3000/google-auth", {
+//         token,
+//       });
+  
+//       console.log("User Info from Backend:", response.data);
+  
+//       // ✅ Store user data in local storage
+//       localStorage.setItem("user", JSON.stringify(response.data.user));
+  
+//       // ✅ Update UserContext immediately
+//       setUser(response.data.user);
+  
+//       // ✅ Redirect to dashboard
+//       navigate("/dashboard", { state: { user: response.data.user } });
+  
+//       toast.success("Login successful");
 //     } catch (error) {
 //       toast.error("Google Sign-In Error");
 //       console.error("Google Sign-In Error:", error.message);
 //     }
 //   };
 
-
- const GoogleLogin = async () => {
-      const auth = getAuth();
-      // const provider = new GoogleAuthProvider();
-      try {
-          signInWithPopup(auth, provider)
-          .then((result) => {
-            // This gives you a Google Access Token. You can use it to access the Google API.
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-            const token = credential.accessToken;
-            // The signed-in user info.
-            const user = result.user;
-            // IdP data available using getAdditionalUserInfo(result)
-            // ...
-          }).
-        console.log("User Info from Firebase:", user);
-
-        // ✅ Send token to backend for verification
-        const response = await axios.post(
-          "http://localhost:3000/user/google-auth",
-          { token }
-        );
-
-        console.log("User Info from Backend:", response.data);
-
-        // ✅ Store user data in local storage
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-
-        // ✅ Update UserContext immediately
-        setUser(response.data.user);
-
-        // ✅ Redirect to dashboard
-        navigate("/dashboard", { state: { user: response.data.user } });
-
-        toast.success("Login successful");
-      } catch (error) {
-        toast.error("Google Sign-In Error");
-        console.error("Google Sign-In Error:", error.message);
-      }
-    };
-
-   
   return (
     <div className="p-8 h-screen">
       {/* Theme Toggle Button */}

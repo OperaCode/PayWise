@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Line from "../charts/LineGraph";
 import DashPieChart from "../charts/PieChart";
-import FwPay from "../Hooks/FlutterWave";
+import FwPay from "../components/FlutterWave";
 import { toast } from "react-toastify";
 import axios from "axios";
 
@@ -136,9 +136,9 @@ const DashBoard = () => {
           <div className="bg-zinc-200 relative p-4 rounded-lg shadow-lg w-2/3 md:w-1/3">
             <h2 className="text-xl font-bold mb-4 m-auto">Fund Wallet</h2>
             <p>Enter the amount you want to add to your wallet.</p>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <button
-                className="mt-4 px-4 py-2  hover:cursor-pointer bg-red-500 text-white rounded"
+                className="p-2  hover:cursor-pointer bg-red-500 text-white rounded hover:bg-red-300"
                 onClick={() => setFundModalOpen(false)}
               >
                 Cancel
@@ -314,34 +314,6 @@ const DashBoard = () => {
         </div>
       )}
 
-      {/* P2P Modal */}
-      {/* {p2pModalOpen && (
-        <div className="fixed inset-0 text-black flex items-center justify-center z-50 bg-neutral-500 bg-opacity-50">
-            <div
-            className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-            style={{ backgroundImage: `url(${blkchain2})` }}
-          ></div>
-          <div className="stars"></div>
-          <div className="bg-white p-6 rounded-lg shadow-lg w-2/3 md:w-1/3">
-            <h2 className="text-xl font-bold mb-4">Fund Wallet</h2>
-            <p>Enter the amount you want to add to your wallet.</p>
-            <div className="flex justify-between">
-              <button
-                className="mt-4 px-4 py-2  hover:cursor-pointer bg-red-500 text-white rounded"
-                onClick={() => setFundModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-800 text-white rounded"
-                onClick={() => setFundModalOpen(false)}
-              >
-                Pay Now
-              </button>
-            </div>
-          </div>
-        </div>
-      )} */}
     </section>
   );
 };
