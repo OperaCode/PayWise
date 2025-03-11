@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import BarChart from "../charts/BarChart";
+import Loader from "../components/Loader"
 
 const ManageBillers = () => {
+  const [loading, setLoading] = useState(true);
   const [billers, setBillers] = useState([
     {
       _id: "1",
@@ -76,6 +78,12 @@ const ManageBillers = () => {
     "Others",
   ];
 
+
+  useEffect(() => {
+    // Simulate an API call or app initialization delay
+    setTimeout(() => setLoading(false), 3000);
+  }, [])
+
   const handleSaveBiller = () => {
     if (currentBiller) {
       setBillers((prevBillers) =>
@@ -104,7 +112,10 @@ const ManageBillers = () => {
   };
 
   return (
-    <div className="p-6">
+    <>
+    
+    {loading?(<Loader/>):(
+      <div className="p-6">
       <div>
         <div>
           <h2 className="text-xl font-semibold mb-4">Manage Billers</h2>
@@ -240,6 +251,8 @@ const ManageBillers = () => {
         </div>
       )}
     </div>
+    )}
+    </>
   );
 };
 

@@ -1,17 +1,8 @@
-// import React from 'react'
 
-// const modals = () => {
-//   return (
-//     <div>
-
-//     </div>
-//   )
-// }
-
-// export default modals
 
 import axios from "axios";
 import React, { useState } from "react";
+import Loader from "../components/Loader";
 import { toast } from "react-toastify";
 import "./css"
 
@@ -57,12 +48,15 @@ const ManageTokens = ({ onAddTransaction, onClose }) => {
     } catch (error) {
       toast.error(error?.response?.data?.message);
     } finally {
+      
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <>
+   
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-indigo-800 rounded-lg shadow-lg lg:w-96 p-8 border-2 border-white">
         <div className="space-y-4">
           <div className="flex flex-col">
@@ -178,6 +172,8 @@ const ManageTokens = ({ onAddTransaction, onClose }) => {
         </div>
       </div>
     </div>
+ 
+    </>
   );
 };
 

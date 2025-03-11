@@ -54,7 +54,7 @@ const Register = () => {
   //   };
 
  
-  const handleSubmit = async (event) => {
+  const emailReg = async (event) => {
     event.preventDefault();
     setLoading(true);
     setIsSubmitting(true);
@@ -95,48 +95,38 @@ const Register = () => {
   };
   
 
-   const googleReg = async (e) => {
-      const auth = getAuth();
-      const provider = new GoogleAuthProvider();
-
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const token = credential.accessToken;
-        const user = result.user;
-
-        // Get Firebase ID token
-        //const token = await user.getIdToken();
-        console.log("Firebase Token:", token);
-
-        // Send user details to backend
-        const response = await axios.post("http://localhost:3000/user/google-auth", {
-          uid: user.uid, // Firebase UID
-          email: user.email,
-          name: user.displayName,
-          profilePic: user.photoURL,
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response?.data) {
-          console.log("Backend Response:", response.data);
-
-          // ✅ Store user data in local storage (only on client-side)
-          if (typeof window !== "undefined") {
-            localStorage.setItem("user", JSON.stringify(response.data.user));
-          }
-
-          setUser(response.data.user);
-          navigate("/dashboard", { state: { user: response.data.user } });
-          toast.success("✅ Google Sign-In Successful!");
-        }
-      } catch (error) {
-        toast.error("Google Sign-In Error");
-        console.error("Google Sign-In Error:", error.message);
+const googleReg = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+  
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+  
+      // Get Firebase ID token
+      const idToken = await user.getIdToken();
+      console.log("Firebase ID Token:", idToken);
+  
+      // ✅ Send the ID Token to backend
+      const response = await axios.post("http://localhost:3000/user/google-auth", {
+        idToken, // This is what the backend expects
+      });
+  
+      if (response?.data) {
+        console.log("Backend Response:", response.data);
+  
+        // ✅ Store user data locally
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+  
+        setUser(response.data.user);
+        navigate("/dashboard", { state: { user: response.data.user } });
+        toast.success("✅ Google Sign-In Successful!");
       }
-    };
-
+    } catch (error) {
+      toast.error("Google Sign-In Error");
+      console.error("Google Sign-In Error:", error.message);
+    }
+  };
   
 
   return (
@@ -173,7 +163,7 @@ const Register = () => {
           <p className="mb-6 text-center">Hello Chief! Let’s get you started</p>
 
           <form
-            onSubmit={handleSubmit}
+            onSubmit={emailReg}
             className="space-y-4 flex flex-col items-center"
           >
             <input
@@ -231,7 +221,7 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                onClick={handleSubmit}
+                onClick={emailReg}
                 className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
                 {loading ? "Registering..." : "Let's get started"}

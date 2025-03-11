@@ -17,8 +17,7 @@ const Login = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { setUser } = useContext(UserContext);
   const [error, setError] = useState(" ");
-  const [loading, setLoading] = useState(false); 
-  
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -33,70 +32,41 @@ const Login = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  // Email and Paasword Login
-//   const loginUser = async (e) => {
-//     e.preventDefault();
-//     const { email, password } = formData;
-
-//     if (!email || !password) {
-//       toast.error("All fields are required");
-//       return;
-//     }
-
-//     setIsSubmitting(true);
-
-//     try {
-//       const response = await axios.post(
-//         `http://localhost:3000/user/login`,
-//         formData,
-//         { withCredentials: true }
-//       );
-
-//       localStorage.setItem("user", JSON.stringify(response.data)); // Store user data in local storage
-//       console.log(response)
-//       toast.success("Login successful");
-//       setUser(response.data); // ✅ Update UserContext immediately
-//       navigate("/dashboard", { state: { user: response.data } }); // Redirect to dashboard
-//     } catch (error) {
-//       toast.error(error?.response?.data?.message || "Login failed");
-//     } finally {
-//       setIsSubmitting(false);
-//     }
-//   };
-
-
-const loginUser = async (e) => {
+  const loginUser = async (e) => {
     e.preventDefault();
-   // setError("");
+    // setError("");
     setLoading(true);
 
     try {
       const { email, password } = formData;
-      
-      if( !email || !password ) {
-        toast.error('All fields are required');
+
+      if (!email || !password) {
+        toast.error("All fields are required");
         return;
       }
       setIsSubmitting(true);
 
       // console.log({formData});
-      
-      const response = await axios.post("http://localhost:3000/user/login", formData, {withCredentials: true});
+
+      const response = await axios.post(
+        "http://localhost:3000/user/login",
+        formData,
+        { withCredentials: true }
+      );
       // localStorage.setItem("authToken", data.token);
       console.log(response);
-      toast.success('Login Successful');
-      setUser(response.data)
-      navigate('/dashboard')
-
+      toast.success("Login Successful");
+      setUser(response.data);
+      navigate("/dashboard");
     } catch (error) {
-        console.error(error)
-        toast.error(error?.response?.data?.message)
-        setError(error?.response?.data?.message)
+      console.error(error);
+      toast.error(error?.response?.data?.message);
+      setError(error?.response?.data?.message);
     } finally {
-      setIsSubmitting(false)
-      setLoading(false)
-    };
-  }
+      setIsSubmitting(false);
+      setLoading(false);
+    }
+  };
 
   const GoogleLogin = async () => {
     const auth = getAuth();
@@ -107,30 +77,25 @@ const loginUser = async (e) => {
       const user = result.user;
 
       // Get Firebase ID token
-      const token = await user.getIdToken();
-      console.log("Firebase Token:", token);
+      const idToken = await user.getIdToken();
+      console.log("Firebase ID Token:", idToken);
 
-      // Send user details to backend
+      // ✅ Send the ID Token to backend
       const response = await axios.post(
         "http://localhost:3000/user/google-auth",
         {
-          uid: user.uid, // Firebase UID
-          email: user.email,
-          name: user.displayName,
-          profilePic: user.photoURL,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
+          idToken, // This is what the backend expects
         }
       );
 
       if (response?.data) {
         console.log("Backend Response:", response.data);
 
-        // ✅ Store user data in local storage (only on client-side)
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-        }
+        // ✅ Store user data locally
+        //localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
+        localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
 
         setUser(response.data.user);
         navigate("/dashboard", { state: { user: response.data.user } });
@@ -141,86 +106,6 @@ const loginUser = async (e) => {
       console.error("Google Sign-In Error:", error.message);
     }
   };
-
-
-//  const GoogleLogin = async () => {
-//       const auth = getAuth();
-//        const provider = new GoogleAuthProvider();
-//       try {
-//           signInWithPopup(auth, provider)
-//           .then((result) => {
-//             // This gives you a Google Access Token. You can use it to access the Google API.
-//             const credential = GoogleAuthProvider.credentialFromResult(result);
-//             const token = credential.accessToken;
-//             // The signed-in user info.
-//             const user = result.user;
-//             // IdP data available using getAdditionalUserInfo(result)
-//             // ...
-//           }).
-//         console.log("User Info from Firebase:", user);
-
-//         // ✅ Send token to backend for verification
-//         const response = await axios.post(
-//           "http://localhost:3000/user/google-auth",
-//           { token }
-//         );
-
-//         console.log("User Info from Backend:", response.data);
-
-//         // ✅ Store user data in local storage
-//         localStorage.setItem("user", JSON.stringify(response.data.user));
-
-//         // ✅ Update UserContext immediately
-//         setUser(response.data.user);
-
-//         // ✅ Redirect to dashboard
-//         navigate("/dashboard", { state: { user: response.data.user } });
-
-//         toast.success("Login successful");
-//       } catch (error) {
-//         toast.error("Google Sign-In Error");
-//         console.error("Google Sign-In Error:", error.message);
-//       }
-//     };
-
-   
-
-// const GoogleLogin = async () => {
-  
-//     try {
-//       const result = await signInWithPopup(auth, provider);
-  
-//       // Extract Google access token
-//       const credential = GoogleAuthProvider.credentialFromResult(result);
-//       if (!credential) throw new Error("No credential returned from Google");
-  
-//       const token = credential.accessToken;
-//       const user = result.user;
-  
-//       console.log("User Info from Firebase:", user);
-  
-//       // ✅ Send token to backend for verification
-//       const response = await axios.post("http://localhost:3000/google-auth", {
-//         token,
-//       });
-  
-//       console.log("User Info from Backend:", response.data);
-  
-//       // ✅ Store user data in local storage
-//       localStorage.setItem("user", JSON.stringify(response.data.user));
-  
-//       // ✅ Update UserContext immediately
-//       setUser(response.data.user);
-  
-//       // ✅ Redirect to dashboard
-//       navigate("/dashboard", { state: { user: response.data.user } });
-  
-//       toast.success("Login successful");
-//     } catch (error) {
-//       toast.error("Google Sign-In Error");
-//       console.error("Google Sign-In Error:", error.message);
-//     }
-//   };
 
   return (
     <div className="p-8 h-screen">
@@ -290,7 +175,6 @@ const loginUser = async (e) => {
             />
 
             <div className="flex-col space-y-4 items-center justify-center">
-              
               <button
                 type="submit"
                 disabled={isSubmitting}
