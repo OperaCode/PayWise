@@ -1,11 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
 import image from "../assets/category.png";
 import { UserContext } from "../context/UserContext";
+import Loader from '../context/LoaderContext';
 import walletImages from "../assets/autopay.png";
-import blkchain from "../assets/blockchain.webp";
-import blkchain2 from "../assets/blockchain2.webp";
-import blkchain3 from "../assets/blkchain3.jpeg";
-import blkchain4 from "../assets/blockChain1.jpg";
 import blkchain5 from "../assets/darkbg.jpg";
 import {
   SmartphoneNfc,
@@ -29,6 +26,11 @@ const DashBoard = () => {
   const [p2pModalOpen, setP2pModalOpen] = useState(false);
   const [schedulePayModalOpen, setSchedulePayModalOpen] = useState(false);
   const [autoPayModalOpen, setAutoPayModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+    
+    // useEffect(() => {
+    //   setTimeout(() => setLoading(false), 3000);
+    // }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -40,13 +42,24 @@ const DashBoard = () => {
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
       } catch (error) {
         toast.error("Error Fetching User");
+      } finally {
+        setTimeout(() => setLoading(false), 3000); // Ensure loader shows for at least 3s
       }
     };
     fetchUser();
   }, []);
 
+
+  if (loading) {
+    return <Loader />;
+  }
+
+
   return (
-    <section className="p-8">
+   
+   
+   
+   <section className="p-8">
       <div className="lg:flex gap-4">
         {/* Wallet Balance Section */}
         <div className="flex-1 h-full font-bodyFont w-full">

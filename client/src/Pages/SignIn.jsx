@@ -16,8 +16,9 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const Login = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { setUser } = useContext(UserContext);
-  const auth = getAuth();
-  const provider = new GoogleAuthProvider();
+  const [error, setError] = useState(" ");
+  const [loading, setLoading] = useState(false); 
+  
 
   const [formData, setFormData] = useState({
     email: "",
@@ -33,35 +34,69 @@ const Login = () => {
   };
 
   // Email and Paasword Login
-  const loginUser = async (e) => {
+//   const loginUser = async (e) => {
+//     e.preventDefault();
+//     const { email, password } = formData;
+
+//     if (!email || !password) {
+//       toast.error("All fields are required");
+//       return;
+//     }
+
+//     setIsSubmitting(true);
+
+//     try {
+//       const response = await axios.post(
+//         `http://localhost:3000/user/login`,
+//         formData,
+//         { withCredentials: true }
+//       );
+
+//       localStorage.setItem("user", JSON.stringify(response.data)); // Store user data in local storage
+//       console.log(response)
+//       toast.success("Login successful");
+//       setUser(response.data); // ✅ Update UserContext immediately
+//       navigate("/dashboard", { state: { user: response.data } }); // Redirect to dashboard
+//     } catch (error) {
+//       toast.error(error?.response?.data?.message || "Login failed");
+//     } finally {
+//       setIsSubmitting(false);
+//     }
+//   };
+
+
+const loginUser = async (e) => {
     e.preventDefault();
-    const { email, password } = formData;
-
-    if (!email || !password) {
-      toast.error("All fields are required");
-      return;
-    }
-
-    setIsSubmitting(true);
+   // setError("");
+    setLoading(true);
 
     try {
-      const response = await axios.post(
-        `http://localhost:3000/user/login`,
-        formData,
-        { withCredentials: true }
-      );
+      const { email, password } = formData;
+      
+      if( !email || !password ) {
+        toast.error('All fields are required');
+        return;
+      }
+      setIsSubmitting(true);
 
-      localStorage.setItem("user", JSON.stringify(response.data)); // Store user data in local storage
-      console.log(response)
-      toast.success("Login successful");
-      setUser(response.data); // ✅ Update UserContext immediately
-      navigate("/dashboard", { state: { user: response.data } }); // Redirect to dashboard
+      // console.log({formData});
+      
+      const response = await axios.post("http://localhost:3000/user/login", formData, {withCredentials: true});
+      // localStorage.setItem("authToken", data.token);
+      console.log(response);
+      toast.success('Login Successful');
+      setUser(response.data)
+      navigate('/dashboard')
+
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Login failed");
+        console.error(error)
+        toast.error(error?.response?.data?.message)
+        setError(error?.response?.data?.message)
     } finally {
-      setIsSubmitting(false);
-    }
-  };
+      setIsSubmitting(false)
+      setLoading(false)
+    };
+  }
 
   const GoogleLogin = async () => {
     const auth = getAuth();
@@ -77,7 +112,7 @@ const Login = () => {
 
       // Send user details to backend
       const response = await axios.post(
-        "http://localhost:3000/user/google",
+        "http://localhost:3000/user/google-auth",
         {
           uid: user.uid, // Firebase UID
           email: user.email,

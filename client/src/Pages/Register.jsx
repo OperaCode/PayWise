@@ -7,13 +7,24 @@ import logo from "../assets/paywise-logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged} from "firebase/auth";
-// import AuthContext from "../context/AuthContext";
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL; 
+const firebaseConfig = {
+  apiKey:import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:import.meta.env.VITE_FIREBASE_STORAGE_BUCKET, 
+  messagingSenderId:import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId:import.meta.env.VITE_FIREBASE_APP_ID ,
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const Register = () => {
-
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -22,8 +33,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
-//   const { googleSignIn, user, logout } = useContext(AuthContext);
-  
+
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -37,103 +47,97 @@ const Register = () => {
     setError(""); // Clear the error when the user types
   };
 
+  //   const handlePastePassword = (e) => {
+  //     e.preventDefault();
+  //     toast.error("Cannot paste into this field");
+  //     return;
+  //   };
 
-//   const handlePastePassword = (e) => {
-//     e.preventDefault();
-//     toast.error("Cannot paste into this field");
-//     return;
-//   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
     setIsSubmitting(true);
-    setError(""); // Reset error before validation
-
+  
     try {
-      const { firstName, lastName, email, password, confirmPassword } =
-        formData;
-
-      if (!firstName || !lastName || !email || !password || !confirmPassword) {
-        setError("Oops, all fields are required");
-        throw new Error("All fields are required");
+        const { firstName, lastName, email, password, confirmPassword } = formData;
+  
+      if (!firstName || !lastName || !email || !password) {
+        toast.error("All fields are required");
+        return;
       }
-
-      if (password !== confirmPassword) {
-        setError("Passwords do not match");
-        throw new Error("Passwords do not match");
+  
+      if (password.length < 8 || password.length > 20) {
+        toast.error("Password must be between 8 and 20 characters");
+        return;
       }
-
-      
-      const response = await axios.post(
-        `${BASE_URL}/user/register`,
-        formData,
-        { withCredentials: true }
-      );
-
+  
+      const response = await axios.post(`${BASE_URL}/user/register`, formData, {
+        withCredentials: true,
+      });
+  
       if (response?.data) {
-          const userInfo = response.data;
-          console.log(userInfo);
+        const userInfo = response.data;
+        console.log(userInfo);
         setUser(userInfo);
         toast.success("Registration Successful");
-        navigate("/dashboard", { state: { user: user } })} 
-    
-    }catch (error) {
-      const errorMessage =
-        error?.response?.data?.message ||
-        error.message ||
-        "Internal server error";
-      setError(errorMessage); // Set error message
-      toast.error(errorMessage);
+        navigate("/dashboard", { state: { userInfo } });
+      }
+    } catch (error) {
+      console.error("Registration Error:", error);
+      toast.error(
+        error.response?.data?.message || "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
       setIsSubmitting(false);
     }
-  
-
-
-};
-
- const googleReg = async (e) => {
-    const auth = getAuth();
-    const provider = new GoogleAuthProvider();
-  
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-  
-      // Get Firebase ID token
-      const token = await user.getIdToken();
-      console.log("Firebase Token:", token);
-  
-      // Send user details to backend
-      const response = await axios.post("http://localhost:3000/user/google-auth", {
-        uid: user.uid, // Firebase UID
-        email: user.email,
-        name: user.displayName,
-        profilePic: user.photoURL,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-  
-      if (response?.data) {
-        console.log("Backend Response:", response.data);
-  
-        // ✅ Store user data in local storage (only on client-side)
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-        }
-  
-        setUser(response.data.user);
-        navigate("/dashboard", { state: { user: response.data.user } });
-        toast.success("✅ Google Sign-In Successful!");
-      }
-    } catch (error) {
-      toast.error("Google Sign-In Error");
-      console.error("Google Sign-In Error:", error.message);
-    }
   };
- 
+  
+
+   const googleReg = async (e) => {
+      const auth = getAuth();
+      const provider = new GoogleAuthProvider();
+
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+        const user = result.user;
+
+        // Get Firebase ID token
+        //const token = await user.getIdToken();
+        console.log("Firebase Token:", token);
+
+        // Send user details to backend
+        const response = await axios.post("http://localhost:3000/user/google-auth", {
+          uid: user.uid, // Firebase UID
+          email: user.email,
+          name: user.displayName,
+          profilePic: user.photoURL,
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response?.data) {
+          console.log("Backend Response:", response.data);
+
+          // ✅ Store user data in local storage (only on client-side)
+          if (typeof window !== "undefined") {
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+          }
+
+          setUser(response.data.user);
+          navigate("/dashboard", { state: { user: response.data.user } });
+          toast.success("✅ Google Sign-In Successful!");
+        }
+      } catch (error) {
+        toast.error("Google Sign-In Error");
+        console.error("Google Sign-In Error:", error.message);
+      }
+    };
+
+  
 
   return (
     <div className="flex-col justify-center p-4">
@@ -205,6 +209,7 @@ const Register = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
+              onPaste={(e) => e.preventDefault()} 
               className="w-md p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
               required
             />
@@ -214,6 +219,7 @@ const Register = () => {
               placeholder="Confirm Password"
               value={formData.confirmPassword}
               onChange={handleChange}
+              onPaste={(e) => e.preventDefault()} 
               className="w-md p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
               required
             />
@@ -244,7 +250,7 @@ const Register = () => {
             Make it simple, Sign up with{" "}
             <span
               className="font-bold hover:cursor-pointer"
-               onClick={googleReg}
+              onClick={googleReg}
             >
               Gmail
             </span>
@@ -264,8 +270,6 @@ const Register = () => {
       </div>
     </div>
   );
-}
-
-
+};
 
 export default Register;
