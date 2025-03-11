@@ -3,6 +3,7 @@ import image from "../assets/category.png";
 import { UserContext } from "../context/UserContext";
 import Loader from "../components/Loader"; // Import your Loader component
 import walletImages from "../assets/autopay.png";
+import { FlutterWaveButton, closePaymentModal } from 'flutterwave-react-v3';
 import blkchain5 from "../assets/darkbg.jpg";
 import {
   SmartphoneNfc,
@@ -18,6 +19,31 @@ import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+const flutterwaveConfig = {
+    public_key: import.meta.env.VITE_FLW_PUBLIC_KEY, // Ensure this is correctly set in your .env file
+    tx_ref: "tx_" + Date.now(),
+    amount: 100, // Amount to charge
+    currency: "USD",
+    payment_options: "card, mobilemoney, ussd",
+    customer: {
+      email: "user@example.com",
+      phone_number: "1234567890",
+      name: "John Doe",
+    },
+    customizations: {
+      title: "PayWise Wallet Funding",
+      description: "Funding your PayWise Wallet",
+      logo: "https://your-logo-url.com/logo.png",
+    },
+    callback: (response) => {
+      console.log("Payment successful:", response);
+      closePaymentModal(); // Close the payment modal
+    },
+    onclose: () => {
+      console.log("Payment modal closed");
+    },
+  };
+
 const DashBoard = () => {
   const { user } = useContext(UserContext);
   //const { setLoading } = useContext(LoaderContext);
@@ -31,6 +57,13 @@ const DashBoard = () => {
     
     
 
+useEffect(() => {
+    // Simulate an API call or app initialization delay
+    setTimeout(() => setLoading(false), 3000);
+  }, [])
+
+
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -41,9 +74,7 @@ const DashBoard = () => {
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
       } catch (error) {
         toast.error("Error Fetching User");
-      } finally {
-        setTimeout(() => setLoading(false), 3000); // Ensure loader shows for at least 3s
-      }
+      } 
     };
     fetchUser();
   }, []);
@@ -91,29 +122,29 @@ const DashBoard = () => {
                  <h1 className="font-semibold py-4 md:text-lg">Quick Links</h1>
                  <div className="flex items-center gap-6 justify-around px-6 ">
                    <div
-                     className="items-center rounded-md space-y-2 flex flex-col hover:scale-105 hover:text-cyan-900  "
+                     className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105 hover:text-cyan-900"
                      onClick={() => setP2pModalOpen(true)}
                    >
                      <HandCoins className="font-extrabold" />
-                     <p className="font-bold text-sm hover:cursor-pointer ">P2P</p>
+                     <p className="font-bold text-sm hover:text-cyan-900">P2P</p>
                    </div>
                    <div
-                     className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105"
+                     className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105 hover:text-cyan-900"
                      onClick={() => setSchedulePayModalOpen(true)}
                    >
                      <CalendarSync className="hover:text-cyan-900 font-extrabold" />
-                     <p className="font-bold hover:cursor-pointer text-sm">
+                     <p className="font-bold text-sm hover:text-cyan-900">
                        SCHEDULE-PAY
                      </p>
                    </div>
                    <div
-                     className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105"
+                     className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105 hover:text-cyan-900"
                      onClick={() => setAutoPayModalOpen(true)}
                    >
                      <SmartphoneNfc className="hover:text-cyan-900 font-extrabold" />
-                     <p className="font-bold text-sm">AUTOPAY</p>
+                     <p className="font-bold text-sm hover:text-cyan-900">AUTOPAY</p>
                    </div>
-                   <div className="items-center flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105">
+                   <div className="items-center flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
                      {/* <img src={analytics} alt="" /> */}
                      <ChartNoAxesCombined classname="hover:text-cyan-900" />
                      <p className="font-bold text-sm hover:text-cyan-900">
@@ -141,36 +172,36 @@ const DashBoard = () => {
      
            {/* Fund Wallet Modal */}
            {fundModalOpen && (
-             <div className="fixed inset-0 text-black flex items-center justify-center z-50  bg-opacity-50">
-               {/* Animated Background  */}
+             <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
                <div
-                 className="absolute inset-0 animate-waves bg-cover bg-center"
+                 className="absolute inset-0 animate-moving-bg bg-cover bg-center"
                  style={{ backgroundImage: `url(${blkchain5})` }}
                ></div>
+               <div className="stars"></div>
      
-               <div className="bg-zinc-200 relative p-4 rounded-lg shadow-lg w-2/3 md:w-1/3">
-                 <h2 className="text-xl font-bold mb-4 m-auto">Fund Wallet</h2>
-                 <p>Enter the amount you want to add to your wallet.</p>
-                 <div className="flex justify-between items-center">
-                   <button
-                     className="p-2  hover:cursor-pointer bg-red-500 text-white rounded hover:bg-red-300"
-                     onClick={() => setFundModalOpen(false)}
-                   >
-                     Cancel
-                   </button>
-     
-                   <FwPay />
-                   {/* <button
-                     className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-800 text-white rounded"
-                     onClick={() => setFundModalOpen(false)}
-                   >
-                     Pay Now
-                   </button> */}
+               <div className="bg-zinc-200 p-4 rounded-lg shadow-lg w-2/3 lg:w-lg relative m-auto">
+                 <div className="flex-col justify-center flex m-auto text-center">
+                   <h2 className="text-xl font-bold ">Manage Tokens</h2>
+                   <p>Here you can manage your tokens, Connect to your wallets</p>
                  </div>
+                 <div className="flex justify-around w-full">
+                   <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md">
+                     Connect Wallet
+                   </button>
+                  <FlutterWaveButton
+                        className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md"
+                        {...flutterwaveConfig}
+                      >Pay with Flutterwave</FlutterWaveButton>
+                 </div>
+                 <button
+                   className=" hover:cursor-pointer mt-4 px-4 py-2 bg-red-500 text-white rounded-md"
+                   onClick={() => setFundModalOpen(false)}
+                 >
+                   Cancel
+                 </button>
                </div>
              </div>
            )}
-     
            {/* Manage Tokens Modal */}
            {manageTokensModalOpen && (
              <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
@@ -260,19 +291,6 @@ const DashBoard = () => {
            {/* Scehdule Payment Modal */}
            {schedulePayModalOpen && (
              <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-               {/* Moving Gradient Background */}
-               {/* <div className="absolute inset-0 animate-gradient bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500"></div> */}
-     
-               {/* Moving Image Background */}
-               {/* <div
-             className="absolute inset-0 galaxy-background bg-contain "
-              style={{ backgroundImage: `url(${blkchain2})` }}
-           ></div>
-           */}
-     
-               {/* Animated Background  */}
-               {/* <div className="absolute inset-0 animate-waves bg-cover bg-center" style={{ backgroundImage: `url(${blkchain2})` }}></div> */}
-     
                <div
                  className="absolute inset-0 animate-moving-bg bg-cover bg-center"
                  style={{ backgroundImage: `url(${blkchain5})` }}

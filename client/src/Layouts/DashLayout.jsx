@@ -108,7 +108,7 @@ const DashLayout = ({ children }) => {
       <SideBar />
 
       {/* Main Content */}
-      <div className="flex-col w-full pt-8 lg:ml-70">
+      <div className="flex-col w-full pt-8 lg:ml-78">
         <div>
           {/* Navbar */}
           <div className="flex items-center justify-end px-10 py-4 gap-2">

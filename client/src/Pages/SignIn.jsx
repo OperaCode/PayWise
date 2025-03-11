@@ -10,6 +10,7 @@ import { UserContext } from "../context/UserContext";
 import { Moon, Sun } from "lucide-react";
 import image from "../assets/Register.png";
 import logo from "../assets/paywise-logo.png";
+import Loader from "../components/Loader";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -184,6 +185,13 @@ const Login = () => {
               </button>
             </div>
           </form>
+
+          {/* Show Loader when Logging in */}
+          {loading && (
+            <div className="loader">
+              <Loader/>
+            </div>
+          )}
 
           <p className="md:hidden p-2">
             Don't have an account?{" "}
