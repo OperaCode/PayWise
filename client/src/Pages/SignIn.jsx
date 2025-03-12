@@ -36,7 +36,7 @@ const Login = () => {
   const loginUser = async (e) => {
     e.preventDefault();
     // setError("");
-    setLoading(true);
+    //setLoading(true);
 
     try {
       const { email, password } = formData;
@@ -69,35 +69,77 @@ const Login = () => {
     }
   };
 
-  const GoogleLogin = async () => {
+//   const GoogleLogin = async () => {
+//     const auth = getAuth();
+//     const provider = new GoogleAuthProvider();
+
+//     try {
+//       const result = await signInWithPopup(auth, provider);
+//       const user = result.user;
+
+//       // Get Firebase ID token
+//       const idToken = await user.getIdToken();
+//       console.log("Firebase ID Token:", idToken);
+
+//       // ✅ Send the ID Token to backend
+//       const response = await axios.post(
+//         "http://localhost:3000/user/google-auth",
+//         {
+//           idToken, // This is what the backend expects
+//         }
+//       );
+
+//       if (response?.data) {
+//         console.log("Backend Response:", response);
+
+//         // ✅ Store user data locally
+//         //localStorage.setItem("user", JSON.stringify(response.data.user));
+
+//         localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
+//         localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
+
+//         setUser(response.data.user);
+//         navigate("/dashboard", { state: { user: response.data.user } });
+//         toast.success("✅ Google Sign-In Successful!");
+//       }
+//     } catch (error) {
+//       toast.error("Google Sign-In Error");
+//       console.error("Google Sign-In Error:", error.message);
+//     }
+//   };
+
+
+const GoogleLogin = async () => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
-
+  
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
+  
       // Get Firebase ID token
       const idToken = await user.getIdToken();
       console.log("Firebase ID Token:", idToken);
-
+  
       // ✅ Send the ID Token to backend
       const response = await axios.post(
         "http://localhost:3000/user/google-auth",
-        {
-          idToken, // This is what the backend expects
-        }
+        { idToken }
       );
-
+  
       if (response?.data) {
-        console.log("Backend Response:", response.data);
+        console.log("Backend Response:", response);
 
-        // ✅ Store user data locally
-        //localStorage.setItem("user", JSON.stringify(response.data.user));
 
-        localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
+        console.log("Google Login - Backend Response:", response.data);
+        console.log("Expected userId:", response.data?.user?._id);
+
+  
+        // ✅ Store user ID explicitly
+        localStorage.setItem("userId", response.data.user._id);
+        //localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
         localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
-
+  
         setUser(response.data.user);
         navigate("/dashboard", { state: { user: response.data.user } });
         toast.success("✅ Google Sign-In Successful!");
@@ -107,8 +149,12 @@ const Login = () => {
       console.error("Google Sign-In Error:", error.message);
     }
   };
+  
 
-  return (
+
+
+
+return (
     <div className="p-8 h-screen">
       {/* Theme Toggle Button */}
       <div className="flex justify-between px-4 items-center">

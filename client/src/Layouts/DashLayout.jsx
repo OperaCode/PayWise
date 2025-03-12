@@ -3,7 +3,7 @@ import SideBar from "../components/SideBar";
 import image from "../assets/avatar.jpg";
 import Recent from "../components/RecentTransactions";
 import { ThemeContext } from "../context/ThemeContext";
-import { UserContext } from "../context/UserContext";
+// import { UserContext } from "../context/UserContext";
 import { Moon, Sun, Search } from "lucide-react";
 import ClipLoader from "react-spinners/ClipLoader";
 
@@ -21,7 +21,8 @@ const override = {
 
 const DashLayout = ({ children }) => {
   const { theme, toggleTheme } = useContext(ThemeContext); // Get
-  const { user, setUser } = useContext(UserContext); // ✅ Use user from context
+ // const { user, setUser } = useContext(UserContext); // ✅ Use user from context
+  const { user, setUser } = useState(" "); // ✅ Use user from context
   const [username, setUserName] = useState("");
   const [res, setRes] = useState({});
    const [loading, setLoading] = useState(false);
@@ -38,31 +39,99 @@ const DashLayout = ({ children }) => {
     }
   };
 
-  // ✅ Fetch User Data
+  // // ✅ Fetch User Data
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const userId = localStorage.getItem("userId");
+        
+  //       if (!userId) return;
+
+       
+  //       const response = await axios.get(`${BASE_URL}/user/${userId}`, {
+  //         withCredentials: true,
+  //       });
+
+
+  //        const userData = response?.data;
+  //         console.log(userData);
+  //        const user = userData?.user
+  //        //console.log(user.firstName);
+  //       // setUserName(user.firstName);
+  //       // // console.log(fetchedUser)
+  //       // setUserName(fetchedUser?.firstName || "User");
+  //       // setProfilePicture(fetchedUser?.profilePicture || image);
+  //     } catch (error) {
+  //       console.error("Error fetching user:", error);
+  //     }
+  //   };
+
+  //   fetchUser();
+  // }, [setUser]);
+
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        if (!userId) return;
+        let userId = localStorage.getItem("userId");
+        console.log("LocalStorage userId:", userId);
+  
+        if (!userId) {
+          console.warn("No userId in localStorage, trying backend...");
+          const token = localStorage.getItem("token");
+  
+          if (!token) {
+            console.error("No token found. User may not be authenticated.");
+            return;
+          }
+          
+         
 
-       
 
+          const response = await axios.get(`${BASE_URL}/user/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+  
+          console.log("Response from backend:", response?.data);
+  
+          userId = response?.data?.user?._id; 
+          if (userId) {
+            localStorage.setItem("userId", userId);
+            console.log("Updated localStorage userId:", userId);
+          } else {
+            console.error("User ID missing from backend response!");
+            return;
+          }
+        }
+  
+        if (!userId) {
+          console.error("Still no userId, aborting fetch.");
+          return;
+        }
+  
+        console.log("Fetching user with userId:", userId);
         const response = await axios.get(`${BASE_URL}/user/${userId}`, {
           withCredentials: true,
         });
-
-        const fetchedUser = response?.data?.user;
-        setUser(fetchedUser);
-        // console.log(fetchedUser)
-        setUserName(fetchedUser?.firstName || "User");
-        setProfilePicture(fetchedUser?.profilePicture || image);
+        
+        console.log("Fetched User Data:", response?.data);
+        console.log("Fetched user with userId:",response?.data?.user._id);
+        const user = response?.data?.user;
+  
+        if (user) {
+          setUserName(user.firstName || "User");
+          setProfilePicture(user.profilePicture || image);
+        }
       } catch (error) {
         console.error("Error fetching user:", error);
       }
     };
-
+  
     fetchUser();
   }, [setUser]);
+  
+  
+ 
 
   const uploadPhoto = async (selectedFile) => {
     // if (!selectedFile) return toast.eroor("Please select an image");
@@ -114,6 +183,7 @@ const DashLayout = ({ children }) => {
           <div className="flex items-center justify-end px-10 py-4 gap-2">
             <h1 className="text-cyan- text-xl font-bold">
               Welcome, {username.charAt(0).toUpperCase() + username.slice(1)}!
+             
             </h1>
 
             {/* Clickable Profile Picture */}

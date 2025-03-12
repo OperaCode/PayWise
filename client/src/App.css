@@ -50,7 +50,7 @@
 
 .animate-moving-bg {
   background-size: 120% 120%;
-  animation: moveBackground 80s infinite linear;
+  animation: moveBackground 60s infinite linear;
 }
 
 @keyframes waveEffect {

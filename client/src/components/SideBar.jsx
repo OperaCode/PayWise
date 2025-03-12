@@ -43,8 +43,8 @@ const SideBar = () => {
 
       if (response.status === 200) {
         localStorage.removeItem("userToken");
-        toast.success("Logout successful!");
         navigate("/login");
+        //toast.success("Logout successful!");
       } else {
         console.error("Logout failed");
         toast.error("Failed to log out. Please try again.");
@@ -76,7 +76,7 @@ const SideBar = () => {
               <Link to="/dashboard">
                 <div className="flex gap-2 items-center hover:text-cyan-900 ">
                   <House size={17} strokeWidth={3}/>
-                  <li className="hover:cursor-pointer  md:block hover:text-cyan-900 font-bold lg:text-">
+                  <li className="hover:cursor-pointer  md:block hover:text-cyan-900 font-bold lg:text-md active:bg-cyan-900">
                     {" "}
                     Home
                   </li>
@@ -84,34 +84,34 @@ const SideBar = () => {
               </Link>
 
               <Link to="/payment">
-                <div className="flex gap-2 items-center hover:text-cyan-900 ">
+                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex active:bg-cyan-900">
                   <DollarSign size={17} strokeWidth={3}/>
-                  <li className="hover:cursor-pointer hidden lg:block font-bold lg:text-md">
+                  <li className="hover:cursor-pointer  font-bold lg:text-md ">
                     Make Payment
                   </li>
                 </div>
               </Link>
 
               <Link to="/billers">
-                <div className="flex gap-2 items-center hover:text-cyan-900 ">
+                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex active:bg-cyan-900">
                   <TabletSmartphone size={17} strokeWidth={3}/>
-                  <li className="hover:cursor-pointer hidden lg:block font-bold lg:text-md">
+                  <li className="hover:cursor-pointer  font-bold lg:text-md ">
                     Manage Billers
                   </li>
                 </div>
               </Link>
               <Link to="/analytics">
-                <div className="flex gap-2 items-center hover:text-cyan-900 ">
+                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex active:bg-cyan-900">
                 <Milestone strokeWidth={3}/>
-                <li className="hover:cursor-pointer hidden lg:block  font-bold w-full lg:text-md">
+                <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
                   Rewards and Analytics
                 </li>
                 </div>
               </Link>
               <Link to="/inbox">
-                <div className="flex gap-2 items-center hover:text-cyan-900 ">
+                <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex active:bg-cyan-900">
                   <MessageSquareMore strokeWidth={3}/>
-                  <li className="hover:cursor-pointer hidden lg:block  font-bold lg:text-md">
+                  <li className="hover:cursor-pointer font-bold lg:text-md">
                     Messages
                   </li>
                 </div>
