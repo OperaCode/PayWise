@@ -109,6 +109,49 @@ const Login = () => {
 //   };
 
 
+// const GoogleLogin = async () => {
+//     const auth = getAuth();
+//     const provider = new GoogleAuthProvider();
+  
+//     try {
+//       const result = await signInWithPopup(auth, provider);
+//       const user = result.user;
+  
+//       // Get Firebase ID token
+//       const idToken = await user.getIdToken();
+//       console.log("Firebase ID Token:", idToken);
+  
+//       // ✅ Send the ID Token to backend
+//       const response = await axios.post(
+//         "http://localhost:3000/user/google-auth",
+//         { idToken }
+//       );
+  
+//       if (response?.data) {
+//         console.log("Backend Response:", response);
+
+
+//         console.log("Google Login - Backend Response:", response.data);
+//         console.log("Expected userId:", response.data?.user?._id);
+
+  
+//         // ✅ Store user ID explicitly
+//         localStorage.setItem("userId", response.data.user._id);
+//         //localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
+//         localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
+  
+//         setUser(response.data.user);
+//         navigate("/dashboard", { state: { user: response.data.user } });
+//         toast.success("✅ Google Sign-In Successful!");
+//       }
+//     } catch (error) {
+//       toast.error("Google Sign-In Error");
+//       console.error("Google Sign-In Error:", error.message);
+//     }
+//   };
+  
+
+
 const GoogleLogin = async () => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
@@ -117,27 +160,31 @@ const GoogleLogin = async () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
   
-      // Get Firebase ID token
+      // ✅ Get Firebase ID Token
       const idToken = await user.getIdToken();
       console.log("Firebase ID Token:", idToken);
   
-      // ✅ Send the ID Token to backend
-      const response = await axios.post(
-        "http://localhost:3000/user/google-auth",
-        { idToken }
-      );
+      // ✅ Prepare user data for backend
+      const userData = {
+        idToken, // Firebase authentication token
+        firebaseUid: user.uid, // Firebase user ID
+        email: user.email,
+        name: user.displayName,
+        profilePicture: user.photoURL,
+        emailVerified: user.emailVerified,
+      };
+  
+      // ✅ Send ID Token & User Data to Backend
+      const response = await axios.post("http://localhost:3000/user/google-auth", userData);
   
       if (response?.data) {
-        console.log("Backend Response:", response);
-
-
+        console.log("Backend Response:", response.data);
         console.log("Google Login - Backend Response:", response.data);
         console.log("Expected userId:", response.data?.user?._id);
-
   
-        // ✅ Store user ID explicitly
+        // ✅ Store user ID & token locally
         localStorage.setItem("userId", response.data.user._id);
-        //localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
+        localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
         localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
   
         setUser(response.data.user);
