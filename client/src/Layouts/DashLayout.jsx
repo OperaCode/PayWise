@@ -10,9 +10,7 @@ import { toast } from "react-toastify";
 
 import axios from "axios";
 
-
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-
 
 const override = {
   display: "block",
@@ -22,21 +20,21 @@ const override = {
 
 const DashLayout = ({ children }) => {
   const { theme, toggleTheme } = useContext(ThemeContext); // Get
- // const { user, setUser } = useContext(UserContext); // ✅ Use user from context
+  // const { user, setUser } = useContext(UserContext); // ✅ Use user from context
   const { user, setUser } = useState(" "); // ✅ Use user from context
   const [username, setUserName] = useState("");
   const [res, setRes] = useState({});
-   const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
   const [isUploading, setIsUploading] = useState(false);
 
   // ✅ Handle file selection
   const handleSelectFile = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      uploadPhoto(selectedFile); // Pass selectedFile directly
+    const photo = e.target.files[0];
+    if (photo) {
+      setFile(photo);
+      uploadPhoto(photo); // Pass photo directly
     }
   };
 
@@ -45,14 +43,12 @@ const DashLayout = ({ children }) => {
   //   const fetchUser = async () => {
   //     try {
   //       const userId = localStorage.getItem("userId");
-        
+
   //       if (!userId) return;
 
-       
   //       const response = await axios.get(`${BASE_URL}/user/${userId}`, {
   //         withCredentials: true,
   //       });
-
 
   //        const userData = response?.data;
   //         console.log(userData);
@@ -70,54 +66,105 @@ const DashLayout = ({ children }) => {
   //   fetchUser();
   // }, [setUser]);
 
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const userId = localStorage.getItem("userId");
+  //       //console.log("LocalStorage userId:", userId);
+
+  //       if (!userId) {
+  //        //console.warn("No userId in localStorage, trying backend...");
+  //         const token = localStorage.getItem("token");
+
+  //         if (!token) {
+  //           console.log("No token found. User may not be authenticated.");
+  //           return;
+  //         }
+
+  //         const response = await axios.get(`${BASE_URL}/user/${userId}`, {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         });
+
+  //         console.log("Response from backend:", response?.data);
+
+  //         user = response?.data?.user?._id;
+  //         //console.log(user)
+  //         if (userId) {
+  //           localStorage.setItem("userId", userId);
+  //           //console.log("Updated localStorage userId:", userId);
+  //         } else {
+  //           console.error("User ID missing from backend response!");
+  //           return;
+  //         }
+  //       }
+
+  //       if (!userId) {
+  //         console.error("Still no userId, aborting fetch.");
+  //         return;
+  //       }
+
+  //       console.log("Fetching user with userId:", userId);
+  //       const response = await axios.get(`${BASE_URL}/user/${userId}`, {
+  //         withCredentials: true,
+  //       });
+
+  //       console.log("Fetched User Data:", response?.data);
+  //       console.log("Fetched user with userId:", response?.data?.user._id);
+  //       const user = response?.data?.user;
+
+  //       if (user) {
+  //         setUserName(user.firstName || "User");
+  //         setProfilePicture(user.profilePicture || image);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching user:", error);
+  //     }
+  //   };
+
+  //   fetchUser();
+  // }, [setUser]);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        let userId = localStorage.getItem("userId");
-        console.log("LocalStorage userId:", userId);
+         const userId = localStorage.getItem("userId");
+        // const token = localStorage.getItem("token");
   
-        if (!userId) {
-          console.warn("No userId in localStorage, trying backend...");
-          const token = localStorage.getItem("token");
+        // If no userId, fetch it using the token
+        // if (!userId && token) {
+        //   console.warn("No userId found, trying to fetch from backend...");
   
-          if (!token) {
-            console.error("No token found. User may not be authenticated.");
-            return;
-          }
-          
-         
-
-
-          const response = await axios.get(`${BASE_URL}/user/${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+        //   const response = await axios.get(`${BASE_URL}/auth/me`, {
+        //     headers: { Authorization: `Bearer ${token}` },
+        //     withCredentials: true, // Ensure credentials are included
+        //   });
   
-          console.log("Response from backend:", response?.data);
+        //   console.log("Backend response for Google user:", response?.data);
   
-          userId = response?.data?.user?._id; 
-          if (userId) {
-            localStorage.setItem("userId", userId);
-            console.log("Updated localStorage userId:", userId);
-          } else {
-            console.error("User ID missing from backend response!");
-            return;
-          }
-        }
+        //   const user = response?.data; // ✅ Get correct userId
+        //   console.log(user)
   
-        if (!userId) {
-          console.error("Still no userId, aborting fetch.");
-          return;
-        }
+        //   if (userId) {
+        //     localStorage.setItem("userId", userId);
+        //   } else {
+        //     console.error("User ID missing from backend response!");
+        //     return;
+        //   }
+        // }
   
-        console.log("Fetching user with userId:", userId);
+        // if (!userId) {
+        //   console.error("Still no userId, aborting fetch.");
+        //   return;
+        // }
+  
+       
         const response = await axios.get(`${BASE_URL}/user/${userId}`, {
           withCredentials: true,
         });
-        
+  
         console.log("Fetched User Data:", response?.data);
-        console.log("Fetched user with userId:",response?.data?.user._id);
         const user = response?.data?.user;
+        console.log(user)
   
         if (user) {
           setUserName(user.firstName || "User");
@@ -131,23 +178,23 @@ const DashLayout = ({ children }) => {
     fetchUser();
   }, [setUser]);
   
-  
- 
 
-  const uploadPhoto = async (selectedFile) => {
-    // if (!selectedFile) return toast.eroor("Please select an image");
+  const uploadPhoto = async (photo) => {
+    // if (!photo) return toast.eroor("Please select an image");
 
     // const formData = new FormData();
-    // formData.append("my_file", selectedFile); // Send the selected file
+    // formData.append("my_file", photo); // Send the selected file
     // formData.append("userId", user.id);
 
-   
+    const userId = localStorage.getItem("userId");
+    console.log("LocalStorage userId:", userId);
+
     const formData = new FormData();
-    formData.append("my_file", selectedFile); // Send the selected file
-    formData.append("userId", user.id);
-  
+    formData.append("my_file", photo); // Send the selected file
+    formData.append("userId", userId);
+
     try {
-       setLoading(true);
+      setLoading(true);
       const res = await axios.post("http://localhost:3000/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -161,28 +208,77 @@ const DashLayout = ({ children }) => {
       // }
 
       // ✅ Check if the response contains a URL and update the state
-      if (res.data.secure_url) {
-        setProfilePicture(res.data.secure_url); // ✅ Update profile picture
-        await axios.put(
-          `http://localhost:3000/user/${user.id}/update-profile-picture`,
+      if (res.data.url) {
+        console.log(res.data.url);
+        setProfilePicture(res.data.url); // ✅ Update profile picture
+        const updateresponse = await axios.put(
+          `http://localhost:3000/user/${userId}/update-profile-picture`,
           {
             profilePicture: res.data.url, // ✅ Save to database
           },
           { withCredentials: true }
         );
+
+        if (updateresponse) {
+          console.log(updateresponse);
+        }
+
+        // // Update the user state with the new profile picture
+        if (updateresponse.data.user.profilePicture) {
+          setProfilePicture(updateresponse.data.user.profilePicture);
+          console.log(updateresponse.data.user.profilePicture);
+          toast.success("Profile picture updated!");
+        }
       } else {
-        toast.success("Error uploading profile picture. Please try again.");
+        toast.error("Error uploading profile picture. Please try again.");
       }
     } catch (error) {
       console.error("Upload error:", error);
     } finally {
-       setLoading(false);
+      setLoading(false);
     }
   };
 
+  // const uploadPhoto = async (photo) => {
+  //   if (!photo) return toast.error("Please select an image");
 
+  //   const formData = new FormData();
+  //   formData.append("my_file", photo);
 
+  //   if (!user || !user.id) {
+  //     toast.error("User not found. Please log in again.");
+  //     return;
+  //   }
+  //   formData.append("userId", user.id);
 
+  //   try {
+  //     setLoading(true);
+  //     const res = await axios.post("http://localhost:3000/upload", formData, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //     });
+
+  //     console.log("Cloudinary Response:", res.data);
+
+  //     if (res.data.secure_url) {
+  //       setProfilePicture(res.data.secure_url);
+
+  //       await axios.put(
+  //         `http://localhost:3000/user/${user.id}/update-profile-picture`,
+  //         { profilePicture: res.data.secure_url },
+  //         { withCredentials: true }
+  //       );
+
+  //       toast.success("Profile picture updated successfully!");
+  //     } else {
+  //       toast.error("Error uploading profile picture. Please try again.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Upload error:", error);
+  //     toast.error("Upload failed. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className="lg:flex">
@@ -195,7 +291,6 @@ const DashLayout = ({ children }) => {
           <div className="flex items-center justify-end px-10 py-4 gap-2">
             <h1 className="text-cyan- text-xl font-bold">
               Welcome, {username.charAt(0).toUpperCase() + username.slice(1)}!
-             
             </h1>
 
             {/* Clickable Profile Picture */}
@@ -228,7 +323,9 @@ const DashLayout = ({ children }) => {
               </label>
             </div>
 
-            {loading && <span className="text-sm text-gray-500">Uploading...</span>}
+            {loading && (
+              <span className="text-sm text-gray-500">Uploading...</span>
+            )}
 
             <button
               onClick={toggleTheme}

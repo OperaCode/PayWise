@@ -62,7 +62,7 @@ const Register = () => {
     try {
         const { firstName, lastName, email, password, confirmPassword } = formData;
   
-      if (!firstName || !lastName || !email || !password) {
+      if (!firstName || !lastName || !email || !password || ! confirmPassword) {
         toast.error("All fields are required");
         return;
       }
@@ -114,12 +114,13 @@ const googleReg = async () => {
   
       if (response?.data) {
         console.log("Backend Response:", response.data);
-  
+        const user = response.data.user;
+        console.log("Backend Response:", user);
         // ✅ Store user data locally
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+         //localStorage.setItem("user", JSON.stringify(userInfo));
   
-        setUser(response.data.user);
-        navigate("/dashboard", { state: { user: response.data.user } });
+        setUser(user);
+        navigate("/dashboard");
         toast.success("✅ Google Sign-In Successful!");
       }
     } catch (error) {

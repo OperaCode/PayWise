@@ -54,7 +54,7 @@ const Login = () => {
         formData,
         { withCredentials: true }
       );
-      // localStorage.setItem("authToken", data.token);
+    //localStorage.setItem("authToken", data.token);
       console.log(response);
       toast.success("Login Successful");
       setUser(response.data);
@@ -184,12 +184,12 @@ const GoogleLogin = async () => {
   
         // ✅ Store user ID & token locally
         localStorage.setItem("userId", response.data.user._id);
-        localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
-        localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
+        // localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
+        // localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
   
         setUser(response.data.user);
-        navigate("/dashboard", { state: { user: response.data.user } });
-        toast.success("✅ Google Sign-In Successful!");
+        navigate("/dashboard");
+        toast.success("Google Sign-In Successful!");
       }
     } catch (error) {
       toast.error("Google Sign-In Error");
