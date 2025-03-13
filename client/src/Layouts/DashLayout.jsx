@@ -6,6 +6,7 @@ import { ThemeContext } from "../context/ThemeContext";
 // import { UserContext } from "../context/UserContext";
 import { Moon, Sun, Search } from "lucide-react";
 import ClipLoader from "react-spinners/ClipLoader";
+import { toast } from "react-toastify";
 
 import axios from "axios";
 
@@ -136,8 +137,15 @@ const DashLayout = ({ children }) => {
   const uploadPhoto = async (selectedFile) => {
     // if (!selectedFile) return toast.eroor("Please select an image");
 
+    // const formData = new FormData();
+    // formData.append("my_file", selectedFile); // Send the selected file
+    // formData.append("userId", user.id);
+
+   
     const formData = new FormData();
     formData.append("my_file", selectedFile); // Send the selected file
+    formData.append("userId", user.id);
+  
     try {
        setLoading(true);
       const res = await axios.post("http://localhost:3000/upload", formData, {
@@ -153,17 +161,17 @@ const DashLayout = ({ children }) => {
       // }
 
       // ✅ Check if the response contains a URL and update the state
-      if (res.data.url) {
-        setProfilePicture(res.data.url); // ✅ Update profile picture
+      if (res.data.secure_url) {
+        setProfilePicture(res.data.secure_url); // ✅ Update profile picture
         await axios.put(
-          `http://localhost:3000/user/${user._id}/update-profile-picture`,
+          `http://localhost:3000/user/${user.id}/update-profile-picture`,
           {
             profilePicture: res.data.url, // ✅ Save to database
           },
           { withCredentials: true }
         );
       } else {
-        toast.sucess("Error uploading profile picture. Please try again.");
+        toast.success("Error uploading profile picture. Please try again.");
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -171,6 +179,10 @@ const DashLayout = ({ children }) => {
        setLoading(false);
     }
   };
+
+
+
+
 
   return (
     <div className="lg:flex">

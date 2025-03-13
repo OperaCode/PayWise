@@ -200,7 +200,7 @@ const DashBoard = () => {
               ></div>
               <div className="stars"></div>
 
-              <div className="bg-zinc-200 p-4 rounded-lg shadow-lg w-2/3 lg:w-lg relative m-auto">
+              <div className="bg-zinc-200 p-4 rounded-lg shadow-lg w-2/3 lg:w-md relative m-auto">
                 <div className="flex-col justify-center flex m-auto text-center">
                   <h2 className="text-xl font-bold ">Manage Tokens</h2>
                   <p>
@@ -208,22 +208,19 @@ const DashBoard = () => {
                   </p>
                 </div>
                 <div className="flex justify-around w-full">
-                  <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md">
-                    Connect Wallet
+                  <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-red-500 on hover:bg-red-400 text-white rounded-md w-1/3"
+                  onClick={() => setFundModalOpen(false)}
+                  >
+                    Cancel
                   </button>
                   <FlutterWaveButton
-                    className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md"
+                    className=" hover:cursor-pointer mt-4 px-4 py-2 w-1/3 bg-cyan-700 hover:bg-cyan-500 text-white rounded-md"
                     {...flutterwaveConfig}
                   >
-                    Pay with Flutterwave
+                    Fund Wallet
                   </FlutterWaveButton>
                 </div>
-                <button
-                  className=" hover:cursor-pointer mt-4 px-4 py-2 bg-red-500 text-white rounded-md"
-                  onClick={() => setFundModalOpen(false)}
-                >
-                  Cancel
-                </button>
+            
               </div>
             </div>
           )}

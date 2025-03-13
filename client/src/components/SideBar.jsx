@@ -76,7 +76,7 @@ const SideBar = () => {
               <Link to="/dashboard">
                 <div className="flex gap-2 items-center hover:text-cyan-900 ">
                   <House size={17} strokeWidth={3}/>
-                  <li className="hover:cursor-pointer  md:block hover:text-cyan-900 font-bold lg:text-md active:bg-cyan-900">
+                  <li className="hover:cursor-pointer  md:block hover:text-cyan-900 font-bold lg:text-md ">
                     {" "}
                     Home
                   </li>
@@ -84,7 +84,7 @@ const SideBar = () => {
               </Link>
 
               <Link to="/payment">
-                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex active:bg-cyan-900">
+                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
                   <DollarSign size={17} strokeWidth={3}/>
                   <li className="hover:cursor-pointer  font-bold lg:text-md ">
                     Make Payment
@@ -93,7 +93,7 @@ const SideBar = () => {
               </Link>
 
               <Link to="/billers">
-                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex active:bg-cyan-900">
+                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
                   <TabletSmartphone size={17} strokeWidth={3}/>
                   <li className="hover:cursor-pointer  font-bold lg:text-md ">
                     Manage Billers
@@ -101,7 +101,7 @@ const SideBar = () => {
                 </div>
               </Link>
               <Link to="/analytics">
-                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex active:bg-cyan-900">
+                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
                 <Milestone strokeWidth={3}/>
                 <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
                   Rewards and Analytics
@@ -109,7 +109,7 @@ const SideBar = () => {
                 </div>
               </Link>
               <Link to="/inbox">
-                <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex active:bg-cyan-900">
+                <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
                   <MessageSquareMore strokeWidth={3}/>
                   <li className="hover:cursor-pointer font-bold lg:text-md">
                     Messages
