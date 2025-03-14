@@ -108,7 +108,7 @@ const SideBar = () => {
                 </li>
                 </div>
               </Link>
-              <Link to="/inbox">
+              <Link to="/messages">
                 <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
                   <MessageSquareMore strokeWidth={3}/>
                   <li className="hover:cursor-pointer font-bold lg:text-md">
@@ -168,7 +168,7 @@ const SideBar = () => {
                   Rewards and Analytics
                 </li>
               </Link>
-              <Link to="/inbox">
+              <Link to="/messages">
                 <li className="hover:text-cyan-900 font-bold  cursor-pointer">
                   Messages
                 </li>

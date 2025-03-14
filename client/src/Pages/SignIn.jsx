@@ -54,9 +54,9 @@ const Login = () => {
         formData,
         { withCredentials: true }
       );
-    localStorage.setItem("token", data.token);
       console.log(response);
       toast.success("Login Successful");
+    //   localStorage.setItem("token", data.token);
       setUser(response.data);
       navigate("/dashboard");
     } catch (error) {

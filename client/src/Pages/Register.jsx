@@ -109,6 +109,7 @@ const googleReg = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      console.log(user)
   
       // Get Firebase ID token
       const idToken = await user.getIdToken();
@@ -116,8 +117,10 @@ const googleReg = async () => {
       if (idToken) {
         //console.log(idToken)
         localStorage.setItem('token', idToken);
+        console.log("Token stored in localStorage:", localStorage.getItem("token")); // ✅ Confirm storage
     }
-  
+    console.log("Google Auth Token:", idToken);
+
       // ✅ Send the ID Token to backend
       const response = await axios.post(
         "http://localhost:3000/user/google-auth",
@@ -132,7 +135,7 @@ const googleReg = async () => {
         const user = response.data.user;
         //console.log("Backend Response:", user);
         // ✅ Store user data locally
-         localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("userId", user._id);
   
         setUser(user);
         navigate("/dashboard");
