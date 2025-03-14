@@ -54,7 +54,7 @@ const Login = () => {
         formData,
         { withCredentials: true }
       );
-    //localStorage.setItem("authToken", data.token);
+    localStorage.setItem("token", data.token);
       console.log(response);
       toast.success("Login Successful");
       setUser(response.data);
@@ -175,16 +175,15 @@ const GoogleLogin = async () => {
       };
   
       // ✅ Send ID Token & User Data to Backend
-      const response = await axios.post("http://localhost:3000/user/google-auth", userData);
+      const response = await axios.post("http://localhost:3000/user/google-auth", userData,  { withCredentials: true });
   
       if (response?.data) {
-        console.log("Backend Response:", response.data);
         console.log("Google Login - Backend Response:", response.data);
         console.log("Expected userId:", response.data?.user?._id);
   
         // ✅ Store user ID & token locally
         localStorage.setItem("userId", response.data.user._id);
-        // localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
+        localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
         // localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
   
         setUser(response.data.user);

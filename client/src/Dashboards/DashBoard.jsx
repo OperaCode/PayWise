@@ -67,9 +67,10 @@ const DashBoard = () => {
     const fetchUser = async () => {
       try {
         const UserId = localStorage.getItem("userId");
-        const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
+        const response = await axios.get(`${BASE_URL}/user/${UserId}`, UserId, {
           withCredentials: true,
         });
+        console.log(response)
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
       } catch (error) {
         toast.error("Error Fetching User");

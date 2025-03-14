@@ -124,51 +124,103 @@ const DashLayout = ({ children }) => {
   //   fetchUser();
   // }, [setUser]);
 
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     const userId = localStorage.getItem("userId");
+  //     //  const token = localStorage.getItem("token");
+
+  //     // If no userId, fetch it using the token
+  //     // if (!userId && token) {
+  //     //   console.warn("No userId found, trying to fetch from backend...");
+
+  //     //   const response = await axios.get(`${BASE_URL}/auth/me`, {
+  //     //     headers: { Authorization: `Bearer ${token}` },
+  //     //     withCredentials: true, // Ensure credentials are included
+  //     //   });
+
+  //     //   console.log("Backend response for Google user:", response?.data);
+
+  //     //   const user = response?.data; // ✅ Get correct userId
+  //     //   console.log(user)
+
+  //     //   if (userId) {
+  //     //     localStorage.setItem("userId", userId);
+  //     //   } else {
+  //     //     console.error("User ID missing from backend response!");
+  //     //     return;
+  //     //   }
+  //     // }
+
+  //     // if (!userId) {
+  //     //   console.error("Still no userId, aborting fetch.");
+  //     //   return;
+  //     // }
+
+  //     // const response = await axios.get(`${BASE_URL}/user/${userId}`, {
+  //     //   withCredentials: true,
+  //     // });
+
+  //     // console.log("Fetched User Data:", response?.data);
+  //     // const user = response?.data?.user;
+  //     // console.log(user)
+
+  //     const token = localStorage.getItem("token");
+  //     if (!token) return null;
+
+  //     try {
+  //       const response = await fetch(`${BASE_URL}/user/${userId}`, {
+  //         method: "GET",
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       });
+
+  //       if (!response.ok) throw new Error("Failed to fetch user");
+
+  //       const userData = await response.data;
+  //       console.log(userData);
+  //       // return userData;
+
+  //        if (userData) {
+  //          setUserName(userData.firstName || "User");
+  //          setProfilePicture(userData.profilePicture || image);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching user:", error);
+  //     }
+  //   };
+
+  //   fetchUser();
+  // }, [setUser]);
+
+
   useEffect(() => {
     const fetchUser = async () => {
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("token");
+  
+      if (!userId || !token) {
+        console.error("User ID or token is missing");
+        return;
+      }
+      // console.log(userId)
+      // console.log(token)
+  
       try {
-         const userId = localStorage.getItem("userId");
-        // const token = localStorage.getItem("token");
-  
-        // If no userId, fetch it using the token
-        // if (!userId && token) {
-        //   console.warn("No userId found, trying to fetch from backend...");
-  
-        //   const response = await axios.get(`${BASE_URL}/auth/me`, {
-        //     headers: { Authorization: `Bearer ${token}` },
-        //     withCredentials: true, // Ensure credentials are included
-        //   });
-  
-        //   console.log("Backend response for Google user:", response?.data);
-  
-        //   const user = response?.data; // ✅ Get correct userId
-        //   console.log(user)
-  
-        //   if (userId) {
-        //     localStorage.setItem("userId", userId);
-        //   } else {
-        //     console.error("User ID missing from backend response!");
-        //     return;
-        //   }
-        // }
-  
-        // if (!userId) {
-        //   console.error("Still no userId, aborting fetch.");
-        //   return;
-        // }
-  
-       
-        const response = await axios.get(`${BASE_URL}/user/${userId}`, {
-          withCredentials: true,
+
+        const response = await axios.get(`http://localhost:3000/user/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true, // If using cookies
         });
+
+        if (!response.ok) throw new Error("Failed to fetch user");
   
-        console.log("Fetched User Data:", response?.data);
-        const user = response?.data?.user;
-        console.log(user)
+        const userData = await response.json(); // ✅ Correctly parse JSON response
+        console.log("Fetched User Data:", userData);
   
-        if (user) {
-          setUserName(user.firstName || "User");
-          setProfilePicture(user.profilePicture || image);
+        if (userData) {
+          setUserName(userData.firstName || "User");
+          setProfilePicture(userData.profilePicture || image);
         }
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -176,8 +228,7 @@ const DashLayout = ({ children }) => {
     };
   
     fetchUser();
-  }, [setUser]);
-  
+  }, [setUserName, setProfilePicture]);
 
   const uploadPhoto = async (photo) => {
     // if (!photo) return toast.eroor("Please select an image");
