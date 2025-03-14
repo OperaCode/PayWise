@@ -191,21 +191,16 @@ const registerUser = asyncHandler(async (req, res) => {
 //     const decodedToken = await admin.auth().verifyIdToken(idToken);
 //     const { uid, email, name, picture } = decodedToken;
 
-
 //   //   console.log("🔍 Received request for /auth/me");
 //   // console.log("Decoded token userId:", req.user.userId);
 
 //   //   let user = await User.findOne({ email });
-
 
 //   console.log("🔍 Received request for /auth/me");
 //   console.log("Decoded token userId:", req.user.userId);
 
 //   const user = await User.findById(req.user.userId);
 //   console.log("🔍 Found user in database:", user);
-
-    
-  
 
 //     if (!user) {
 //       // 🔹 Create new user
@@ -242,7 +237,7 @@ const registerUser = asyncHandler(async (req, res) => {
 //       firstName: name?.split(" ")[0] || "",
 //       lastName: name?.split(" ").slice(1).join(" ") || "",
 //       email,
-     
+
 //       wallet: {
 //         balance: 100,
 //         cowries: 50,
@@ -284,7 +279,6 @@ const registerUser = asyncHandler(async (req, res) => {
 //   }
 // });
 
-
 const googleAuth = asyncHandler(async (req, res) => {
   const { idToken } = req.body;
   if (!idToken) return res.status(400).json({ error: "ID Token required" });
@@ -299,6 +293,10 @@ const googleAuth = asyncHandler(async (req, res) => {
     // 🔹 Find user by email
     let user = await User.findOne({ email });
 
+    if (userExist) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
     if (!user) {
       // 🔹 Create new user
       user = await User.create({
@@ -312,7 +310,9 @@ const googleAuth = asyncHandler(async (req, res) => {
     }
 
     // 🔹 Generate JWT (Only once)
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
     console.log("✅ Authentication successful for user:", user._id);
 
@@ -329,13 +329,11 @@ const googleAuth = asyncHandler(async (req, res) => {
       },
       token,
     });
-
   } catch (error) {
     console.error("❌ Google Auth Error:", error);
     res.status(500).json({ error: "Authentication failed" });
   }
 });
-
 
 const loginUser = asyncHandler(async (req, res) => {
   try {
@@ -448,87 +446,66 @@ const uploadProfilePicture = asyncHandler(async (req, res) => {
   }
 });
 
-const getUser = asyncHandler(async (req, res) => {
-  try {
-    const userId = req.userId;  // Get ID from authenticated user
-    const user = await User.findById(userId);
-
-    if(!user) {
-      return res.status(404).json({message: 'User Not Found!'})
-    }
-
-    return res.status(200).json({user});
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({message: 'Internal Server Error'})
-  }
-
-  try {
-    const token = localStorage.getItem('token'); // Retrieve the token from local storage
-    if (!token) {
-      console.error('No token found');
-      return;
-    }
-
-    const response = await axios.get(`http://localhost:3000/user/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`, // Send the token in the header
-      },
-    });
-
-    console.log('User data:', response.data || response.user);
-  } catch (error) {
-    console.error('Error fetching user:', error);
-  }
-
-  // try {
-
-  //   if (!token) {
-  //     console.log("No auth token found. User is not authenticated.");
-  //     return;
-  //   }
-
-  //   const response = await axios.get("http://localhost:3000/user/profile", {
-  //     headers: {
-  //       "Content-Type": "application/json", // ✅ Ensures correct data format
-  //       Authorization: `Bearer ${token}`, // ✅ Correct token format
-  //     },
-  //   });
-
-  //   setUser(response.data.user);
-  //   // localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Persist user data
-  // } catch (error) {
-  //   console.error(
-  //     "Error fetching user:",
-  //     error.response?.data || error.message
-  //   );
-  // }
-});
-
 // const getUser = asyncHandler(async (req, res) => {
+//   const userId = req.userId; // Get ID from authenticated user
+//   const user = await User.findById(userId);
 //   try {
-//     // Extract user ID from request (set by auth middleware)
-//     const userId = req.user?.id || req.userId;
-
-//     if (!userId) {
-//       return res
-//         .status(401)
-//         .json({ message: "Unauthorized - No userId found" });
-//     }
-
-//     // Find user in database
-//     const user = await User.findById(userId).select("-password"); // Exclude password
-
 //     if (!user) {
 //       return res.status(404).json({ message: "User Not Found!" });
 //     }
+//     const token = localStorage.getItem("token"); // Retrieve the token from local storage
+//     if (!token) {
+//       console.error("No token found");
+//       return;
+//     }
 
-//     res.status(200).json({ user });
+//     const response = await axios.get(`http://localhost:3000/user/${userId}`, {
+//       headers: {
+//         Authorization: `Bearer ${token}`, // Send the token in the header
+//       },
+//     });
+
+//     console.log("User data:", response.data || response.user);
 //   } catch (error) {
-//     console.error("Fetch User Error:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
+//     console.error("Error fetching user:", error);
 //   }
 // });
+
+const getUser = asyncHandler(async (req, res) => {
+  try {
+    // Extract user ID from request (set by auth middleware)
+    const userId = req.user?.id || req.userId;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized - No userId found" });
+    }
+
+    // Find user in database
+    const user = await User.findById(userId).select("-password"); // Exclude password
+
+    if (!user) {
+      return res.status(404).json({ message: "User Not Found!" });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Fetch User Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+// const getUser = asyncHandler(async (req, res) => {
+//   if (!req.user) {
+//     return res.status(404).json({ message: "User not found" });
+//   }
+
+//   res.status(200).json(req.user);
+  
+// });
+
 
 const getUsers = asyncHandler(async (req, res) => {
   try {
