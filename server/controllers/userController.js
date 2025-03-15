@@ -420,7 +420,16 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // Verify password
+    //const passwordMatch = await bcrypt.compare(password, user.password);
+
+    console.log("Stored Hashed Password:", user.password);
+    console.log("Entered Password:", password);
+
+    // ✅ Compare the plain-text input password with the hashed password
     const passwordMatch = await bcrypt.compare(password, user.password);
+    console.log("Password Match:", passwordMatch);
+
+
     if (!passwordMatch) {
       console.error("Password mismatch detected:", {
         inputPassword: password,

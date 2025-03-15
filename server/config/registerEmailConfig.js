@@ -1,40 +1,79 @@
-
 import nodemailer from "nodemailer";
 
-
-
-
 const sendVerificationEmail = async (email, firstName) => {
-    try {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-  
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Welcome to PayWise - Activate Your Account",
-        html: `
-          <h2>Hello ${firstName},</h2>
-          <p>Welcome to PayWise! Please verify your account by clicking the button below:</p>
-          <a href="http://localhost:5173/dashboard" 
-             style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; display: inline-block;">
-            Go to Dashboard
-          </a>
-          <p>If you did not create this account, please ignore this email.</p>
-        `,
-      };
-  
-      await transporter.sendMail(mailOptions);
-      console.log("Verification email sent to:", email);
-    } catch (error) {
-      console.error("Email sending error:", error);
-    }
-  };
+  try {
+    // ✅ Secure email transport setup
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587, // TLS (recommended)
+      secure: false, // Use `true` for port 465
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
+    const activationLink = `http://localhost:5173/dashboard`;
 
-  export { sendVerificationEmail };
+    // ✅ Enhanced HTML email with TailwindCSS styling
+    const mailOptions = {
+      from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "🚀 Welcome to PayWise - Activate Your Account",
+      html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Verify Your PayWise Account</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+      </head>
+      <body class="bg-gray-100">
+        <div class="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-2xl font-bold text-gray-800">Welcome to <span class="text-green-600">PayWise</span>, ${firstName}! 🎉</h2>
+          
+          <p class="text-gray-700 mt-4">
+            Thank you for signing up! To start using PayWise, please verify your email by clicking the button below:
+          </p>
+
+          <div class="text-center mt-6">
+            <a href="${activationLink}"
+              class="bg-green-600 text-white font-semibold px-6 py-3 rounded-lg text-lg shadow-md hover:bg-green-700 transition">
+              Activate My Account
+            </a>
+          </div>
+
+          <p class="text-gray-600 mt-4">
+            If the button above doesn’t work, copy and paste this link into your browser:
+          </p>
+
+          <p class="text-blue-500 break-words mt-2">
+            <a href="${activationLink}">${activationLink}</a>
+          </p>
+
+          <p class="text-gray-600 mt-4">
+            If you didn’t create this account, please ignore this email.
+          </p>
+
+          <div class="border-t mt-6 pt-4 text-center">
+            <p class="text-gray-500 text-sm">
+              Need help? Contact our support team at 
+              <a href="mailto:support@paywise.com" class="text-blue-600">support@paywise.com</a>
+            </p>
+            <p class="text-gray-400 text-xs mt-2">© 2025 PayWise Inc. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+      `,
+    };
+
+    // ✅ Send email and log success message
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Verification email sent to: ${email}, Message ID: ${info.messageId}`);
+  } catch (error) {
+    console.error("❌ Email sending error:", error.message);
+  }
+};
+
+export { sendVerificationEmail };
