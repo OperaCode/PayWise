@@ -31,10 +31,7 @@ const userSchema = new mongoose.Schema(
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
-    password: { 
-      type: String, 
-      required: function () { return !this.googleId && !this.firebaseUID; } // Password required only if NOT Google/Web3
-    },
+    password: { type: String, required: true },
     profilePicture: { type: String, default: null },
     wallet: {
       walletId: { type: String, default: () => crypto.randomUUID() },
