@@ -181,79 +181,6 @@ const registerUser2 = asyncHandler(async (req, res) => {
   }
 });
 
-const registerUser3 = asyncHandler(async (req, res) => {
-  try {
-    const { idToken, firstName, lastName, email, password } = req.body;
-
-    // Validate required fields
-    if (!idToken || !email || !password || !firstName || !lastName) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-    
-    if (password.length < 8 || password.length > 20) {
-      return res.status(400).json({ message: "Password must be between 8 and 20 characters" });
-    }
-
-    const userExist = await userModel.findOne({ email });
-    if (userExist) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    // Hash password before saving
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // ✅ Correct user creation (using firstName and lastName from req.body)
-    const newUser = await userModel.create({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword, // Use hashed password
-      wallet: {
-        balance: 100,
-        cowries: 50,
-        walletId: uuidv4(),
-      },
-    });
-
-    if (newUser) {
-      // Generate a token for the user
-      const token = generateToken(newUser._id);
-
-      res.cookie("token", token, {
-        path: "/",
-        httpOnly: true,
-        expires: new Date(Date.now() + 86400000), // 1 day
-        sameSite: "none",
-        secure: true,
-      });
-
-       // Send verification email
-       await sendVerificationEmail(newUser.email, newUser.firstName);
-
-      res.status(201).json({
-        message: "User registered successfully",
-        user: {
-          _id: newUser._id,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          email: newUser.email,
-          wallet: {
-            balance: newUser.wallet.balance,
-            cowries: newUser.wallet.cowries,
-            walletId: newUser.wallet.walletId,
-          },
-          token,
-        },
-      });
-    } else {
-      res.status(400).json({ message: "User registration failed" });
-    }
-  } catch (error) {
-    console.error("Registration Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
 const registerUser = asyncHandler(async (req, res) => {
   try {
     //Log incoming request body
@@ -355,8 +282,7 @@ const googleAuth = asyncHandler(async (req, res) => {
   if (!idToken) return res.status(400).json({ error: "ID Token required" });
 
   try {
-    // 🔹 Verify Firebase token
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+   
     const { uid, email, name, picture } = decodedToken;
 
     console.log("🔍 Received request for /auth/me");
@@ -401,7 +327,7 @@ const googleAuth = asyncHandler(async (req, res) => {
   }
 });
 
-const loginUser = asyncHandler(async (req, res) => {
+const loginUser1 = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -475,6 +401,51 @@ const loginUser = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+const loginUser = asyncHandler(async (req, res) => {
+  try {
+    const { idToken } = req.body; // ✅ Expect an ID Token from Firebase
+
+    if (!idToken) {
+      return res.status(400).json({ message: "Firebase ID token is required" });
+    }
+
+    // ✅ Verify Firebase token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const email = decodedToken.email;
+
+    console.log("Decoded Token:", decodedToken);
+
+    // ✅ Find user in MongoDB
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    // ✅ Generate JWT for app authentication
+    const token = generateToken(user._id);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      expires: new Date(Date.now() + 86400000),
+      sameSite: "none",
+      secure: true,
+    });
+
+    res.status(200).json({
+      _id: user._id,
+      firstName: user.firstName,
+      email,
+      token,
+      wallet: user.wallet || { balance: 0, walletId: null },
+    });
+  } catch (error) {
+    console.error("🔥 Firebase Auth Error:", error);
+    res.status(500).json({ message: "Authentication Failed" });
+  }
+});
+
 
 const setTransactionPin = asyncHandler(async (req, res) => {
   try {
