@@ -268,13 +268,12 @@ const Register = () => {
         toast.success("Registration Successful!");
       }
     } catch (error) {
-      console.error("Registration Error:", error.message);
-      if (error.code === "auth/email-already-in-use") {
-        toast.error("This email is already registered");
-      } else {
-        toast.error(error.message || "Registration failed");
-      }
-      toast.error(error.message || "Registration failed");
+        if (error.code === "auth/email-already-in-use") {
+            toast.error("This email is already registered. Try logging in instead.");
+        } else{
+            toast.error("Registration Error:", error.message);
+        }
+
     } finally {
       setLoading(false);
       setIsSubmitting(false);

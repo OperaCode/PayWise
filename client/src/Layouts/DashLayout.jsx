@@ -39,89 +39,32 @@ const DashLayout = ({ children }) => {
   };
 
   // ✅ Fetch User Data
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userId = localStorage.getItem("userId");
-        const token = localStorage.getItem("token"); // 🔥 Retrieve the auth token
-        console.log(userId)
-        console.log(`token: ${token}`)
-
-        if (!userId) return;
-
-      
-
-        const response = await axios.get(`${BASE_URL}/user/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }, // ✅ Include token
-          withCredentials: true,
-        });
-
-         const userData = response?.data;
-          console.log(userData);
-         const user = userData?.user
-         console.log(user.firstName);
-        setUserName(user.firstName);
-        // console.log(fetchedUser)
-        setUserName(fetchedUser?.firstName || "User");
-        setProfilePicture(fetchedUser?.profilePicture || image);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      }
-    };
-
-    fetchUser();
-  }, [setUser]);
-
   // useEffect(() => {
   //   const fetchUser = async () => {
   //     try {
+  //       const userInfo = localStorage.getItem("user");
   //       const userId = localStorage.getItem("userId");
-  //       //console.log("LocalStorage userId:", userId);
+  //       const token = localStorage.getItem("token"); // 🔥 Retrieve the auth token
+  //       console.log(userInfo)
+  //       // console.log(`token: ${token}`)
 
-  //       if (!userId) {
-  //        //console.warn("No userId in localStorage, trying backend...");
-  //         const token = localStorage.getItem("token");
+  //       if (!userId) return;
 
-  //         if (!token) {
-  //           console.log("No token found. User may not be authenticated.");
-  //           return;
-  //         }
+      
 
-  //         const response = await axios.get(`${BASE_URL}/user/${userId}`, {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         });
-
-  //         console.log("Response from backend:", response?.data);
-
-  //         user = response?.data?.user?._id;
-  //         //console.log(user)
-  //         if (userId) {
-  //           localStorage.setItem("userId", userId);
-  //           //console.log("Updated localStorage userId:", userId);
-  //         } else {
-  //           console.error("User ID missing from backend response!");
-  //           return;
-  //         }
-  //       }
-
-  //       if (!userId) {
-  //         console.error("Still no userId, aborting fetch.");
-  //         return;
-  //       }
-
-  //       console.log("Fetching user with userId:", userId);
   //       const response = await axios.get(`${BASE_URL}/user/${userId}`, {
+  //         headers: { Authorization: `Bearer ${token}` }, // ✅ Include token
   //         withCredentials: true,
   //       });
 
-  //       console.log("Fetched User Data:", response?.data);
-  //       console.log("Fetched user with userId:", response?.data?.user._id);
-  //       const user = response?.data?.user;
-
-  //       if (user) {
-  //         setUserName(user.firstName || "User");
-  //         setProfilePicture(user.profilePicture || image);
-  //       }
+  //        const userData = response?.data;
+  //         console.log(userData);
+  //        const user = userData?.user
+  //        console.log(user.firstName);
+  //       setUserName(user.firstName);
+  //       // console.log(fetchedUser)
+  //       setUserName(fetchedUser?.firstName || "User");
+  //       setProfilePicture(fetchedUser?.profilePicture || image);
   //     } catch (error) {
   //       console.error("Error fetching user:", error);
   //     }
@@ -129,6 +72,64 @@ const DashLayout = ({ children }) => {
 
   //   fetchUser();
   // }, [setUser]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        //console.log("LocalStorage userId:", userId);
+
+        if (!userId) {
+         //console.warn("No userId in localStorage, trying backend...");
+          const token = localStorage.getItem("token");
+
+          if (!token) {
+            console.log("No token found. User may not be authenticated.");
+            return;
+          }
+
+          const response = await axios.get(`${BASE_URL}/user/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          console.log("Response from backend:", response?.data);
+
+          user = response?.data?.user?._id;
+          //console.log(user)
+          if (userId) {
+            localStorage.setItem("userId", userId);
+            //console.log("Updated localStorage userId:", userId);
+          } else {
+            console.error("User ID missing from backend response!");
+            return;
+          }
+        }
+
+        if (!userId) {
+          console.error("Still no userId, aborting fetch.");
+          return;
+        }
+
+        console.log("Fetching user with userId:", userId);
+        const response = await axios.get(`${BASE_URL}/user/${userId}`, {
+          withCredentials: true,
+        });
+
+        console.log("Fetched User Data:", response?.data);
+        console.log("Fetched user with userId:", response?.data?.user._id);
+        const user = response?.data?.user;
+
+        if (user) {
+          setUserName(user.firstName || "User");
+          setProfilePicture(user.profilePicture || image);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    fetchUser();
+  }, [setUser]);
 
  
 

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 
 import { toast } from "react-toastify";
 import { ThemeContext } from "../context/ThemeContext";
@@ -33,7 +33,7 @@ const Login = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const loginUser = async (e) => {
+  const loginUser1 = async (e) => {
     e.preventDefault();
     // setError("");
     //setLoading(true);
@@ -66,6 +66,53 @@ const Login = () => {
     } finally {
       setIsSubmitting(false);
       setLoading(false);
+    }
+  };
+  
+  const loginUser = async (e) => {
+    e.preventDefault();
+  
+    try {
+      const { email, password } = formData;
+  
+      if (!email || !password) {
+        toast.error("All fields are required");
+        return;
+      }
+  
+      setIsSubmitting(true);
+  
+      // ✅ Authenticate with Firebase first
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      console.log("Firebase User:", user);
+  
+      // ✅ Get Firebase ID token
+      const idToken = await user.getIdToken();
+      console.log("Firebase ID Token:", idToken);
+  
+      // ✅ Send ID token to backend for authentication
+      const response = await axios.post(
+        "http://localhost:3000/user/login",
+        { idToken }, // Send ID Token, NOT email/password
+        { withCredentials: true }
+      );
+  
+      console.log("Login Successful:", response.data);
+      toast.success("Login Successful");
+  
+      // ✅ Store user data in local state or context
+      setUser(response.data);
+      localStorage.setItem("token", response.data.token);
+  
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("🔥 Login Error:", error);
+      toast.error(error?.response?.data?.message || "Login failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
