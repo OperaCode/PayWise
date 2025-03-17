@@ -33,42 +33,42 @@ const Login = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const loginUser1 = async (e) => {
-    e.preventDefault();
-    // setError("");
-    //setLoading(true);
+//   const loginUser = async (e) => {
+//     e.preventDefault();
+//     // setError("");
+//     //setLoading(true);
 
-    try {
-      const { email, password } = formData;
+//     try {
+//       const { email, password } = formData;
 
-      if (!email || !password) {
-        toast.error("All fields are required");
-        return;
-      }
-      setIsSubmitting(true);
+//       if (!email || !password) {
+//         toast.error("All fields are required");
+//         return;
+//       }
+//       setIsSubmitting(true);
 
-      // console.log({formData});
+//       // console.log({formData});
 
-      const response = await axios.post(
-        "http://localhost:3000/user/login",
-        formData,
-        { withCredentials: true }
-      );
-      console.log(response);
-      toast.success("Login Successful");
-    //   localStorage.setItem("token", data.token);
-      setUser(response.data);
-      navigate("/dashboard");
-    } catch (error) {
-      console.error(error);
-      toast.error(error?.response?.data?.message);
-      setError(error?.response?.data?.message);
-    } finally {
-      setIsSubmitting(false);
-      setLoading(false);
-    }
-  };
-  
+//       const response = await axios.post(
+//         "http://localhost:3000/user/login",
+//         formData,
+//         { withCredentials: true }
+//       );
+//       console.log(response);
+//       toast.success("Login Successful");
+//     //   localStorage.setItem("token", data.token);
+//       setUser(response.data);
+//       navigate("/dashboard");
+//     } catch (error) {
+//       console.error(error);
+//       toast.error(error?.response?.data?.message);
+//       setError(error?.response?.data?.message);
+//     } finally {
+//       setIsSubmitting(false);
+//       setLoading(false);
+//     }
+//   };
+
   const loginUser = async (e) => {
     e.preventDefault();
   
@@ -96,9 +96,26 @@ const Login = () => {
       // ✅ Send ID token to backend for authentication
       const response = await axios.post(
         "http://localhost:3000/user/login",
-        { idToken }, // Send ID Token, NOT email/password
-        { withCredentials: true }
+        { formData, idToken }, // Send ID Token, NOT email/password
+        {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
       );
+
+
+    //   // Send data to the backend
+    //   const response = await axios.post(
+    //     "http://localhost:3000/user/register",
+    //     { firstName, lastName, email, password, idToken }, // Correct structure
+    //     {
+    //       headers: { "Content-Type": "application/json" },
+    //       withCredentials: true,
+    //     }
+    //   );
+
+
+
   
       console.log("Login Successful:", response.data);
       toast.success("Login Successful");
@@ -115,6 +132,89 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
+
+
+
+
+const loginUser1 = async (e) => {
+  e.preventDefault();
+  
+  try {
+    const { email, password } = formData;
+
+    if (!email || !password) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // ✅ Initialize Firebase Auth
+    const auth = getAuth();
+    if (!auth) {
+      throw new Error("Firebase authentication not initialized properly.");
+    }
+
+    // ✅ Authenticate with Firebase
+    let userCredential;
+    try {
+      userCredential = await signInWithEmailAndPassword(auth, email, password);
+    } catch (firebaseError) {
+      console.error("🔥 Firebase Authentication Error:", firebaseError);
+      if (firebaseError.code === "auth/invalid-credential") {
+        toast.error("Invalid email or password. Please try again.");
+      } else {
+        toast.error(firebaseError.message || "Authentication failed.");
+      }
+      return;
+    }
+
+    const user = userCredential.user;
+    console.log("✅ Firebase User:", user);
+
+    // ✅ Get Firebase ID Token
+    let idToken;
+    try {
+      idToken = await user.getIdToken();
+    } catch (tokenError) {
+      console.error("🔥 Firebase Token Error:", tokenError);
+      toast.error("Failed to retrieve authentication token.");
+      return;
+    }
+
+    console.log("✅ Firebase ID Token:", idToken);
+
+    // ✅ Send ID Token to backend
+    let response;
+    try {
+      response = await axios.post(
+        "http://localhost:3000/user/login",
+        { idToken },
+        { withCredentials: true }
+      );
+    } catch (apiError) {
+      console.error("🔥 API Login Error:", apiError);
+      toast.error(apiError.response?.data?.message || "Login failed.");
+      return;
+    }
+
+    console.log("✅ Login Successful:", response.data);
+    toast.success("Login Successful");
+
+    // ✅ Store user data in state or localStorage
+    setUser(response.data);
+    localStorage.setItem("token", response.data.token);
+
+    navigate("/dashboard");
+  } catch (error) {
+    console.error("🔥 Unexpected Error:", error);
+    toast.error(error.message || "An unexpected error occurred.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
 
   const GoogleLogin = async () => {
     const auth = getAuth();

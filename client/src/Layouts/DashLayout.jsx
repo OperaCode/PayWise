@@ -7,6 +7,7 @@ import { ThemeContext } from "../context/ThemeContext";
 import { Moon, Sun, Search } from "lucide-react";
 import ClipLoader from "react-spinners/ClipLoader";
 import { toast } from "react-toastify";
+import { getAuth } from "firebase/auth";
 
 import axios from "axios";
 
@@ -94,7 +95,7 @@ const DashLayout = ({ children }) => {
 
           console.log("Response from backend:", response?.data);
 
-          user = response?.data?.user?._id;
+          const userId = response?.data?.user?._id;
           //console.log(user)
           if (userId) {
             localStorage.setItem("userId", userId);
@@ -131,8 +132,7 @@ const DashLayout = ({ children }) => {
     fetchUser();
   }, [setUser]);
 
- 
-
+  
   const uploadPhoto = async (photo) => {
     // if (!photo) return toast.eroor("Please select an image");
 
