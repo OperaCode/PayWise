@@ -1,25 +1,29 @@
 import nodemailer from "nodemailer";
 
+
+
+ // ✅ Secure email transport setup
+ const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587, // TLS (recommended)
+    secure: false, // Use `true` for port 465
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+
 const sendVerificationEmail = async (email, firstName) => {
   try {
-    // ✅ Secure email transport setup
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587, // TLS (recommended)
-      secure: false, // Use `true` for port 465
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
+   
     const activationLink = `http://localhost:5173/dashboard`;
 
     // ✅ Enhanced HTML email with TailwindCSS styling
     const mailOptions = {
       from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "🚀 Welcome to PayWise - Activate Your Account",
+      subject: "🚀 Welcome to PayWise ",
       html: `
       <!DOCTYPE html>
       <html>
@@ -33,7 +37,7 @@ const sendVerificationEmail = async (email, firstName) => {
           <h2 class="text-2xl font-bold text-gray-800">Welcome to <span class="text-green-600">PayWise</span>, ${firstName}! 🎉</h2>
           
           <p class="text-gray-700 mt-4">
-            Thank you for signing up! To start using PayWise, please verify your email by clicking the button below:
+            To start using PayWise, please verify your email by clicking the button below:
           </p>
 
           <div class="text-center mt-6">
@@ -52,7 +56,66 @@ const sendVerificationEmail = async (email, firstName) => {
           </p>
 
           <p class="text-gray-600 mt-4">
-            If you didn’t create this account, please ignore this email.
+            If you did not create this account or initiate a sign in, please reach out to our support team.
+          </p>
+
+          <div class="border-t mt-6 pt-4 text-center">
+            <p class="text-gray-500 text-sm">
+              Need help? Contact our support team at 
+              <a href="mailto:support@paywise.com" class="text-blue-600">support@paywise.com</a>
+            </p>
+            <p class="text-gray-400 text-xs mt-2">© 2025 PayWise Inc. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+      `,
+    };
+
+    // ✅ Send email and log success message
+    const info = await transporter.sendMail(mailOptions);
+    //console.log(`✅ Verification email sent to: ${email}, Message ID: ${info.messageId}`);
+  } catch (error) {
+    console.error("❌ Email sending error:", error.message);
+  }
+};
+const sendWelcomeBackEmail = async (email, firstName) => {
+  try {
+   
+    const activationLink = `http://localhost:5173/dashboard`;
+
+    // ✅ Enhanced HTML email with TailwindCSS styling
+    const mailOptions = {
+      from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "🚀 Welcome to PayWise - Activate Your Account",
+      html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Verify Your PayWise Account</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+      </head>
+      <body class="bg-gray-100">
+        <div class="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-2xl font-bold text-gray-800">Welcome back to <span class="text-green-600">PayWise</span>, ${firstName}! 🎉</h2>
+          
+          <p class="text-gray-700 mt-4">
+            Its good to have you here!
+          </p>
+
+
+          <p class="text-gray-600 mt-4">
+            To check your paywise activity, copy and paste this link into your browser:
+          </p>
+
+          <p class="text-blue-500 break-words mt-2">
+            <a href="${activationLink}">${activationLink}</a>
+          </p>
+
+          <p class="text-gray-600 mt-4">
+            If you did not initiate this sign in, please reach out to our support team to help us protect your account..
           </p>
 
           <div class="border-t mt-6 pt-4 text-center">
@@ -76,4 +139,4 @@ const sendVerificationEmail = async (email, firstName) => {
   }
 };
 
-export { sendVerificationEmail };
+export { sendVerificationEmail, sendWelcomeBackEmail };

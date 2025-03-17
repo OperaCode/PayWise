@@ -31,7 +31,10 @@ const userSchema = new mongoose.Schema(
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
-    password: { type: String, required: true },
+    password: { 
+      type: String, 
+      required: function () { return !this.googleId && !this.firebaseUID; } // Password required only if NOT Google/Web3
+    },
     profilePicture: { type: String, default: null },
     wallet: {
       walletId: { type: String, default: () => crypto.randomUUID() },
@@ -45,34 +48,14 @@ const userSchema = new mongoose.Schema(
 );
 
 // **Ensure wallet gets initialized properly**
-userSchema.pre("save", function (next) {
-  if (!this.wallet) {
-    this.wallet = { walletId: crypto.randomUUID(), balance: 100, cowries: 100 };
-  } else {
-    if (this.wallet.balance === undefined) this.wallet.balance = 100;
-    if (this.wallet.cowries === undefined) this.wallet.cowries = 100;
-  }
-  next();
-});
 
 
-userSchema.pre("save", function (next) {
-  if (!this.wallet) {
-    this.wallet = { walletId: crypto.randomUUID(), balance};
-  } else if (!this.wallet.balance) {
-    this.wallet.balance ; // Ensure balance is set
-  }
-  next();
-});
+
 
 
 // Hash password before saving
-// userSchema.pre("save", async function (next) {
-//   if (!this.isModified("password")) return next();
-//     const salt = await bcrypt.genSalt(10);
-//     this.password = await bcrypt.hash(this.password, salt);
-//     next();
-//   }
-// );
+userSchema.pre("save", async function (next) {
+}
+);
 
 module.exports = mongoose.model("User", userSchema);

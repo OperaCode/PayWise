@@ -5,7 +5,10 @@ const bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
 const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
-const { sendVerificationEmail } =require("../config/registerEmailConfig.js") ;
+const {
+  sendVerificationEmail,
+  sendWelcomeBackEmail,
+} = require("../config/registerEmailConfig.js");
 const admin = require("firebase-admin");
 
 const cloudinary = require("cloudinary").v2;
@@ -135,8 +138,10 @@ const registerUser2 = asyncHandler(async (req, res) => {
 
     // Create a new user with a transaction wallet
     const newUser = await userModel.create({
-      firstName : user.displayName ? user.displayName.split(" ")[0] : "Unknown",
-      lastName : user.displayName ? user.displayName.split(" ")[1] || "" : "User",
+      firstName: user.displayName ? user.displayName.split(" ")[0] : "Unknown",
+      lastName: user.displayName
+        ? user.displayName.split(" ")[1] || ""
+        : "User",
       email,
       password,
       wallet: {
@@ -184,43 +189,39 @@ const registerUser2 = asyncHandler(async (req, res) => {
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
-   
     console.log("Incoming request body:", req.body);
 
     const { idToken, firstName, lastName, email, password } = req.body;
 
-    //Log each field separately
     console.log("idToken:", idToken);
     console.log("email:", email);
     console.log("password:", password);
     console.log("firstName:", firstName);
     console.log("lastName:", lastName);
 
-    //Validate required fields
+    // Validate required fields
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Optional: If idToken is required (for Firebase Auth)
     if (!idToken) {
       console.warn("⚠️ Missing idToken (if required for Firebase authentication)");
     }
 
-    //Validate password length
+    // Validate password length
     if (password.length < 8 || password.length > 20) {
       return res.status(400).json({ message: "Password must be between 8 and 20 characters" });
     }
 
-    //Check if user already exists
+    // Check if user already exists
     const userExist = await userModel.findOne({ email });
     console.log("Existing user check result:", userExist);
 
     if (userExist) {
-      return res.status(400).json({ message: `User already exists: ${userExist}` });
-
+      return res.status(400).json({ message: "User already exists. Please log in." });
     }
 
-    // Hash password before saving
+    // Hash password BEFORE saving
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -229,55 +230,57 @@ const registerUser = asyncHandler(async (req, res) => {
       firstName,
       lastName,
       email,
-      password: hashedPassword,
+      password: hashedPassword, // Store hashed password
       wallet: {
         balance: 100,
         cowries: 50,
         walletId: uuidv4(),
       },
     });
-
-    if (newUser) {
-      // Generate JWT token
-      const token = generateToken(newUser._id);
-
-      res.cookie("token", token, {
-        path: "/",
-        httpOnly: true,
-        expires: new Date(Date.now() + 86400000), // 1 day
-        sameSite: "none",
-        secure: true,
-      });
-
-      // Send verification email
-      await sendVerificationEmail(newUser.email, newUser.firstName);
-
-      console.log("✅ User registered successfully:", newUser.email);
-
-      res.status(201).json({
-        message: `Registration Successful. Verfication email sent! `,
-        user: {
-          _id: newUser._id,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          email: newUser.email,
-          wallet: {
-            balance: newUser.wallet.balance,
-            cowries: newUser.wallet.cowries,
-            walletId: newUser.wallet.walletId,
-          },
-          token,
-        },
-      });
-      console.log(user)
-    } else {
+    
+    if (!newUser) {
       return res.status(400).json({ message: "User registration failed" });
     }
+
+    // Generate JWT token
+    const token = generateToken(newUser._id);
+    
+    res.cookie("token", token, {
+      path: "/",
+      httpOnly: true,
+      expires: new Date(Date.now() + 86400000), // 1 day
+      sameSite: "none",
+      secure: true,
+    });
+    console.log(newUser)
+    
+    // Send verification email
+    await sendVerificationEmail(newUser.email, newUser.firstName);
+
+    console.log("✅ User registered successfully:", newUser.email);
+
+    res.status(201).json({
+      message: `Registration Successful. Verification email sent!`,
+      user: {
+        _id: newUser._id,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        wallet: {
+          balance: newUser.wallet.balance,
+          cowries: newUser.wallet.cowries,
+          walletId: newUser.wallet.walletId,
+        },
+        token,
+      },
+    });
+
   } catch (error) {
-    console.error("Registration Error:", error);
+    console.error("🔥 Registration Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
 
 const googleAuth = asyncHandler(async (req, res) => {
   const { idToken } = req.body;
@@ -292,14 +295,47 @@ const googleAuth = asyncHandler(async (req, res) => {
     }
     const { uid, email, name, picture } = decodedToken;
 
+
     console.log("🔍 Received request for /auth/me");
+
+
+    if (!email) {
+      return res.status(400).json({ error: "Google account email is required" });
+    }
+
+    
 
     // ✅ First, check if a user already exists by email
     let user = await User.findOne({ email });
 
-    if (!user) {
-      console.log("🆕 Creating new user...");
+    // if (!user) {
+    //   // 🔹 Create new user only if email doesn't exist
+    //   user = await User.create({
+    //     firebaseUID: uid,
+    //     firstName: name?.split(" ")[0] || "",
+    //     lastName: name?.split(" ").slice(1).join(" ") || "",
+    //     email,
+    //     profilePicture: picture,
+    //     wallet: { balance: 100, cowries: 50, walletId: uid },
+    //   });
 
+
+    //   // ✉️ Send welcome email
+    //   await sendVerificationEmail(email, name);
+    //   console.log("📧 Welcome email sent to new user:", email);
+    // } else {
+    //   console.log("📧 Welcome back email sent to existing user:", email);
+    // }
+
+
+    // // ✅ Existing user - Send welcome back email
+    // await sendWelcomeBackEmail(email, name);
+    // console.log("📧 Welcome back email sent to existing user:", email);
+  
+
+    // 🔹 Generate JWT
+    
+    if (!user) {
       // 🔹 Create new user only if email doesn't exist
       user = await User.create({
         firebaseUID: uid,
@@ -309,18 +345,32 @@ const googleAuth = asyncHandler(async (req, res) => {
         profilePicture: picture,
         wallet: { balance: 100, cowries: 50, walletId: uid },
       });
-    } else {
-      console.log("✅ User already exists:", user);
-    }
+    
+    } 
 
-    // 🔹 Generate JWT
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    console.log(user)
+    console.log("📧 Welcome email sent to new user:", email);
+    await sendVerificationEmail(email, firstName); // ✅ Only send this
+   
+      // console.log("📧 Welcome back email sent to existing user:", email);
+      // await sendWelcomeBackEmail(email, name); // ✅ Only for existing users
+    
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+    res.cookie("token", token, {
+      path: "/",
+      httpOnly: true,
+      expires: new Date(Date.now() + 86400000), // 1 day
+      sameSite: "none",
+      secure: true,
+    });
 
     // Send verification email
-    await sendVerificationEmail(user.email, user.firstName);
+    // await sendVerificationEmail(user.email, user.firstName);
 
     res.status(200).json({
-      message: `Authentication successful, An email has been sent to ${user.email}`,
+      message: `Authentication successful, Verification email sent`,
       user: {
         _id: user._id,
         firstName: user.firstName,
@@ -364,7 +414,6 @@ const loginUser1 = asyncHandler(async (req, res) => {
     // ✅ Compare the plain-text input password with the hashed password
     const passwordMatch = await bcrypt.compare(password, user.password);
     console.log("Password Match:", passwordMatch);
-
 
     if (!passwordMatch) {
       console.error("Password mismatch detected:", {
@@ -428,6 +477,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // ✅ Find user in MongoDB
     const user = await userModel.findOne({ email });
+    console.log("✅ Searching for user with email:", email);
+    console.log("🔍 Found user:", user);
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
@@ -455,7 +506,6 @@ const loginUser = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Authentication Failed" });
   }
 });
-
 
 const setTransactionPin = asyncHandler(async (req, res) => {
   try {
@@ -504,18 +554,18 @@ const uploadProfilePicture = asyncHandler(async (req, res) => {
 
 const getUser = asyncHandler(async (req, res) => {
   try {
-    const userId = req.userId;  // Get ID from authenticated user
+    const userId = req.userId; // Get ID from authenticated user
     const user = await User.findById(userId);
-    
-    if(!user) {
-      return res.status(404).json({message: 'User Not Found!'})
+
+    if (!user) {
+      return res.status(404).json({ message: "User Not Found!" });
     }
-    
-    const {_id, firstName, lastName, email} = user;
-    return res.status(200).json({_id, firstName, lastName, email});
+
+    const { _id, firstName, lastName, email } = user;
+    return res.status(200).json({ _id, firstName, lastName, email });
   } catch (error) {
     console.error(error);
-    res.status(500).json({message: 'Internal Server Error'})
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
@@ -544,16 +594,14 @@ const getUser = asyncHandler(async (req, res) => {
 //   }
 // });
 
-
 // const getUser = asyncHandler(async (req, res) => {
 //   if (!req.user) {
 //     return res.status(404).json({ message: "User not found" });
 //   }
 
 //   res.status(200).json(req.user);
-  
-// });
 
+// });
 
 const getUsers = asyncHandler(async (req, res) => {
   try {
