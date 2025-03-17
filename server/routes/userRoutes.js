@@ -14,7 +14,7 @@ const {
 } = require("../controllers/userController");
 
 const { protectUser } = require("../middleware/authMiddleWare");
-//const {verifyUser} = require("../middleware/firebaseAdminAuth");
+// const {verifyUser} = require("../middleware/firebaseAdminAuth");
 
 const router = express.Router();
 
@@ -25,7 +25,7 @@ router.post("/google-auth", googleAuth);
 router.post("/set-pin", setTransactionPin); 
 
 router.put("/:id/update-profile-picture", uploadProfilePicture);
-router.get("/:userId", protectUser, getUser);
+router.get("/:userId",protectUser , getUser);
 router.get("/", protectUser, getUsers);
 router.patch("/:userId", protectUser, updateUser);
 router.delete("/:userId", protectUser, deleteUser);

@@ -8,11 +8,11 @@ const serviceAccount = require("../utils/firebaseAdmin.json"); // Replace with y
 //   }
 
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
 
-const verifyFirebaseToken = async (req, res, next) => {
+const verifyUser = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
@@ -29,4 +29,4 @@ const verifyFirebaseToken = async (req, res, next) => {
 };
 
 
-module.exports = {verifyFirebaseToken};
+module.exports = {verifyUser};

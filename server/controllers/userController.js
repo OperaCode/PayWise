@@ -6,11 +6,12 @@ const { OAuth2Client } = require("google-auth-library");
 const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
 const { sendVerificationEmail } =require("../config/registerEmailConfig.js") ;
+const admin = require("firebase-admin");
 
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 
-const admin = require("../middleware/firebaseAdminAuth");
+//const admin = require("../middleware/firebaseAdminAuth");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Initialize Google client
 
@@ -183,7 +184,7 @@ const registerUser2 = asyncHandler(async (req, res) => {
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
-    //Log incoming request body
+   
     console.log("Incoming request body:", req.body);
 
     const { idToken, firstName, lastName, email, password } = req.body;
@@ -215,7 +216,8 @@ const registerUser = asyncHandler(async (req, res) => {
     console.log("Existing user check result:", userExist);
 
     if (userExist) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: `User already exists: ${userExist}` });
+
     }
 
     // Hash password before saving
@@ -253,7 +255,7 @@ const registerUser = asyncHandler(async (req, res) => {
       console.log("✅ User registered successfully:", newUser.email);
 
       res.status(201).json({
-        message: "User registered successfully",
+        message: `Registration Successful. Verfication email sent! `,
         user: {
           _id: newUser._id,
           firstName: newUser.firstName,
@@ -267,6 +269,7 @@ const registerUser = asyncHandler(async (req, res) => {
           token,
         },
       });
+      console.log(user)
     } else {
       return res.status(400).json({ message: "User registration failed" });
     }
@@ -276,13 +279,17 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-
 const googleAuth = asyncHandler(async (req, res) => {
   const { idToken } = req.body;
   if (!idToken) return res.status(400).json({ error: "ID Token required" });
 
   try {
-   
+    // 🔹 Verify the Google ID token using Firebase Admin SDK
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+    if (!decodedToken) {
+      return res.status(401).json({ error: "Invalid ID Token" });
+    }
     const { uid, email, name, picture } = decodedToken;
 
     console.log("🔍 Received request for /auth/me");
@@ -309,8 +316,11 @@ const googleAuth = asyncHandler(async (req, res) => {
     // 🔹 Generate JWT
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
+    // Send verification email
+    await sendVerificationEmail(user.email, user.firstName);
+
     res.status(200).json({
-      message: "Authentication successful",
+      message: `Authentication successful, An email has been sent to ${user.email}`,
       user: {
         _id: user._id,
         firstName: user.firstName,
