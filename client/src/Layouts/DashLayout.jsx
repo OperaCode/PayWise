@@ -21,8 +21,8 @@ const override = {
 
 const DashLayout = ({ children }) => {
   const { theme, toggleTheme } = useContext(ThemeContext); // Get
-  // const { user, setUser } = useContext(UserContext); // ✅ Use user from context
-  const { user, setUser } = useState(" "); // ✅ Use user from context
+  // const { user, setUser } = useContext(UserContext); // Use user from context
+  const { user, setUser } = useState(" "); // Use user from context
   const [username, setUserName] = useState("");
   const [res, setRes] = useState({});
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ const DashLayout = ({ children }) => {
   const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
   const [isUploading, setIsUploading] = useState(false);
 
-  // ✅ Handle file selection
+  // Handle file selection
   const handleSelectFile = (e) => {
     const photo = e.target.files[0];
     if (photo) {
@@ -39,99 +39,34 @@ const DashLayout = ({ children }) => {
     }
   };
 
-  // ✅ Fetch User Data
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     try {
-  //       const userInfo = localStorage.getItem("user");
-  //       const userId = localStorage.getItem("userId");
-  //       const token = localStorage.getItem("token"); // 🔥 Retrieve the auth token
-  //       console.log(userInfo)
-  //       // console.log(`token: ${token}`)
-
-  //       if (!userId) return;
-
-      
-
-  //       const response = await axios.get(`${BASE_URL}/user/${userId}`, {
-  //         headers: { Authorization: `Bearer ${token}` }, // ✅ Include token
-  //         withCredentials: true,
-  //       });
-
-  //        const userData = response?.data;
-  //         console.log(userData);
-  //        const user = userData?.user
-  //        console.log(user.firstName);
-  //       setUserName(user.firstName);
-  //       // console.log(fetchedUser)
-  //       setUserName(fetchedUser?.firstName || "User");
-  //       setProfilePicture(fetchedUser?.profilePicture || image);
-  //     } catch (error) {
-  //       console.error("Error fetching user:", error);
-  //     }
-  //   };
-
-  //   fetchUser();
-  // }, [setUser]);
+  
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        //console.log("LocalStorage userId:", userId);
-
-        if (!userId) {
-         //console.warn("No userId in localStorage, trying backend...");
-          const token = localStorage.getItem("token");
-
-          if (!token) {
-            console.log("No token found. User may not be authenticated.");
-            return;
-          }
-
-          const response = await axios.get(`${BASE_URL}/user/${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          console.log("Response from backend:", response?.data);
-
-          const userId = response?.data?.user?._id;
-          //console.log(user)
-          if (userId) {
-            localStorage.setItem("userId", userId);
-            //console.log("Updated localStorage userId:", userId);
-          } else {
-            console.error("User ID missing from backend response!");
-            return;
-          }
-        }
-
-        if (!userId) {
-          console.error("Still no userId, aborting fetch.");
-          return;
-        }
-
-        console.log("Fetching user with userId:", userId);
-        const response = await axios.get(`${BASE_URL}/user/${userId}`, {
+        const UserId = localStorage.getItem("userId");
+        console.log(UserId)
+        const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
           withCredentials: true,
         });
-
-        console.log("Fetched User Data:", response?.data);
-        console.log("Fetched user with userId:", response?.data?.user._id);
-        const user = response?.data?.user;
-
-        if (user) {
-          setUserName(user.firstName || "User");
-          setProfilePicture(user.profilePicture || image);
-        }
+        console.log(response)
+        const data = response?.data;
+        const user = data?.user
+        console.log(user)
+        setUser(user);
+        setUserName(user.firstName)
+        setProfilePicture(user.profilePicture || image)
+        setWalletBalance(response?.data?.user?.wallet?.balance || 0);
       } catch (error) {
-        console.error("Error fetching user:", error);
+        toast.error("Error Fetching User");
       }
     };
 
     fetchUser();
   }, [setUser]);
 
+ 
+  
   
   const uploadPhoto = async (photo) => {
     // if (!photo) return toast.eroor("Please select an image");
@@ -156,10 +91,10 @@ const DashLayout = ({ children }) => {
       console.log("Cloudinary Response:", res.data);
 
       // Update the profile picture state
-      // if (res.data.secure_url) {
-      //   setProfilePicture(res.data.secure_url);
-      //   // Optionally, update user profile in DB
-      // }
+      if (res.data.secure_url) {
+        setProfilePicture(res.data.secure_url);
+        // Optionally, update user profile in DB
+      }
 
       // ✅ Check if the response contains a URL and update the state
       if (res.data.url) {

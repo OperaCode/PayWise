@@ -33,43 +33,71 @@ const Login = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-//   const loginUser = async (e) => {
-//     e.preventDefault();
-//     // setError("");
-//     //setLoading(true);
-
-//     try {
-//       const { email, password } = formData;
-
-//       if (!email || !password) {
-//         toast.error("All fields are required");
-//         return;
-//       }
-//       setIsSubmitting(true);
-
-//       // console.log({formData});
-
-//       const response = await axios.post(
-//         "http://localhost:3000/user/login",
-//         formData,
-//         { withCredentials: true }
-//       );
-//       console.log(response);
-//       toast.success("Login Successful");
-//     //   localStorage.setItem("token", data.token);
-//       setUser(response.data);
-//       navigate("/dashboard");
-//     } catch (error) {
-//       console.error(error);
-//       toast.error(error?.response?.data?.message);
-//       setError(error?.response?.data?.message);
-//     } finally {
-//       setIsSubmitting(false);
-//       setLoading(false);
-//     }
-//   };
-
   const loginUser = async (e) => {
+    e.preventDefault();
+    // setError("");
+    //setLoading(true);
+
+    try {
+      const { email, password } = formData;
+
+      if (!email || !password) {
+        toast.error("All fields are required");
+        return;
+      }
+      setIsSubmitting(true);
+
+      // console.log({formData});
+
+      const response = await axios.post(
+        "http://localhost:3000/user/login",
+        formData,
+        { withCredentials: true }
+      );
+
+
+      // ✅ Store user data in local state or context
+      localStorage.setItem("token", response.data.token);
+
+
+
+    //   console.log(response);
+    //   toast.success("Login Successful");
+    //     //localStorage.setItem("token", data.token);
+    //   setUser(response.data);
+    //   navigate("/dashboard");
+
+
+
+
+      if (response?.data) {
+        console.log("Backend Response:", response.data);
+        const user = response.data.user;
+        console.log("Backend Response:", user);
+        // ✅ Store user data locally
+        localStorage.setItem("userId", user._id);
+        console.log(user)
+  
+        setUser(user);
+        navigate("/dashboard");
+        toast.success("Google Sign-In Successful!");
+      }
+
+
+
+
+
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message);
+      setError(error?.response?.data?.message);
+    } finally {
+      setIsSubmitting(false);
+      setLoading(false);
+    }
+  };
+
+  const loginUser2 = async (e) => {
     e.preventDefault();
   
     try {
@@ -227,17 +255,17 @@ const loginUser1 = async (e) => {
   
       // Get Firebase ID token
       const idToken = await user.getIdToken();
-      console.log("Firebase ID Token:", idToken);
+    //   console.log("Firebase ID Token:", idToken);
       if (idToken) {
         //console.log(idToken)
         localStorage.setItem('token', idToken);
         console.log("Token stored in localStorage:", localStorage.getItem("token")); // ✅ Confirm storage
     }
-    console.log("Google Auth Token:", idToken);
+    // console.log("Google Auth Token:", idToken);
 
       // ✅ Send the ID Token to backend
       const response = await axios.post(
-        "http://localhost:3000/user/google-auth",
+        "http://localhost:3000/auth/google-auth",
         { idToken }, // The request body
         {
           headers: { 'Content-Type': 'application/json' },
@@ -247,7 +275,7 @@ const loginUser1 = async (e) => {
       if (response?.data) {
         console.log("Backend Response:", response.data);
         const user = response.data.user;
-        //console.log("Backend Response:", user);
+        console.log("Backend Response:", user);
         // ✅ Store user data locally
         localStorage.setItem("userId", user._id);
         console.log(user)

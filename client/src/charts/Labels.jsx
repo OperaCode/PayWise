@@ -22,24 +22,25 @@ const Label = () => {
   return (
     <>
       <div>
-        {labelObject.map((item, index) => (
-          <div className="flex justify-between  ">
-            <div className="p-2">
-              <div className="flex gap-2" key={index}>
-                <div
-                  className="w-2 h-2 rounded py-3"
-                  style={{ background: item.color ?? "#f9c74f" }}
-                ></div>
-                <h3 className="text-md">{item.type ?? ""}</h3>
-              </div>
-            </div>
-
-            <div className=" flex items-center">
-              <h3 className="font-bold">{item.percent ?? 0}</h3>
+      {labelObject.map((item, index) => (
+        // ✅ Moved key to the outermost <div>
+        <div key={index} className="flex justify-between">
+          <div className="p-2">
+            <div className="flex gap-2">
+              <div
+                className="w-2 h-2 rounded py-3"
+                style={{ background: item.color ?? "#f9c74f" }}
+              ></div>
+              <h3 className="text-md">{item.type ?? ""}</h3>
             </div>
           </div>
-        ))}
-      </div>
+
+          <div className="flex items-center">
+            <h3 className="font-bold">{item.percent ?? 0}</h3>
+          </div>
+        </div>
+      ))}
+    </div>
     </>
   );
 };
