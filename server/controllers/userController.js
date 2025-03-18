@@ -9,12 +9,12 @@ const {
   sendVerificationEmail,
   sendWelcomeBackEmail,
 } = require("../config/registerEmailConfig.js");
-const admin = require("firebase-admin");
+
 
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 
-//const admin = require("../middleware/firebaseAdminAuth");
+// const admin = require("../middleware/firebaseAdminAuth");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Initialize Google client
 
@@ -44,158 +44,161 @@ const storage = multer.diskStorage({
 });
 
 //Register user with email and password
-const registerUser1 = asyncHandler(async (req, res) => {
-  try {
-    const { firstName, lastName, email, password } = req.body;
+// const registerUser = asyncHandler(async (req, res) => {
+//   try {
+//     const { firstName, lastName, email, password } = req.body;
 
-    if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-    if (password.length < 8 || password.length > 20) {
-      return res
-        .status(400)
-        .json({ message: "Password must be between 8 and 20 characters" });
-    }
+//     if (!firstName || !lastName || !email || !password) {
+//       return res.status(400).json({ message: "All fields are required" });
+//     }
+//     if (password.length < 8 || password.length > 20) {
+//       return res
+//         .status(400)
+//         .json({ message: "Password must be between 8 and 20 characters" });
+//     }
 
-    const userExist = await userModel.findOne({ email });
-    if (userExist) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+//     const userExist = await userModel.findOne({ email });
+//     if (userExist) {
+//       return res.status(400).json({ message: "User already exists" });
+//     }
 
-    //Hash password before saving
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+//     //Hash password before saving
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user with a transaction wallet
-    const newUser = await userModel.create({
-      firstName,
-      lastName,
-      email,
-      password,
-      wallet: {
-        balance: 100,
-        cowries: 50,
-        walletId: uuidv4(),
-      },
-    });
+//     // Create a new user with a transaction wallet
+//     const newUser = await userModel.create({
+//       firstName,
+//       lastName,
+//       email,
+//       password,
+//       wallet: {
+//         balance: 100,
+//         cowries: 50,
+//         walletId: uuidv4(),
+//       },
+//     });
 
-    if (newUser) {
-      // Generate a token for the user
-      const token = generateToken(newUser._id);
+//     if (newUser) {
+//       // Generate a token for the user
+//       const token = generateToken(newUser._id);
 
-      res.cookie("token", token, {
-        path: "/",
-        httpOnly: true,
-        expires: new Date(Date.now() + 86400000), // 1 day
-        sameSite: "none",
-        secure: true,
-      });
+//       res.cookie("token", token, {
+//         path: "/",
+//         httpOnly: true,
+//         expires: new Date(Date.now() + 86400000), // 1 day
+//         sameSite: "none",
+//         secure: true,
+//       });
 
-      res.status(201).json({
-        message: "User registered successfully",
-        user: {
-          _id: newUser._id,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          email: newUser.email,
-          wallet: {
-            balance: newUser.wallet.balance,
-            cowries: newUser.wallet.cowries,
-            walletId: newUser.wallet.walletId,
-          },
-          token,
-        },
-      });
-    } else {
-      res.status(400).json({ message: "User registration failed" });
-    }
-  } catch (error) {
-    console.error("Registration Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
-const registerUser2 = asyncHandler(async (req, res) => {
-  try {
-    const { idToken, email, password } = req.body;
+//       res.status(201).json({
+//         message: "User registered successfully",
+//         user: {
+//           _id: newUser._id,
+//           firstName: newUser.firstName,
+//           lastName: newUser.lastName,
+//           email: newUser.email,
+//           wallet: {
+//             balance: newUser.wallet.balance,
+//             cowries: newUser.wallet.cowries,
+//             walletId: newUser.wallet.walletId,
+//           },
+//           token,
+//         },
+//       });
+//     } else {
+//       res.status(400).json({ message: "User registration failed" });
+//     }
+//   } catch (error) {
+//     console.error("Registration Error:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// });
 
-    if (!idToken || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-    if (password.length < 8 || password.length > 20) {
-      return res
-        .status(400)
-        .json({ message: "Password must be between 8 and 20 characters" });
-    }
 
-    const userExist = await userModel.findOne({ email });
-    if (userExist) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+//register with token
+// const registerUser2 = asyncHandler(async (req, res) => {
+//   try {
+//     const { idToken, email, password } = req.body;
 
-    //Hash password before saving
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+//     if (!idToken || !email || !password) {
+//       return res.status(400).json({ message: "All fields are required" });
+//     }
+//     if (password.length < 8 || password.length > 20) {
+//       return res
+//         .status(400)
+//         .json({ message: "Password must be between 8 and 20 characters" });
+//     }
 
-    // Create a new user with a transaction wallet
-    const newUser = await userModel.create({
-      firstName: user.displayName ? user.displayName.split(" ")[0] : "Unknown",
-      lastName: user.displayName
-        ? user.displayName.split(" ")[1] || ""
-        : "User",
-      email,
-      password,
-      wallet: {
-        balance: 100,
-        cowries: 50,
-        walletId: uuidv4(),
-      },
-    });
+//     const userExist = await userModel.findOne({ email });
+//     if (userExist) {
+//       return res.status(400).json({ message: "User already exists" });
+//     }
 
-    if (newUser) {
-      // Generate a token for the user
-      const token = generateToken(newUser._id);
+//     //Hash password before saving
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
 
-      res.cookie("token", token, {
-        path: "/",
-        httpOnly: true,
-        expires: new Date(Date.now() + 86400000), // 1 day
-        sameSite: "none",
-        secure: true,
-      });
+//     // Create a new user with a transaction wallet
+//     const newUser = await userModel.create({
+//       firstName: user.displayName ? user.displayName.split(" ")[0] : "Unknown",
+//       lastName: user.displayName
+//         ? user.displayName.split(" ")[1] || ""
+//         : "User",
+//       email,
+//       password,
+//       wallet: {
+//         balance: 100,
+//         cowries: 50,
+//         walletId: uuidv4(),
+//       },
+//     });
 
-      res.status(201).json({
-        message: "User registered successfully",
-        user: {
-          _id: newUser._id,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          email: newUser.email,
-          wallet: {
-            balance: newUser.wallet.balance,
-            cowries: newUser.wallet.cowries,
-            walletId: newUser.wallet.walletId,
-          },
-          token,
-        },
-      });
-    } else {
-      res.status(400).json({ message: "User registration failed" });
-    }
-  } catch (error) {
-    console.error("Registration Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
+//     if (newUser) {
+//       // Generate a token for the user
+//       const token = generateToken(newUser._id);
+
+//       res.cookie("token", token, {
+//         path: "/",
+//         httpOnly: true,
+//         expires: new Date(Date.now() + 86400000), // 1 day
+//         sameSite: "none",
+//         secure: true,
+//       });
+
+//       res.status(201).json({
+//         message: "User registered successfully",
+//         user: {
+//           _id: newUser._id,
+//           firstName: newUser.firstName,
+//           lastName: newUser.lastName,
+//           email: newUser.email,
+//           wallet: {
+//             balance: newUser.wallet.balance,
+//             cowries: newUser.wallet.cowries,
+//             walletId: newUser.wallet.walletId,
+//           },
+//           token,
+//         },
+//       });
+//     } else {
+//       res.status(400).json({ message: "User registration failed" });
+//     }
+//   } catch (error) {
+//     console.error("Registration Error:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// });
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
 
-    const { idToken, firstName, lastName, email, password } = req.body;
+    const { idToken, firstName, lastName, email, password, confirmPassword} = req.body;
 
     console.log("idToken:", idToken);
     console.log("email:", email);
-    console.log("password:", password);
+    // console.log("password:", password);
     console.log("firstName:", firstName);
     console.log("lastName:", lastName);
 
@@ -242,7 +245,10 @@ const registerUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "User registration failed" });
     }
 
-    // Generate JWT token
+    // to send verification email
+    await sendVerificationEmail(newUser.email, newUser.firstName);
+
+  
     const token = generateToken(newUser._id);
     
     res.cookie("token", token, {
@@ -254,10 +260,8 @@ const registerUser = asyncHandler(async (req, res) => {
     });
     console.log(newUser)
     
-    // Send verification email
-    await sendVerificationEmail(newUser.email, newUser.firstName);
 
-    console.log("✅ User registered successfully:", newUser.email);
+    console.log("User registered successfully:", newUser.email);
 
     res.status(201).json({
       message: `Registration Successful. Verification email sent!`,
@@ -274,6 +278,7 @@ const registerUser = asyncHandler(async (req, res) => {
         token,
       },
     });
+    console.log(newUser)
 
   } catch (error) {
     console.error("🔥 Registration Error:", error);
@@ -282,230 +287,125 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 
-const googleAuth = asyncHandler(async (req, res) => {
-  const { idToken } = req.body;
-  if (!idToken) return res.status(400).json({ error: "ID Token required" });
 
-  try {
-    // 🔹 Verify the Google ID token using Firebase Admin SDK
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+// login trial with firebase/tokens
+// const loginUser2 = asyncHandler(async (req, res) => {
+//   try {
+//     const { idToken } = req.body; // ✅ Expect an ID Token from Firebase
 
-    if (!decodedToken) {
-      return res.status(401).json({ error: "Invalid ID Token" });
-    }
-    const { uid, email, name, picture } = decodedToken;
+//     if (!idToken) {
+//       return res.status(400).json({ message: "Firebase ID token is required" });
+//     }
 
+//     // ✅ Verify Firebase token
+//     const decodedToken = await admin.auth().verifyIdToken(idToken);
+//     const email = decodedToken.email;
 
-    console.log("🔍 Received request for /auth/me");
+//     console.log("Decoded Token:", decodedToken);
 
+//     // ✅ Find user in MongoDB
+//     const user = await userModel.findOne({ email });
+//     console.log("✅ Searching for user with email:", email);
+//     console.log("🔍 Found user:", user);
 
-    if (!email) {
-      return res.status(400).json({ error: "Google account email is required" });
-    }
+//     if (!user) {
+//       return res.status(401).json({ message: "User not found" });
+//     }
 
-    
+//     // ✅ Generate JWT for app authentication
+//     const token = generateToken(user._id);
 
-    // ✅ First, check if a user already exists by email
-    let user = await User.findOne({ email });
+//     res.cookie("token", token, {
+//       httpOnly: true,
+//       expires: new Date(Date.now() + 86400000),
+//       sameSite: "none",
+//       secure: true,
+//     });
 
-    // if (!user) {
-    //   // 🔹 Create new user only if email doesn't exist
-    //   user = await User.create({
-    //     firebaseUID: uid,
-    //     firstName: name?.split(" ")[0] || "",
-    //     lastName: name?.split(" ").slice(1).join(" ") || "",
-    //     email,
-    //     profilePicture: picture,
-    //     wallet: { balance: 100, cowries: 50, walletId: uid },
-    //   });
+//     res.status(200).json({
+//       _id: user._id,
+//       firstName: user.firstName,
+//       email,
+//       token,
+//       wallet: user.wallet || { balance: 0, walletId: null },
+//     });
+//   } catch (error) {
+//     console.error("🔥 Firebase Auth Error:", error);
+//     res.status(500).json({ message: "Authentication Failed" });
+//   }
+// });
 
-
-    //   // ✉️ Send welcome email
-    //   await sendVerificationEmail(email, name);
-    //   console.log("📧 Welcome email sent to new user:", email);
-    // } else {
-    //   console.log("📧 Welcome back email sent to existing user:", email);
-    // }
-
-
-    // // ✅ Existing user - Send welcome back email
-    // await sendWelcomeBackEmail(email, name);
-    // console.log("📧 Welcome back email sent to existing user:", email);
-  
-
-    // 🔹 Generate JWT
-    
-    if (!user) {
-      // 🔹 Create new user only if email doesn't exist
-      user = await User.create({
-        firebaseUID: uid,
-        firstName: name?.split(" ")[0] || "",
-        lastName: name?.split(" ").slice(1).join(" ") || "",
-        email,
-        profilePicture: picture,
-        wallet: { balance: 100, cowries: 50, walletId: uid },
-      });
-    
-    } 
-
-    console.log(user)
-    console.log("📧 Welcome email sent to new user:", email);
-    await sendVerificationEmail(email, firstName); // ✅ Only send this
-   
-      // console.log("📧 Welcome back email sent to existing user:", email);
-      // await sendWelcomeBackEmail(email, name); // ✅ Only for existing users
-    
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
-    res.cookie("token", token, {
-      path: "/",
-      httpOnly: true,
-      expires: new Date(Date.now() + 86400000), // 1 day
-      sameSite: "none",
-      secure: true,
-    });
-
-    // Send verification email
-    // await sendVerificationEmail(user.email, user.firstName);
-
-    res.status(200).json({
-      message: `Authentication successful, Verification email sent`,
-      user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        profilePicture: user.profilePicture,
-        wallet: user.wallet,
-        token,
-      },
-    });
-  } catch (error) {
-    console.error("Google Auth Error:", error);
-    res.status(500).json({ error: "Authentication failed" });
-  }
-});
 
 const loginUser1 = asyncHandler(async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
+    let user = await User.findOne({email})
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+    // Check if the admin exists
+    if(!user) {
+        return res.status(404).json({message: 'User Not Found!'})
+    }
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if(!isMatch) {
+        return res.status(400).json({message: 'Invalid Credentials'})
     }
 
-    const user = await userModel.findOne({ email });
-    // console.log(user)
-    if (!user) {
-      return res
-        .status(401)
-        .json({ message: "Invalid credentials, user not found" });
-    }
-
-    // Verify password
-    //const passwordMatch = await bcrypt.compare(password, user.password);
-
-    console.log("Stored Hashed Password:", user.password);
-    console.log("Entered Password:", password);
-
-    // ✅ Compare the plain-text input password with the hashed password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    console.log("Password Match:", passwordMatch);
-
-    if (!passwordMatch) {
-      console.error("Password mismatch detected:", {
-        inputPassword: password,
-        storedPassword: user.password,
-      });
-      return res.status(401).json({ message: "Password mismatch detected" });
-    }
-
-    // Ensure user has a wallet (prevents balance reset issues)
-    if (!user.wallet) {
-      user.wallet = { balance: 0, walletId: generateWalletId() }; // Ensure wallet exists
-      await user.save();
-    }
-
-    // Generate JWT token
     const token = generateToken(user._id);
+    res.cookie('token', token, {
+        path: '/',
+        httpOnly: true,
+        expires: new Date(Date.now() + 1000 * 86400),   //expires within 24hrs
+        sameSite: 'none',
+        secure: true
+    })
 
-    res.cookie("token", token, {
-      path: "/",
-      httpOnly: true,
-      expires: new Date(Date.now() + 86400000), // 1 day
-      sameSite: "none",
-      secure: true,
-    });
-
-    //console.log("Wallet before login response:", user.wallet.balance); // Debugging
-
-    res.status(200).json({
-      _id: user._id,
-      firstName: user.firstName,
-      lastname: user.lastName,
-      fullName: `${user.firstName} ${user.lastName}`,
-      email,
-      token,
-      wallet: {
-        walletId: user.wallet.walletId || null,
-        balance: user.wallet.balance ?? 0, // Ensure a default balance
-        cowries: user.wallet.cowries ?? 0, // Ensure a default balance
-      },
-    });
+    const {_id, firstName, lastName} = user;
+    res.status(201).json({_id, firstName, lastName, email, token})
   } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 const loginUser = asyncHandler(async (req, res) => {
   try {
-    const { idToken } = req.body; // ✅ Expect an ID Token from Firebase
+    const { email, password } = req.body;
+    let user = await User.findOne({ email });
 
-    if (!idToken) {
-      return res.status(400).json({ message: "Firebase ID token is required" });
-    }
-
-    // ✅ Verify Firebase token
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const email = decodedToken.email;
-
-    console.log("Decoded Token:", decodedToken);
-
-    // ✅ Find user in MongoDB
-    const user = await userModel.findOne({ email });
-    console.log("✅ Searching for user with email:", email);
-    console.log("🔍 Found user:", user);
-
+    // Check if the user exists
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      return res.status(404).json({ message: "User Not Found!" });
     }
 
-    // ✅ Generate JWT for app authentication
-    const token = generateToken(user._id);
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid Credentials" });
+    }
 
+    // Generate token
+    const token = generateToken(user._id);
     res.cookie("token", token, {
+      path: "/",
       httpOnly: true,
-      expires: new Date(Date.now() + 86400000),
+      expires: new Date(Date.now() + 1000 * 86400), // Expires in 24 hours
       sameSite: "none",
       secure: true,
     });
 
-    res.status(200).json({
-      _id: user._id,
-      firstName: user.firstName,
-      email,
-      token,
-      wallet: user.wallet || { balance: 0, walletId: null },
-    });
+    // Include profilePicture in response
+    // const { _id, firstName, lastName, profilePicture } = user;
+    // Fetch user again to ensure we include profilePicture
+    user = await User.findById(user._id).select("-password");
+    res.status(201).json({ user});
   } catch (error) {
-    console.error("🔥 Firebase Auth Error:", error);
-    res.status(500).json({ message: "Authentication Failed" });
+    console.log("Login Error:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+
 
 const setTransactionPin = asyncHandler(async (req, res) => {
   try {
@@ -552,56 +452,33 @@ const uploadProfilePicture = asyncHandler(async (req, res) => {
   }
 });
 
+
 const getUser = asyncHandler(async (req, res) => {
   try {
-    const userId = req.userId; // Get ID from authenticated user
-    const user = await User.findById(userId);
+    // Extract user ID from request (set by auth middleware)
+    const userId = req.user?.id || req.userId;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized - No userId found" });
+    }
+
+    // Find user in database
+    const user = await User.findById(userId).select("-password"); // Exclude password
 
     if (!user) {
       return res.status(404).json({ message: "User Not Found!" });
     }
 
-    const { _id, firstName, lastName, email } = user;
-    return res.status(200).json({ _id, firstName, lastName, email });
+    res.status(200).json({ user });
   } catch (error) {
-    console.error(error);
+    console.error("Fetch User Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-// const getUser = asyncHandler(async (req, res) => {
-//   try {
-//     // Extract user ID from request (set by auth middleware)
-//     const userId = req.user?.id || req.userId;
 
-//     if (!userId) {
-//       return res
-//         .status(401)
-//         .json({ message: "Unauthorized - No userId found" });
-//     }
-
-//     // Find user in database
-//     const user = await User.findById(userId).select("-password"); // Exclude password
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User Not Found!" });
-//     }
-
-//     res.status(200).json({ user });
-//   } catch (error) {
-//     console.error("Fetch User Error:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// });
-
-// const getUser = asyncHandler(async (req, res) => {
-//   if (!req.user) {
-//     return res.status(404).json({ message: "User not found" });
-//   }
-
-//   res.status(200).json(req.user);
-
-// });
 
 const getUsers = asyncHandler(async (req, res) => {
   try {
@@ -686,7 +563,6 @@ module.exports = {
   registerUser,
   loginUser,
   uploadProfilePicture,
-  googleAuth,
   setTransactionPin,
   getUser,
   getUsers,

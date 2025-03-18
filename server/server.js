@@ -86,6 +86,7 @@ app.use(passport.session());
 
 // Routes
 app.use("/user", userRoutes);
+app.use("/auth", authRoutes);
 app.use("/biller", billerRoutes);
 app.use("/payment", paymentRoutes);
 

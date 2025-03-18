@@ -14,13 +14,13 @@ const {
 } = require("../controllers/userController");
 
 const { protectUser } = require("../middleware/authMiddleWare");
-// const {verifyUser} = require("../middleware/firebaseAdminAuth");
+
 
 const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser); 
-router.post("/google-auth", googleAuth); 
+
 
 router.post("/set-pin", setTransactionPin); 
 
