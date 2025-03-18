@@ -43,7 +43,7 @@ const storage = multer.diskStorage({
   },
 });
 
-//Register user with email and password
+//REGISTER USER WITH FORMDATA
 // const registerUser = asyncHandler(async (req, res) => {
 //   try {
 //     const { firstName, lastName, email, password } = req.body;
@@ -116,80 +116,6 @@ const storage = multer.diskStorage({
 // });
 
 
-//register with token
-// const registerUser2 = asyncHandler(async (req, res) => {
-//   try {
-//     const { idToken, email, password } = req.body;
-
-//     if (!idToken || !email || !password) {
-//       return res.status(400).json({ message: "All fields are required" });
-//     }
-//     if (password.length < 8 || password.length > 20) {
-//       return res
-//         .status(400)
-//         .json({ message: "Password must be between 8 and 20 characters" });
-//     }
-
-//     const userExist = await userModel.findOne({ email });
-//     if (userExist) {
-//       return res.status(400).json({ message: "User already exists" });
-//     }
-
-//     //Hash password before saving
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
-
-//     // Create a new user with a transaction wallet
-//     const newUser = await userModel.create({
-//       firstName: user.displayName ? user.displayName.split(" ")[0] : "Unknown",
-//       lastName: user.displayName
-//         ? user.displayName.split(" ")[1] || ""
-//         : "User",
-//       email,
-//       password,
-//       wallet: {
-//         balance: 100,
-//         cowries: 50,
-//         walletId: uuidv4(),
-//       },
-//     });
-
-//     if (newUser) {
-//       // Generate a token for the user
-//       const token = generateToken(newUser._id);
-
-//       res.cookie("token", token, {
-//         path: "/",
-//         httpOnly: true,
-//         expires: new Date(Date.now() + 86400000), // 1 day
-//         sameSite: "none",
-//         secure: true,
-//       });
-
-//       res.status(201).json({
-//         message: "User registered successfully",
-//         user: {
-//           _id: newUser._id,
-//           firstName: newUser.firstName,
-//           lastName: newUser.lastName,
-//           email: newUser.email,
-//           wallet: {
-//             balance: newUser.wallet.balance,
-//             cowries: newUser.wallet.cowries,
-//             walletId: newUser.wallet.walletId,
-//           },
-//           token,
-//         },
-//       });
-//     } else {
-//       res.status(400).json({ message: "User registration failed" });
-//     }
-//   } catch (error) {
-//     console.error("Registration Error:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// });
-
 const registerUser = asyncHandler(async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
@@ -202,7 +128,7 @@ const registerUser = asyncHandler(async (req, res) => {
     console.log("firstName:", firstName);
     console.log("lastName:", lastName);
 
-    // Validate required fields
+    
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -233,7 +159,7 @@ const registerUser = asyncHandler(async (req, res) => {
       firstName,
       lastName,
       email,
-      password: hashedPassword, // Store hashed password
+      password: hashedPassword, 
       wallet: {
         balance: 100,
         cowries: 50,
@@ -245,7 +171,7 @@ const registerUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "User registration failed" });
     }
 
-    // to send verification email
+    
     await sendVerificationEmail(newUser.email, newUser.firstName);
 
   
@@ -254,7 +180,7 @@ const registerUser = asyncHandler(async (req, res) => {
     res.cookie("token", token, {
       path: "/",
       httpOnly: true,
-      expires: new Date(Date.now() + 86400000), // 1 day
+      expires: new Date(Date.now() + 86400000), 
       sameSite: "none",
       secure: true,
     });
@@ -281,14 +207,13 @@ const registerUser = asyncHandler(async (req, res) => {
     console.log(newUser)
 
   } catch (error) {
-    console.error("🔥 Registration Error:", error);
+    console.error("Registration Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 
-
-// login trial with firebase/tokens
+// EMAIL LOGIN TRAILS WITH FIREBASE
 // const loginUser2 = asyncHandler(async (req, res) => {
 //   try {
 //     const { idToken } = req.body; // ✅ Expect an ID Token from Firebase
@@ -336,37 +261,37 @@ const registerUser = asyncHandler(async (req, res) => {
 // });
 
 
-const loginUser1 = asyncHandler(async (req, res) => {
-  try {
-    const {email, password} = req.body;
-    let user = await User.findOne({email})
+// const loginUser1 = asyncHandler(async (req, res) => {
+//   try {
+//     const {email, password} = req.body;
+//     let user = await User.findOne({email})
 
-    // Check if the admin exists
-    if(!user) {
-        return res.status(404).json({message: 'User Not Found!'})
-    }
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if(!isMatch) {
-        return res.status(400).json({message: 'Invalid Credentials'})
-    }
+//     // Check if the admin exists
+//     if(!user) {
+//         return res.status(404).json({message: 'User Not Found!'})
+//     }
+//     // Check password
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if(!isMatch) {
+//         return res.status(400).json({message: 'Invalid Credentials'})
+//     }
 
-    const token = generateToken(user._id);
-    res.cookie('token', token, {
-        path: '/',
-        httpOnly: true,
-        expires: new Date(Date.now() + 1000 * 86400),   //expires within 24hrs
-        sameSite: 'none',
-        secure: true
-    })
+//     const token = generateToken(user._id);
+//     res.cookie('token', token, {
+//         path: '/',
+//         httpOnly: true,
+//         expires: new Date(Date.now() + 1000 * 86400),   //expires within 24hrs
+//         sameSite: 'none',
+//         secure: true
+//     })
 
-    const {_id, firstName, lastName} = user;
-    res.status(201).json({_id, firstName, lastName, email, token})
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
-});
+//     const {_id, firstName, lastName} = user;
+//     res.status(201).json({_id, firstName, lastName, email, token})
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ message: "Internal Server Error" });
+//   }
+// });
 
 const loginUser = asyncHandler(async (req, res) => {
   try {
@@ -394,11 +319,20 @@ const loginUser = asyncHandler(async (req, res) => {
       secure: true,
     });
 
-    // Include profilePicture in response
-    // const { _id, firstName, lastName, profilePicture } = user;
-    // Fetch user again to ensure we include profilePicture
-    user = await User.findById(user._id).select("-password");
-    res.status(201).json({ user});
+    
+
+    res.json({
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        wallet: user.wallet,
+        token, // Only send if using local storage (not recommended for security)
+      },
+    });
+    console.log(user)
   } catch (error) {
     console.log("Login Error:", error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -456,7 +390,7 @@ const uploadProfilePicture = asyncHandler(async (req, res) => {
 const getUser = asyncHandler(async (req, res) => {
   try {
     // Extract user ID from request (set by auth middleware)
-    const userId = req.user?.id || req.userId;
+    const userId = req.userId;
 
     if (!userId) {
       return res

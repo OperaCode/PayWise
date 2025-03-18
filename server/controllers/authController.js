@@ -57,7 +57,7 @@ const googleAuth = asyncHandler(async (req, res) => {
 
     
 
-    // ✅ First, check if a user already exists by email
+    // First, check if a user already exists by email
     let user = await User.findOne({ email });
 
     
@@ -76,10 +76,10 @@ const googleAuth = asyncHandler(async (req, res) => {
 
     console.log(user)
     console.log("📧 Welcome email sent to new user:", email);
-    await sendVerificationEmail(email, user.firstName); // ✅ Only send this
+    await sendVerificationEmail(email, user.firstName); // Only send this
    
-      // console.log("📧 Welcome back email sent to existing user:", email);
-      // await sendWelcomeBackEmail(email, name); // ✅ Only for existing users
+      // console.log(" Welcome back email sent to existing user:", email);
+      // await sendWelcomeBackEmail(email, name); // Only for existing users
     
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
