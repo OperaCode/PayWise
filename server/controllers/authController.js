@@ -6,7 +6,7 @@ const User = require("../models/userModel");
 const {
     sendVerificationEmail,
     sendWelcomeBackEmail,
-  } = require("../config/registerEmailConfig.js");
+  } = require("../config/EmailConfig.js");
 
 /**
  * Handle Google Login

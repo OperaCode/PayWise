@@ -4,7 +4,7 @@ const {
   registerUser,
   loginUser,
   uploadProfilePicture,
-  googleAuth,
+  connectWallet,
   setTransactionPin,
   getUser,
   getUsers,
@@ -20,6 +20,7 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser); 
+router.post('/connect-metamask',connectWallet);
 
 
 router.post("/set-pin", setTransactionPin); 

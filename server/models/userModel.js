@@ -41,21 +41,31 @@ const userSchema = new mongoose.Schema(
       balance: { type: Number, default: 100 }, // Ensure new users get 100 tokens
       cowries: { type: Number, default: 100 },
     },
+    metamaskWallet: { type: String, unique: true, default: null}, // MetaMask Wallet Address
     transactionPin: { type: String, required: false },
     billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Biller" }],
   },
   { timestamps: true }
 );
 
-// **Ensure wallet gets initialized properly**
+
+userSchema.pre("save", async function (next){
+  if(!this.isModified("password")){
+    return next();
+  }
+
+  // hashing of password
+  const salt = await bcrypt.genSalt(10)
+  const hashedPassword = await bcrypt.hash(this.password, salt);
+  this.password = hashedPassword;
+
+  next();
+
+});
 
 
 
 
 
-// Hash password before saving
-userSchema.pre("save", async function (next) {
-}
-);
-
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema)
+module.exports = User

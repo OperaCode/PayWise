@@ -7,8 +7,8 @@ const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
 const {
   sendVerificationEmail,
-  sendWelcomeBackEmail,
-} = require("../config/registerEmailConfig.js");
+  sendMetaMaskEmail,
+} = require("../config/EmailConfig.js");
 
 
 const cloudinary = require("cloudinary").v2;
@@ -120,22 +120,19 @@ const registerUser = asyncHandler(async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
 
-    const { idToken, firstName, lastName, email, password, confirmPassword} = req.body;
+    const { idToken, firstName, lastName, email, password} = req.body;
 
-    console.log("idToken:", idToken);
-    console.log("email:", email);
+    // console.log("idToken:", idToken);
+    // console.log("email:", email);
     // console.log("password:", password);
-    console.log("firstName:", firstName);
-    console.log("lastName:", lastName);
+    // console.log("firstName:", firstName);
+    // console.log("lastName:", lastName);
 
     
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (!idToken) {
-      console.warn("⚠️ Missing idToken (if required for Firebase authentication)");
-    }
 
     // Validate password length
     if (password.length < 8 || password.length > 20) {
@@ -150,16 +147,13 @@ const registerUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "User already exists. Please log in." });
     }
 
-    // Hash password BEFORE saving
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
+    
     // Create user with wallet
     const newUser = await userModel.create({
       firstName,
       lastName,
       email,
-      password: hashedPassword, 
+      password, 
       wallet: {
         balance: 100,
         cowries: 50,
@@ -167,10 +161,6 @@ const registerUser = asyncHandler(async (req, res) => {
       },
     });
     
-    if (!newUser) {
-      return res.status(400).json({ message: "User registration failed" });
-    }
-
     
     await sendVerificationEmail(newUser.email, newUser.firstName);
 
@@ -187,23 +177,27 @@ const registerUser = asyncHandler(async (req, res) => {
     console.log(newUser)
     
 
-    console.log("User registered successfully:", newUser.email);
+    // console.log("User registered successfully:", newUser.email);
 
-    res.status(201).json({
-      message: `Registration Successful. Verification email sent!`,
-      user: {
-        _id: newUser._id,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        email: newUser.email,
-        wallet: {
-          balance: newUser.wallet.balance,
-          cowries: newUser.wallet.cowries,
-          walletId: newUser.wallet.walletId,
+    if(newUser){
+      res.status(201).json({
+        message: `Registration Successful, Verification email sent!`,
+        user: {
+          _id: newUser._id,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          email: newUser.email,
+          wallet: {
+            balance: newUser.wallet.balance,
+            cowries: newUser.wallet.cowries,
+            walletId: newUser.wallet.walletId,
+          },
+          token,
         },
-        token,
-      },
-    });
+      });
+    }
+
+
     console.log(newUser)
 
   } catch (error) {
@@ -261,38 +255,6 @@ const registerUser = asyncHandler(async (req, res) => {
 // });
 
 
-// const loginUser1 = asyncHandler(async (req, res) => {
-//   try {
-//     const {email, password} = req.body;
-//     let user = await User.findOne({email})
-
-//     // Check if the admin exists
-//     if(!user) {
-//         return res.status(404).json({message: 'User Not Found!'})
-//     }
-//     // Check password
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if(!isMatch) {
-//         return res.status(400).json({message: 'Invalid Credentials'})
-//     }
-
-//     const token = generateToken(user._id);
-//     res.cookie('token', token, {
-//         path: '/',
-//         httpOnly: true,
-//         expires: new Date(Date.now() + 1000 * 86400),   //expires within 24hrs
-//         sameSite: 'none',
-//         secure: true
-//     })
-
-//     const {_id, firstName, lastName} = user;
-//     res.status(201).json({_id, firstName, lastName, email, token})
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).json({ message: "Internal Server Error" });
-//   }
-// });
-
 const loginUser = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -304,8 +266,8 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
       return res.status(400).json({ message: "Invalid Credentials" });
     }
 
@@ -340,6 +302,39 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 
+const connectWallet = asyncHandler(async(req, res)=>{
+  const { userId, walletAddress } = req.body;
+
+  if (!userId || !walletAddress) {
+    return res.status(400).json({ message: "User ID and wallet address are required" });
+  }
+
+  const existingUser = await User.findOne({ metamaskWallet: walletAddress });
+
+if (existingUser && existingUser._id.toString() !== userId) {
+    throw new Error("This MetaMask wallet address is already in use.");
+}
+
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { metamaskWallet: walletAddress },
+      { new: true, upsert: false }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await sendMetaMaskEmail(updatedUser.email, updatedUser.firstName);
+
+    res.status(200).json({ message: "MetaMask wallet connected successfully",user: updatedUser });
+  } catch (error) {
+    console.error("Error updating wallet:", error);
+    res.status(500).json({ message: "Error connecting MetaMask wallet" });
+  }
+});
 
 const setTransactionPin = asyncHandler(async (req, res) => {
   try {
@@ -497,6 +492,7 @@ module.exports = {
   registerUser,
   loginUser,
   uploadProfilePicture,
+  connectWallet,
   setTransactionPin,
   getUser,
   getUsers,
