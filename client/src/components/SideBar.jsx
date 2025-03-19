@@ -75,7 +75,7 @@ const SideBar = () => {
             <ul className="flex justify-end gap-1 text-c lg:space-y-8 lg:p-8  w-full lg:flex-col">
               <Link to="/dashboard">
                 <div className="flex gap-2 items-center hover:text-cyan-900 ">
-                  <House size={17} strokeWidth={3}/>
+                  <House size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer  md:block hover:text-cyan-900 font-bold lg:text-md ">
                     {" "}
                     Home
@@ -83,34 +83,35 @@ const SideBar = () => {
                 </div>
               </Link>
 
+              <Link to="/billers">
+                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
+                  <TabletSmartphone size={17} strokeWidth={3} />
+                  <li className="hover:cursor-pointer  font-bold lg:text-md ">
+                    Manage Billers
+                  </li>
+                </div>
+              </Link>
+
               <Link to="/payment">
                 <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
-                  <DollarSign size={17} strokeWidth={3}/>
+                  <DollarSign size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer  font-bold lg:text-md ">
                     Make Payment
                   </li>
                 </div>
               </Link>
 
-              <Link to="/billers">
-                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
-                  <TabletSmartphone size={17} strokeWidth={3}/>
-                  <li className="hover:cursor-pointer  font-bold lg:text-md ">
-                    Manage Billers
-                  </li>
-                </div>
-              </Link>
               <Link to="/analytics">
                 <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
-                <Milestone strokeWidth={3}/>
-                <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
-                  Rewards and Analytics
-                </li>
+                  <Milestone strokeWidth={3} />
+                  <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
+                    Rewards and Analytics
+                  </li>
                 </div>
               </Link>
               <Link to="/messages">
                 <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
-                  <MessageSquareMore strokeWidth={3}/>
+                  <MessageSquareMore strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold lg:text-md">
                     Messages
                   </li>
@@ -118,7 +119,7 @@ const SideBar = () => {
               </Link>
 
               <div className="flex gap-2 items-center hover:text-cyan-900 ">
-                <LogOut strokeWidth={3}/>
+                <LogOut strokeWidth={3} />
                 <li
                   className="hover:cursor-pointer hover:text-cyan-900  md:block font-bold lg:text-md"
                   onClick={logoutUser}
