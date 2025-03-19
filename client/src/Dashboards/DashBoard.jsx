@@ -67,21 +67,21 @@ const DashBoard = () => {
     const fetchUser = async () => {
       try {
         const UserId = localStorage.getItem("userId");
-        console.log(UserId)
+        console.log(UserId);
         const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
           withCredentials: true,
         });
-        console.log(response)
-        
+        console.log(response);
+
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
       } catch (error) {
-        toast.error("Error Fetching User");
+        console.error(error);
+        toast.error(error?.response?.data?.message);
       }
     };
     fetchUser();
   }, []);
 
-  
   const handleTransfer = async () => {
     if (!recipientEmail || !amount) {
       toast.error("Please enter recipient email and amount.");
@@ -211,8 +211,9 @@ const DashBoard = () => {
                   </p>
                 </div>
                 <div className="flex justify-around w-full">
-                  <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-red-500 on hover:bg-red-400 text-white rounded-md w-1/3"
-                  onClick={() => setFundModalOpen(false)}
+                  <button
+                    className=" hover:cursor-pointer mt-4 px-4 py-2 bg-red-500 on hover:bg-red-400 text-white rounded-md w-1/3"
+                    onClick={() => setFundModalOpen(false)}
                   >
                     Cancel
                   </button>
@@ -223,7 +224,6 @@ const DashBoard = () => {
                     Fund Wallet
                   </FlutterWaveButton>
                 </div>
-            
               </div>
             </div>
           )}

@@ -23,7 +23,7 @@ const DashLayout = ({ children }) => {
   const { theme, toggleTheme } = useContext(ThemeContext); // Get
   // const { user, setUser } = useContext(UserContext); // Use user from context
   const { user, setUser } = useState(" "); // Use user from context
-  const [username, setUserName] = useState("");
+  const [username, setUserName] = useState(" ");
   const [res, setRes] = useState({});
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
@@ -45,20 +45,21 @@ const DashLayout = ({ children }) => {
     const fetchUser = async () => {
       try {
         const UserId = localStorage.getItem("userId");
-        console.log(UserId)
+        //console.log(UserId)
         const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
           withCredentials: true,
         });
-        console.log(response)
+        //console.log(response)
         const data = response?.data;
         const user = data?.user
         console.log(user)
-        setUser(user);
+        // setUser(user);
         setUserName(user.firstName)
         setProfilePicture(user.profilePicture || image)
-        setWalletBalance(response?.data?.user?.wallet?.balance || 0);
       } catch (error) {
-        toast.error("Error Fetching User");
+        console.error(error);
+        toast.error(error?.response?.data?.message);
+       
       }
     };
 
