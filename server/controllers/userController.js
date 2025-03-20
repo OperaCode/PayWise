@@ -10,7 +10,6 @@ const {
   sendMetaMaskEmail,
 } = require("../config/EmailConfig.js");
 
-
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 
@@ -115,12 +114,11 @@ const storage = multer.diskStorage({
 //   }
 // });
 
-
 const registerUser = asyncHandler(async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
 
-    const { idToken, firstName, lastName, email, password} = req.body;
+    const { idToken, firstName, lastName, email, password } = req.body;
 
     // console.log("idToken:", idToken);
     // console.log("email:", email);
@@ -128,15 +126,15 @@ const registerUser = asyncHandler(async (req, res) => {
     // console.log("firstName:", firstName);
     // console.log("lastName:", lastName);
 
-    
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-
     // Validate password length
     if (password.length < 8 || password.length > 20) {
-      return res.status(400).json({ message: "Password must be between 8 and 20 characters" });
+      return res
+        .status(400)
+        .json({ message: "Password must be between 8 and 20 characters" });
     }
 
     // Check if user already exists
@@ -144,42 +142,40 @@ const registerUser = asyncHandler(async (req, res) => {
     console.log("Existing user check result:", userExist);
 
     if (userExist) {
-      return res.status(400).json({ message: "User already exists. Please log in." });
+      return res
+        .status(400)
+        .json({ message: "User already exists. Please log in." });
     }
 
-    
     // Create user with wallet
     const newUser = await userModel.create({
       firstName,
       lastName,
       email,
-      password, 
+      password,
       wallet: {
         balance: 100,
         cowries: 50,
         walletId: uuidv4(),
       },
     });
-    
-    
+
     await sendVerificationEmail(newUser.email, newUser.firstName);
 
-  
     const token = generateToken(newUser._id);
-    
+
     res.cookie("token", token, {
       path: "/",
       httpOnly: true,
-      expires: new Date(Date.now() + 86400000), 
+      expires: new Date(Date.now() + 86400000),
       sameSite: "none",
       secure: true,
     });
-    console.log(newUser)
-    
+    console.log(newUser);
 
     // console.log("User registered successfully:", newUser.email);
 
-    if(newUser){
+    if (newUser) {
       res.status(201).json({
         message: `Registration Successful, Verification email sent!`,
         user: {
@@ -197,15 +193,12 @@ const registerUser = asyncHandler(async (req, res) => {
       });
     }
 
-
-    console.log(newUser)
-
+    console.log(newUser);
   } catch (error) {
     console.error("Registration Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
 
 // EMAIL LOGIN TRAILS WITH FIREBASE
 // const loginUser2 = asyncHandler(async (req, res) => {
@@ -254,7 +247,6 @@ const registerUser = asyncHandler(async (req, res) => {
 //   }
 // });
 
-
 const loginUser = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -281,8 +273,6 @@ const loginUser = asyncHandler(async (req, res) => {
       secure: true,
     });
 
-    
-
     res.json({
       message: "Login successful",
       user: {
@@ -294,29 +284,31 @@ const loginUser = asyncHandler(async (req, res) => {
         token, // Only send if using local storage (not recommended for security)
       },
     });
-    console.log(user)
+    console.log(user);
   } catch (error) {
     console.log("Login Error:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-
-const connectWallet = asyncHandler(async(req, res)=>{
+const connectWallet = asyncHandler(async (req, res) => {
   const { userId, walletAddress } = req.body;
 
   if (!userId || !walletAddress) {
-    return res.status(400).json({ message: "User ID and wallet address are required" });
+    return res
+      .status(400)
+      .json({ message: "User ID and wallet address are required" });
   }
 
-  const existingUser = await User.findOne({ metamaskWallet: walletAddress });
-
-if (existingUser && existingUser._id.toString() !== userId) {
-    throw new Error("This MetaMask wallet address is already in use.");
-}
-
-
   try {
+
+    // Ensure no other user has this wallet address before updating
+    const existingUser = await User.findOne({ metamaskWallet: walletAddress });
+
+    if (existingUser && existingUser._id.toString() !== userId) {
+      return res.status(400).json({ message: "This MetaMask wallet address is already in use." });
+    }
+    
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { metamaskWallet: walletAddress },
@@ -329,10 +321,15 @@ if (existingUser && existingUser._id.toString() !== userId) {
 
     await sendMetaMaskEmail(updatedUser.email, updatedUser.firstName);
 
-    res.status(200).json({ message: "MetaMask wallet connected successfully",user: updatedUser });
+    res
+      .status(200)
+      .json({
+        message: "MetaMask wallet connected successfully",
+        user: updatedUser,
+      });
   } catch (error) {
-    console.error("Error updating wallet:", error);
-    res.status(500).json({ message: "Error connecting MetaMask wallet" });
+    console.log("Error updating wallet:", error);
+    
   }
 });
 
@@ -381,7 +378,6 @@ const uploadProfilePicture = asyncHandler(async (req, res) => {
   }
 });
 
-
 const getUser = asyncHandler(async (req, res) => {
   try {
     // Extract user ID from request (set by auth middleware)
@@ -406,8 +402,6 @@ const getUser = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
-
 
 const getUsers = asyncHandler(async (req, res) => {
   try {
