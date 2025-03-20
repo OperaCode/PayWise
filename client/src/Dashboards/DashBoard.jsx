@@ -203,18 +203,18 @@ const DashBoard = () => {
                 </button>
               </div>
                 </div>
-                <div className="flex gap-2 text-center">
+                <div className="flex gap-2 text-center mt-4">
                   <button
                     className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
                     onClick={() => setFundModalOpen(true)}
                   >
-                    Add Money
+                    Manage Wallet
                   </button>
                   <button
                     className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
                     onClick={() => setManageTokensModalOpen(true)}
                   >
-                    Manage Tokens
+                    Manage Coin
                   </button>
                 </div>
               </div>

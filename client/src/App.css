@@ -30,6 +30,20 @@
   margin-right: auto;
 } 
 
+.ant-input,
+.ant-select-selector,
+.ant-picker {
+  border-width: 3px !important; /* Make border thicker */
+  border-radius: 8px !important; /* Rounded corners */
+  padding: 12px !important;
+}
+
+.ant-input:focus,
+.ant-select-selector:focus,
+.ant-picker:focus {
+  box-shadow: 0 0 5px rgba(37, 99, 235, 0.5) !important; /* Focus glow */
+}
+
 @keyframes gradientMove {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }

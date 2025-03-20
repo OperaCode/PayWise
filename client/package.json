@@ -15,6 +15,7 @@
     "@web3auth/base": "^9.7.0",
     "@web3auth/ethereum-provider": "^9.7.0",
     "@web3auth/modal": "^9.7.0",
+    "antd": "^5.24.4",
     "axios": "^1.7.9",
     "chart.js": "^4.4.7",
     "cloudinary": "^2.5.1",
