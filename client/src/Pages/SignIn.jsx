@@ -74,7 +74,7 @@ const Login = () => {
         console.log("Backend Response:", response.data);
         const user = response.data.user;
         console.log("Backend Response:", user);
-        // ✅ Store user data locally
+        // Store user data locally
         localStorage.setItem("userId", user._id);
         console.log(user)
   

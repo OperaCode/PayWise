@@ -5,7 +5,7 @@ import image from "../assets/avatar.jpg";
 import cardBg1 from "../assets/cardBg1.avif";
 import cardBg2 from "../assets/cardBg2.webp";
 
-import { Plus, Scroll } from "lucide-react";
+import { Plus, Scroll, ArrowLeft } from "lucide-react";
 import { Button, Modal, Input, Select, Switch, DatePicker, Upload } from "antd";
 
 const ManageBillers = () => {
@@ -72,7 +72,7 @@ const ManageBillers = () => {
     serviceType: "",
     accountNumber: "",
     bankName: "",
-   profilePicture:null,
+    profilePicture: null,
     amount: "",
   });
 
@@ -96,49 +96,29 @@ const ManageBillers = () => {
   const billerTypes = ["Electricity", "Water", "Internet", "Cable TV", "Other"];
 
   const handleAddBiller = () => {
-    setbillers([...biller, { ...newbiller, id: biller.length + 1 }]);
+    if (billers.length >= 5) {
+      alert("You can only add up to 5 billers.");
+      return;
+    }
+  
+    setbillers([...billers, { ...newbiller, id: billers.length + 1 }]);
     setIsModalOpen(false);
-    setNew({ name: "", age: "", gender: "" });
+    setNewbiller({ name: "", age: "", gender: "" });
   };
 
-  const serviceTypeOptions = [
-    "Food and Groceries",
-    "Utilities and Rent",
-    "Beneficiary and Sponsor",
-    "Others",
-  ];
+  // const serviceTypeOptions = [
+  //   "Food and Groceries",
+  //   "Utilities and Rent",
+  //   "Beneficiary and Sponsor",
+  //   "Others",
+  // ];
 
   useEffect(() => {
     // Simulate an API call or app initialization delay
     setTimeout(() => setLoading(false), 3000);
   }, []);
 
-  const handleSaveBiller = () => {
-    if (currentBiller) {
-      setBillers((prevBillers) =>
-        prevBillers.map((b) => (b._id === currentBiller._id ? newBiller : b))
-      );
-    } else {
-      setBillers([...billers, { ...newBiller, _id: Date.now().toString() }]);
-    }
-    setModalOpen(false);
-    // setNewBiller({
-    //   name: "",
-    //   billerType: "Vendor",
-    //   accountNumber: "",
-    //   bankName: "",
-    //   serviceType: "Food and Groceries",
-    //   phone: "",
-    //   email: "",
-    //   amount: "$50",
-    //   createdAt: new Date().toISOString(),
-    // });
-    setCurrentBiller(null);
-  };
-
-  // const handleDeleteBiller = (id) => {
-  //   setBillers(billers.filter((biller) => biller._id !== id));
-  // };
+ 
 
   const handleCardClick = (biller) => {
     setSelectedBiller(biller);
@@ -172,23 +152,45 @@ const ManageBillers = () => {
             // Full List View
             <div>
               <h2 className="text-xl font-bold mb-4">All Billers</h2>
-              <ul className="bg-white p-4 rounded-lg shadow-md">
+
+              <ul className="space-y-2">
                 {billers.map((biller) => (
-                  <li key={biller.id} className="p-2 border-b last:border-none">
-                    {biller.name} - {biller.billerType}
+                  <li
+                    key={biller.id}
+                    className="p-2 border-2 rounded-lg shadow-sm  flex justify-between items-center"
+                  >
+                    {/* Left: Biller Info */}
+                    <div>
+                      <h3 className="text-lg font-semibold">{biller.name}</h3>
+                      <p className="text-sm ">{biller.billerType}</p>
+                    </div>
+
+                    {/* Right: AutoPay Switch */}
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        //checked={autoPayStates[biller.id]}
+                        onChange={() => toggleAutoPay(biller.id)}
+                      />
+                      <span className="text-sm text-gray-700">
+                        {/* {autoPayStates[biller.id]
+                          ? "Auto-Pay On"
+                          : "Enable Auto-Pay"} */}
+                      </span>
+                    </div>
                   </li>
                 ))}
               </ul>
+
               <button
                 onClick={() => setShowFullList(false)}
-                className="mt-4 px-4 py-2 bg-gray-500 text-white rounded-lg"
+                className="mt-4 px-4 py-2  rounded-lg flex gap-2 justify-center hover:scale-105  border-2 items-center  shadow-md cursor-pointer bg-cyan-700  font-semibold hover:bg-red-400 transition duration-200 ease-in hover:cursor-pointer"
               >
-                Back to Profiles
+                <ArrowLeft /> Back to Profiles
               </button>
             </div>
           ) : (
             // Default Profile View with Your Requested Features
-            <div className="lg:flex flex-col items-center text-center p-2">
+            <div className="lg:flex flex-col items-center text-center p-2 ">
               <h1 className="ont-bold  py-2 font-bold text-xl p-2 text-center">
                 Billers Profile
               </h1>
@@ -232,7 +234,7 @@ const ManageBillers = () => {
               </p>
               <button
                 onClick={() => setShowFullList(true)}
-                className="flex gap-2 px-6 py-2 hover:bg-green-700 mt-4 hover:scale-105 font-bold border-2 items-center rounded-md shadow-md cursor-pointer"
+                className="flex gap-2 px-6 m-auto mt-4 justify-center hover:scale-105  border-2 items-center rounded-md shadow-md cursor-pointer w-sm bg-cyan-700 text-white py-3  font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
                 See Full List <Scroll size={20} />
               </button>
@@ -242,7 +244,7 @@ const ManageBillers = () => {
           {/* Modal */}
           {isModalOpen && (
             <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-              <div className="bg-white p-6 rounded-lg w-lg ">
+              <div className="bg-white p-6 rounded-lg w-lg text-black">
                 <h2 className="text-lg font-semibold text-center">
                   {selectedBiller ? "Biller Profile" : "Add New Biller"}
                 </h2>
@@ -282,8 +284,27 @@ const ManageBillers = () => {
                           }
                         />
                       </div>
+                      <div className="flex gap-2 items-center">
+                        <label htmlFor="">Email:</label>
+                        <Input
+                          style={{
+                            borderWidth: "1px",
+                            borderRadius: "6px",
+                            padding: "10px",
+                          }}
+                          // className=" border shadow-sm rounded"
+                          placeholder="Biller Name"
+                          value={selectedBiller.email}
+                          onChange={(e) =>
+                            setSelectedBiller({
+                              ...selectedBiller,
+                              email: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
                       <div className="flex justify-between">
-                        <div className="flex w-full">
+                        <div className="flex w-full gap-2">
                           <label htmlFor="">Biller Type</label>
                           <Select
                             placeholder="Biller Type"
@@ -436,14 +457,14 @@ const ManageBillers = () => {
                     {/* Action Buttons */}
                     <div className="mt-4 flex justify-between w-full ">
                       <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer"
-                        onClick={handleSaveBiller}
+                        className="bg-blue-600 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
+                        // onClick={handleSaveBiller}
                       >
                         Update
                       </button>
 
                       <button
-                        className="bg-red-500 text-white px-4 py-2 cursor-pointer"
+                        className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
                         onClick={() => handleDeleteBiller(selectedBiller.id)}
                       >
                         Delete
@@ -469,6 +490,18 @@ const ManageBillers = () => {
                           placeholder="Biller Name"
                           onChange={(e) =>
                             setNewBiller({ ...newBiller, name: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <label>Email:</label>
+                        <Input
+                          placeholder="Biller Email"
+                          onChange={(e) =>
+                            setNewBiller({
+                              ...newBiller,
+                              email: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -574,13 +607,13 @@ const ManageBillers = () => {
                     {/* Action Buttons */}
                     <div className="mt-4 flex justify-between w-full">
                       <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded"
-                        onClick={handleSaveBiller}
+                        className="bg-blue-600 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
+                        //onClick={handleSaveBiller}
                       >
-                        Save
+                        Create Biller
                       </button>
                       <button
-                        className="bg-red-500 text-white px-4 py-2"
+                        className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
                         onClick={() => handleDeleteBiller(selectedBiller.id)}
                       >
                         Cancel
@@ -592,7 +625,7 @@ const ManageBillers = () => {
                 {/* Close Button */}
                 <div className="flex justify-center">
                   <button
-                    className="mt-4 hover:bg-red-600 hover:text-white p-2 text-gray-600 w-1/2 text-center border-2 cursor-pointer rounded-md"
+                    className="mt-4 hover:bg-red-600 bg-cyan-600 hover:text-white p-2  w-1/2 text-center border-2 cursor-pointer rounded-md hover:scale-105 transition duration-300 ease-in-out"
                     onClick={closeModal}
                   >
                     Close
