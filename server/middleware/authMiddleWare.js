@@ -1,46 +1,40 @@
 const jwt = require("jsonwebtoken");
-const asyncHandler = require("express-async-handler");
-const userModel = require("../models/userModel");
+const User = require("../models/userModel");
 
-const protectUser = asyncHandler(async(req,res,next) => {
-  let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer") || req.cookies.token) {
-    try{
-      token = req.headers?.authorization?.split(" ")[1] || req.cookies.token;
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.userId = decoded.id
-      const foundUser = await userModel.findById(decoded.id).select("-password");
-      if (!foundUser) {
-        return res.status(401).json({ message: "Unauthorized, user not found" });
-      }
-      next();
-    } catch(error){
-        console.error(error);
-        return res.status(401).json({ message: "Invalid token" });
+const protectUser = async (req, res, next) => {
+  try {
+    let token;
+
+    // Check if Authorization header exists and starts with 'Bearer'
+    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1]; // Extract token
     }
-}
-if (!token) {
-  return res.status(401).json({ message: "Unauthorized, no token" });
-}
-})
+
+    console.log("🔹 Token received in middleware:", token); // Debugging log
+
+    if (!token) {
+      console.log("🔴 No token found in request headers.");
+      return res.status(401).json({ message: "Unauthorized: No token provided" });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("🔹 Decoded token:", decoded);
+
+    // Find user from token
+    req.user = await User.findById(decoded.id).select("-password");
+    console.log("🔹 User found in database:", req.user);
+
+    if (!req.user) {
+      console.log("🔴 No user found with this token ID.");
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
+    next(); // Continue to the next middleware
+  } catch (error) {
+    console.error("🔴 Authentication error:", error.message);
+    return res.status(401).json({ message: "Unauthorized: Invalid token" });
+  }
+};
 
 module.exports = { protectUser };
-
-// Example of basic auth middleware
-// const authMiddleware = async (req, res, next) => {
-//   const token = req.headers.authorization?.split(' ')[1];
-//   if (!token) {
-//     return res.status(401).json({ message: 'No token provided' });
-//   }
-//   try {
-//     // Verify the token and decode user info
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-//     // Add the user object to the request
-//     req.user = decoded;
-    
-//     next();
-//   } catch (error) {
-//     res.status(401).json({ message: 'Invalid token' });
-//   }
-// };

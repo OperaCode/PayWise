@@ -3,7 +3,7 @@ const Biller = require("../models/billerModel");
 
 
 const createBiller = asyncHandler(async (req, res) => {
-   // console.log("User in request:", req.user); // Debugging line
+    console.log("User in request:", req.user); // Debugging line
   try {
     if (!req.user || !req.user._id) {
       return res.status(401).json({ message: "Unauthorized: No user found" });
@@ -13,10 +13,10 @@ const createBiller = asyncHandler(async (req, res) => {
 
     if (
       !name ||
-      !billerType ||
-      !accountNumber ||
-      !bankName ||
-      !serviceType ||   
+      // !billerType ||
+      // !accountNumber ||
+      // !bankName ||
+      // !serviceType ||   
       !email 
     ) {
       return res
@@ -57,9 +57,9 @@ const createBiller = asyncHandler(async (req, res) => {
       accountNumber,
       bankName,
       serviceType,
-      phone,
+      //phone,
       email,
-      profilePicture,
+      //profilePicture,
     });
   
     res.status(201).json(biller);
