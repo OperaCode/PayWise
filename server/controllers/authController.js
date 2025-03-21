@@ -13,7 +13,7 @@ const {
  */
 const googleLogin = async (req, res) => {
   try {
-    const { idToken } = req.body; // Get token from frontend
+    const { idToken } = req.body; 
     if (!idToken) {
       return res.status(400).json({ error: "No token provided" });
     }

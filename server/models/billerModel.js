@@ -2,14 +2,17 @@ const mongoose = require("mongoose");
 
 const billerSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    profilePicture: { type: String, default: null },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true, index: true },
     billerType: {
       type: String,
-      enum: ["vendor", "beneficiary"], // Only two allowed categories
+      enum: ["Vendor", "Beneficiary"], // Only two allowed categories
+      required: true,
+    },
+    serviceType: {
+      type: String,
+      enum: ["Utility", "Food", "Subscription", "Others"],
       required: true,
     },
     user: {
@@ -24,19 +27,23 @@ const billerSchema = new mongoose.Schema(
     },
     bankName: {
       type: String, // Only relevant for beneficiaries
+      default: null, // Ensure default value to avoid undefined errors
     },
-    serviceType: {
-      type: String, // Only relevant for vendors (e.g., "Electricity", "Internet", "Water")
+    walletAddress: {
+      type: String, // Only relevant for beneficiaries
+      default: null,
     },
     phone: {
       type: String,
+      default: null,
     },
-    email: {
-      type: String,
+    dueDate: {
+      type: Date, // Fixed incorrect "date" type
+      default: null,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
+    amount: {
+      type: Number, // Fixed incorrect "number" type
+      default: 0,
     },
   },
   { timestamps: true }

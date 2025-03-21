@@ -9,15 +9,14 @@ const createBiller = asyncHandler(async (req, res) => {
       return res.status(401).json({ message: "Unauthorized: No user found" });
     }
   
-    const { name, billerType, accountNumber, bankName, serviceType, phone, email } = req.body;
+    const { name, billerType, accountNumber, bankName, serviceType, email } = req.body;
 
     if (
       !name ||
       !billerType ||
       !accountNumber ||
       !bankName ||
-      !serviceType ||
-      !phone ||
+      !serviceType ||   
       !email 
     ) {
       return res
@@ -60,6 +59,7 @@ const createBiller = asyncHandler(async (req, res) => {
       serviceType,
       phone,
       email,
+      profilePicture,
     });
   
     res.status(201).json(biller);
