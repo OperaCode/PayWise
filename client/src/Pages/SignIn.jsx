@@ -56,18 +56,8 @@ const Login = () => {
       );
 
 
-      // ✅ Store user data in local state or context
-      localStorage.setItem("token", response.data.token);
-
-
-
-    //   console.log(response);
-    //   toast.success("Login Successful");
-    //     //localStorage.setItem("token", data.token);
-    //   setUser(response.data);
-    //   navigate("/dashboard");
-
-
+     
+      
 
 
       if (response?.data) {
@@ -76,7 +66,9 @@ const Login = () => {
         console.log("Backend Response:", user);
         // Store user data locally
         localStorage.setItem("userId", user._id);
+        localStorage.setItem("token", user.token);
         console.log(user)
+        //console.log(token)
   
         setUser(user);
         navigate("/dashboard");

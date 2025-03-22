@@ -2,69 +2,29 @@ import React, { useState, useEffect } from "react";
 import BarChart from "../charts/BarChart";
 import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
-import cardBg1 from "../assets/cardBg1.avif";
+
+
 import cardBg2 from "../assets/cardBg2.webp";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 import { Plus, Scroll, ArrowLeft } from "lucide-react";
 import { Button, Modal, Input, Select, Switch, DatePicker, Upload } from "antd";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 const ManageBillers = () => {
   const [loading, setLoading] = useState(true);
-  const [biller, setBiller] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [biller, setBiller] = useState({});
   const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
-  const [billers, setBillers] = useState([
-    {
-      name: "Power Company",
-      billerType: "Vendor",
-      user: "65d2f8a9c3b6a8e1a4567890",
-      accountNumber: "ACC123456",
-      bankName: "",
-      serviceType: "Utilities and Rent",
-      phone: "555-0101",
-      // amount: "support@powerco.com",
-      amount: "$650",
-      createdAt: "2025-02-28T12:00:00Z",
-    },
-    {
-      name: "Internet Provider",
-      billerType: "Vendor",
-      user: "65d2f8a9c3b6a8e1a4567891",
-      accountNumber: "ACC654321",
-      bankName: "",
-      serviceType: "Utilities and Rent",
-      phone: "555-0202",
-      email: "support@internet.com",
-      amount: "$450",
-      createdAt: "2025-02-28T12:30:00Z",
-    },
-    {
-      name: "John Doe",
-      billerType: "Beneficiary",
-      user: "65d2f8a9c3b6a8e1a4567892",
-      accountNumber: "ACC987654",
-      bankName: "ABC Bank",
-      serviceType: "Beneficiary and Sponsor",
-      phone: "555-0303",
-      email: "john.doe@example.com",
-      amount: "$600",
-      createdAt: "2025-02-28T13:00:00Z",
-    },
-    {
-      name: "SuperMart",
-      billerType: "Vendor",
-      user: "65d2f8a9c3b6a8e1a4567893",
-      accountNumber: "ACC321789",
-      bankName: "",
-      serviceType: "Food and Groceries",
-      phone: "555-0404",
-      email: "contact@supermart.com",
-      amount: "$500",
-      createdAt: "2025-02-28T14:00:00Z",
-    },
-  ]);
+  //array iof billers from user
+  const [billers, setBillers] = useState([]);
+
   const [showFullList, setShowFullList] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentBiller, setCurrentBiller] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBiller, setSelectedBiller] = useState(null);
+  const [error, setError] = useState("");
   const [newBiller, setNewBiller] = useState({
     name: "",
     email: "",
@@ -75,9 +35,117 @@ const ManageBillers = () => {
     profilePicture: null,
     amount: "",
   });
+  const billerTypes = ["Vendor", " Beneficiary"];
+  const serviceTypes = [
+    "Electricity",
+    "Water",
+    "Internet",
+    "Cable TV",
+    "Other",
+  ];
+
+  useEffect(() => {
+    // Simulate an API call or app initialization delay
+    setTimeout(() => setLoading(false), 3000);
+  }, []);
+
+  // const handleChange = (e, fieldName) => {
+  //   if (e && e.target) {
+  //     // Handles standard HTML inputs
+  //     const { name, value } = e.target;
+  //     setBiller((prev) => ({ ...prev, [name]: value }));
+  //   } else if (typeof e === "string" || typeof e === "number") {
+  //     // Handles Ant Design <Select>
+  //     setBiller((prev) => ({ ...prev, [fieldName]: e }));
+  //   } else {
+  //     console.error("Invalid event object:", e);
+  //   }
+
+  //   setError(""); // Clear errors
+  // };
 
   // Function to handle closing the modal
-  const closeModal = () => {
+
+  // const handleChange = (e, field) => {
+  //   if (e.target) {
+  //     // Normal input fields
+  //     setBiller((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  //   } else {
+  //     // For Select components
+  //     setBiller((prev) => ({ ...prev, [field]: e.value }));
+  //   }
+  // };
+  useEffect(()=>{
+    const fetchBillers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      //console.log("UserId:", userId);
+      //console.log("Token:", token);
+
+      // ✅ Send correct data object
+      const response = await axios.post(
+        `${BASE_URL}/biller/`,
+        token,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in Authorization header
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+        console.log("User Profile:", response.data);
+
+        const billerIds = response.data.user.billers;
+
+       
+
+      if (!billerIds.length) {
+        setBillers([]); // No billers found
+        return;
+      }
+
+      // Fetch details of each biller using their IDs
+      const billerResponses = await Promise.all(
+        billerIds.map((id) =>
+          axios.get(`${BASE_URL}/biller/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+      );
+
+      const billerDetails = billerResponses.map((res) => res.data);
+
+      console.log(billerDetails)
+      setBillers(billerDetails); // ✅ Update state with full biller details
+
+
+
+
+
+  
+        // ✅ Set the billers state with full biller details
+        //setBillers(response.data.billers);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        toast.error(error?.response?.data?.message || "Failed to fetch profile");
+      }
+    };
+
+    fetchBillers()
+  },
+  []);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setBiller((prev) => ({
+      ...prev,
+      [name]: value || "",
+    }));
+  };
+
+  const closeModal = async() => {
     setIsModalOpen(false);
     setSelectedBiller(null);
     setNewBiller({
@@ -90,35 +158,130 @@ const ManageBillers = () => {
     });
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newbiller, setNew] = useState({ name: "", age: "", gender: "" });
-  const [selectedBiller, setSelectedBiller] = useState(null);
-  const billerTypes = ["Electricity", "Water", "Internet", "Cable TV", "Other"];
+  const handleCreateBiller1 = async () => {
+    const {
+      name,
+      billerType,
+      accountNumber,
+      bankName,
+      serviceType,
+      email,
+      amount,
+    } = formData;
 
-  const handleAddBiller = () => {
-    if (billers.length >= 5) {
-      alert("You can only add up to 5 billers.");
+    console.log(formData);
+
+    if (
+      !biller.name ||
+      !biller.billerType ||
+      !biller.accountNumber ||
+      !biller.bankName ||
+      !biller.serviceType ||
+      !biller.email ||
+      !biller.amount
+    ) {
+      toast.error("Please fill in all required fields.");
       return;
     }
-  
-    setbillers([...billers, { ...newbiller, id: billers.length + 1 }]);
-    setIsModalOpen(false);
-    setNewbiller({ name: "", age: "", gender: "" });
+
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+      const response = await axios.post(
+        `${BASE_URL}/billers/createbiller`,
+        biller,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = response.data;
+
+      toast.success("Biller created successfully!");
+      refreshBillers(); // Refresh the billers list after creation
+      closeModal(); // Close the modal if applicable
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to create biller.";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // const serviceTypeOptions = [
-  //   "Food and Groceries",
-  //   "Utilities and Rent",
-  //   "Beneficiary and Sponsor",
-  //   "Others",
-  // ];
+  const handleCreateBiller = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setIsSubmitting(true);
+    setError(""); // Reset error before validation
 
-  useEffect(() => {
-    // Simulate an API call or app initialization delay
-    setTimeout(() => setLoading(false), 3000);
-  }, []);
+    try {
+      const {
+        name,
+        billerType,
+        accountNumber,
+        bankName,
+        serviceType,
 
- 
+        email,
+        amount,
+      } = biller;
+
+      //console.log("Biller Data:", biller);
+
+      // ✅ Validate all fields before making API call
+      if (
+        !name ||
+        !email ||
+        !billerType ||
+        !serviceType ||
+        !accountNumber ||
+        !bankName ||
+        !amount
+      ) {
+        toast.error("Oops, all fields are required");
+        setLoading(false);
+        setIsSubmitting(false);
+        return; // ✅ No need to throw an error, just return early
+      }
+
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      //console.log("UserId:", userId);
+      //console.log("Token:", token);
+
+      // ✅ Send correct data object
+      const response = await axios.post(
+        `${BASE_URL}/biller/createbiller`,
+        biller,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in Authorization header
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response?.data) {
+        const userData = response.data.user;
+
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error.message ||
+        "Internal server error";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+      setIsSubmitting(false);
+    }
+  };
 
   const handleCardClick = (biller) => {
     setSelectedBiller(biller);
@@ -131,15 +294,6 @@ const ManageBillers = () => {
       setIsModalOpen(false);
     }
   };
-
-  // const handleSaveBiller = () => {
-  //   setBillers((prev) =>
-  //     prev.map((biller) =>
-  //       biller.id === selectedBiller.id ? selectedBiller : biller
-  //     )
-  //   );
-  //   setIsModalOpen(false);
-  // };
 
   return (
     <>
@@ -154,31 +308,35 @@ const ManageBillers = () => {
               <h2 className="text-xl font-bold mb-4">All Billers</h2>
 
               <ul className="space-y-2">
-                {billers.map((biller) => (
-                  <li
-                    key={biller.id}
-                    className="p-2 border-2 rounded-lg shadow-sm  flex justify-between items-center"
-                  >
-                    {/* Left: Biller Info */}
-                    <div>
-                      <h3 className="text-lg font-semibold">{biller.name}</h3>
-                      <p className="text-sm ">{biller.billerType}</p>
-                    </div>
-
-                    {/* Right: AutoPay Switch */}
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        //checked={autoPayStates[biller.id]}
-                        onChange={() => toggleAutoPay(biller.id)}
-                      />
-                      <span className="text-sm text-gray-700">
-                        {/* {autoPayStates[biller.id]
-                          ? "Auto-Pay On"
-                          : "Enable Auto-Pay"} */}
-                      </span>
-                    </div>
-                  </li>
-                ))}
+                {billers && billers.length > 0 ? (
+                  billers.map((biller) => (
+                    <li
+                      key={biller.id}
+                      className="p-2 border-2 rounded-lg shadow-sm  flex justify-between items-center"
+                    >
+                      {/* Left: Biller Info */}
+                      <div>
+                        <h3 className="text-lg font-semibold">{biller.name}</h3>
+                        <p className="text-sm ">{biller.billerType}</p>
+                      </div>
+  
+                      {/* Right: AutoPay Switch */}
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          //checked={autoPayStates[biller.id]}
+                          onChange={() => toggleAutoPay(biller.id)}
+                        />
+                        <span className="text-sm text-gray-700">
+                          {/* {autoPayStates[biller.id]
+                            ? "Auto-Pay On"
+                            : "Enable Auto-Pay"} */}
+                        </span>
+                      </div>
+                    </li>
+                  ))
+                ):(
+                  <p className="text-xl font-semibold m-auto text-center p-4"> No biller created, Go back <span className="text-2xl">👈</span> to create a new biller.</p>
+                )}
               </ul>
 
               <button
@@ -202,24 +360,30 @@ const ManageBillers = () => {
 
               {/* Cards */}
               <div className="flex gap-4 justify-between  w-full items-center p-4">
-                {billers.map((biller) => (
-                  <div
-                    key={biller.id}
-                    onClick={() => handleCardClick(biller)}
-                    // style={{
-                    //   backgroundImage: `url(${cardBg2})`,
-                    // }}
-                    className="cursor-pointer border bg-center hover:scale-105 shadow-lg rounded-lg p-4 w-50 flex flex-col items-center"
-                  >
-                    <img
-                      src={biller.avatar || image}
-                      alt={biller.name}
-                      className="rounded-full w-20 h-20 border-2 cursor-pointer hover:opacity-80 transition"
-                    />
-                    <h3 className="mt-2 font-bold">{biller.name}</h3>
-                    <p className="text-sm font-semibold">{biller.billerType}</p>
-                  </div>
-                ))}
+                
+                {/* Toggle when billerslist is empty */}
+                {billers && billers.length > 0 ? (
+                  billers.map((biller) => (
+                    <div
+                      key={biller.id}
+                      onClick={() => handleCardClick(biller)}
+                      // style={{
+                      //   backgroundImage: `url(${cardBg2})`,
+                      // }}
+                      className="cursor-pointer border bg-center hover:scale-105 shadow-lg rounded-lg p-4 w-50 flex flex-col items-center"
+                    >
+                      <img
+                        src={biller.profilePicture || image}
+                        alt={biller.name}
+                        className="rounded-full w-20 h-20 border-2 cursor-pointer hover:opacity-80 transition"
+                      />
+                      <h3 className="mt-2 font-bold">{biller.name}</h3>
+                      <p className="text-sm font-semibold">{biller.billerType}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-2xl font-semibold m-auto"> No biller created, Click here <span className="text-2xl">👉</span> to create a new biller.</p>
+                )}
 
                 <button
                   onClick={() => setIsModalOpen(true)}
@@ -267,7 +431,7 @@ const ManageBillers = () => {
                     <div className="w-full space-y-2">
                       <div className="flex gap-2 items-center">
                         <label htmlFor="">Name:</label>
-                        <Input
+                        <input
                           style={{
                             borderWidth: "1px",
                             borderRadius: "6px",
@@ -286,7 +450,7 @@ const ManageBillers = () => {
                       </div>
                       <div className="flex gap-2 items-center">
                         <label htmlFor="">Email:</label>
-                        <Input
+                        <input
                           style={{
                             borderWidth: "1px",
                             borderRadius: "6px",
@@ -345,14 +509,14 @@ const ManageBillers = () => {
                           {" "}
                           Account Number
                         </label>
-                        <Input
+                        <input
                           style={{
                             borderWidth: "1px",
                             borderRadius: "6px",
                             padding: "10px",
                           }}
                           placeholder="Account Number"
-                          value={selectedBiller.accountId}
+                          value={selectedBiller.accountNumber}
                           onChange={(e) =>
                             setSelectedBiller({
                               ...selectedBiller,
@@ -365,7 +529,7 @@ const ManageBillers = () => {
                         <label htmlFor="" className="w-30">
                           Bank Name
                         </label>
-                        <Input
+                        <input
                           style={{
                             borderWidth: "5px",
                             borderRadius: "6px",
@@ -383,7 +547,7 @@ const ManageBillers = () => {
                       </div>
                       <div className="flex gap-2 items-center">
                         <label htmlFor="">Wallet Address(optional)</label>
-                        <Input
+                        <input
                           style={{
                             borderWidth: "1px",
                             borderRadius: "6px",
@@ -423,7 +587,7 @@ const ManageBillers = () => {
                       </div>
                       <div className="flex gap-2 items-center">
                         <label htmlFor="">Amount:</label>
-                        <Input
+                        <input
                           style={{
                             borderWidth: "1px",
                             borderRadius: "6px",
@@ -479,124 +643,131 @@ const ManageBillers = () => {
                       alt={image}
                       className="w-20 h-20 rounded-full border border-gray-300"
                     />
-                    <h3 className="mt-2 font-semibold">{`Name:`}</h3>
-                    <p className="text-gray-500">{newBiller.billerType}</p>
+                    <h3 className="mt-2 font-semibold">Name:</h3>
+                    <p className="text-gray-500">
+                      {biller?.name || "No name provided"}
+                    </p>
 
                     {/* Edit Mode */}
                     <div className="w-full space-y-2">
                       <div className="flex gap-2 items-center">
                         <label>Name:</label>
-                        <Input
+                        <input
+                          name="name"
                           placeholder="Biller Name"
-                          onChange={(e) =>
-                            setNewBiller({ ...newBiller, name: e.target.value })
-                          }
+                          value={biller.name || ""}
+                          onChange={handleChange}
                         />
                       </div>
+
                       <div className="flex gap-2 items-center">
                         <label>Email:</label>
-                        <Input
+                        <input
+                          name="email"
                           placeholder="Biller Email"
-                          onChange={(e) =>
-                            setNewBiller({
-                              ...newBiller,
-                              email: e.target.value,
-                            })
-                          }
+                          value={biller.email || ""}
+                          onChange={handleChange}
                         />
                       </div>
+
                       <div className="flex justify-between">
+                        {/* Biller Type Select */}
                         <div className="flex w-full">
                           <label>Biller Type</label>
-                          <Select
-                            placeholder="Biller Type"
-                            options={billerTypes.map((type) => ({
-                              label: type,
-                              value: type,
-                            }))}
-                            onChange={(value) =>
-                              setNewBiller({ ...newBiller, billerType: value })
-                            }
-                          />
+                          <select
+                            name="billerType"
+                            value={biller.billerType || ""}
+                            onChange={handleChange}
+                            className="border rounded p-2 w-full"
+                          >
+                            <option value="" disabled>
+                              Select Biller Type
+                            </option>
+                            {billerTypes.map((type, index) => (
+                              <option key={index} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
                         </div>
+
+                        {/* Service Type Select */}
                         <div className="flex w-full">
                           <label>Service Type</label>
-                          <Select
-                            placeholder="Biller Type"
-                            options={billerTypes.map((type) => ({
-                              label: type,
-                              value: type,
-                            }))}
-                            onChange={(value) =>
-                              setNewBiller({ ...newBiller, billerType: value })
-                            }
-                          />
+                          <select
+                            name="serviceType"
+                            value={biller.serviceType || ""}
+                            onChange={handleChange}
+                            className="border rounded p-2 w-full"
+                          >
+                            <option value="" disabled>
+                              Select Service Type
+                            </option>
+                            {serviceTypes.map((type, index) => (
+                              <option key={index} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                       </div>
 
                       <div className="flex gap-2 items-center">
-                        <label htmlFor="" className="w-35">
-                          {" "}
-                          Account Number
-                        </label>
-                        <Input
-                          placeholder="Biller Name"
-                          onChange={(e) =>
-                            setNewBiller({ ...newBiller, name: e.target.value })
-                          }
+                        <label className="w-35">Account Number</label>
+                        <input
+                          name="accountNumber"
+                          placeholder="Biller Number"
+                          value={biller.accountNumber || ""}
+                          onChange={handleChange}
                         />
                       </div>
+
                       <div className="flex gap-2 items-center">
-                        <label htmlFor="" className="w-30">
-                          Bank Name
-                        </label>
-                        <Input
-                          placeholder="Biller Name"
-                          onChange={(e) =>
-                            setNewBiller({ ...newBiller, name: e.target.value })
-                          }
+                        <label className="w-30">Bank Name</label>
+                        <input
+                          name="bankName"
+                          placeholder="Bank Name"
+                          value={biller.bankName || ""}
+                          onChange={handleChange}
                         />
                       </div>
+
                       <div className="flex gap-2 items-center">
-                        <label htmlFor="">Wallet Address(optional)</label>
-                        <Input
-                          placeholder="Biller Name"
-                          onChange={(e) =>
-                            setNewBiller({ ...newBiller, name: e.target.value })
-                          }
+                        <label>Wallet Address (optional)</label>
+                        <input
+                          name="metamaskWallet"
+                          placeholder="Wallet Address"
+                          value={biller.metamaskWallet || ""}
+                          onChange={handleChange}
                         />
                       </div>
+
                       <div className="flex items-center">
                         <label>Due Date</label>
-                        <DatePicker
-                          placeholder="Due Date"
-                          value={
-                            newBiller.dueDate ? moment(newBiller.dueDate) : null
-                          }
-                          onChange={(date, dateString) =>
-                            setNewBiller({
-                              ...newBiller,
-                              dueDate: dateString,
-                            })
-                          }
+                        <input
+                          name="date"
+                          type="date"
+                          value={biller.date || ""}
+                          onChange={handleChange}
                         />
                       </div>
+
                       <div className="flex gap-2 items-center">
-                        <label htmlFor="">Amount:</label>
-                        <Input
-                          placeholder="Biller Name"
-                          onChange={(e) =>
-                            setNewBiller({ ...newBiller, name: e.target.value })
-                          }
+                        <label>Amount:</label>
+                        <input
+                          name="amount"
+                          placeholder="Biller Amount"
+                          value={biller.amount || ""}
+                          onChange={handleChange}
                         />
                       </div>
+
                       <div className="flex items-center">
                         <Switch
-                          // checked={newBiller.autoPay}
+                          checked={biller.autoPay || false}
                           onChange={(checked) =>
-                            setNewBiller({
-                              ...newBiller,
-                              autoPay: checked,
+                            handleChange({
+                              target: { name: "autoPay", value: checked },
                             })
                           }
                         />
@@ -608,10 +779,12 @@ const ManageBillers = () => {
                     <div className="mt-4 flex justify-between w-full">
                       <button
                         className="bg-blue-600 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
-                        //onClick={handleSaveBiller}
+                        onClick={handleCreateBiller}
+                        disabled={loading}
                       >
-                        Create Biller
+                        {loading ? "Creating..." : "Create Biller"}
                       </button>
+
                       <button
                         className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
                         onClick={() => handleDeleteBiller(selectedBiller.id)}
