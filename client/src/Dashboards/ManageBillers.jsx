@@ -76,64 +76,38 @@ const ManageBillers = () => {
   //   }
   // };
   useEffect(()=>{
-    const fetchBillers = async () => {
-      try {
-        const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
-      //console.log("UserId:", userId);
-      //console.log("Token:", token);
-
-      // ✅ Send correct data object
-      const response = await axios.post(
-        `${BASE_URL}/biller/`,
-        token,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Send token in Authorization header
-            "Content-Type": "application/json",
-          },
+  
+      const fetchBillers = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          console.log(token)
+  
+          if (!token) {
+            toast.error("User not authenticated!");
+            return;
+          }
+  
+          console.log("Token:", token);
+  
+          // ✅ Correct API request (use GET and send token in headers)
+          const response = await axios.get(`${BASE_URL}/biller`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+  
+          console.log(response?.data || null);
+  
+          // ✅ Set the billers state directly from response
+          setBillers(response.data);
+        } catch (error) {
+          console.error("Error fetching billers:", error);
+          toast.error(error?.response?.data?.message || "Failed to fetch billers");
         }
-      );
   
-        console.log("User Profile:", response.data);
-
-        const billerIds = response.data.user.billers;
-
-       
-
-      if (!billerIds.length) {
-        setBillers([]); // No billers found
-        return;
-      }
-
-      // Fetch details of each biller using their IDs
-      const billerResponses = await Promise.all(
-        billerIds.map((id) =>
-          axios.get(`${BASE_URL}/biller/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-        )
-      );
-
-      const billerDetails = billerResponses.map((res) => res.data);
-
-      console.log(billerDetails)
-      setBillers(billerDetails); // ✅ Update state with full biller details
-
-
-
-
-
+      };
   
-        // ✅ Set the billers state with full biller details
-        //setBillers(response.data.billers);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-        toast.error(error?.response?.data?.message || "Failed to fetch profile");
-      }
-    };
-
-    fetchBillers()
+      fetchBillers();
   },
   []);
 
