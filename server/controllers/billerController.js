@@ -1,84 +1,99 @@
 const asyncHandler = require("express-async-handler");
 const Biller = require("../models/billerModel");
+const User = require("../models/userModel");
 
-
+// Create a new biller and associate it with the user
 const createBiller = asyncHandler(async (req, res) => {
-    console.log("User in request:", req.user); // Debugging line
-  try {
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ message: "Unauthorized: No user found" });
-    }
-  
-    const { name, billerType, accountNumber, bankName, serviceType, email } = req.body;
+  const {
+    name,
+    billerType,
+    accountNumber,
+    bankName,
+    serviceType,
+    email,
+    amount,
+  } = req.body;
 
-    if (
-      !name ||
-      // !billerType ||
-      // !accountNumber ||
-      // !bankName ||
-      // !serviceType ||   
-      !email 
-    ) {
-      return res
-        .status(400)
-        .json({ message: "Please fill in all required fields" });
-    }
-
-    //  Check if the biller already exists (By accountNumber or email)
-    const existingBiller = await Biller.findOne({ 
-      $or: [{ accountNumber }, { email }] // Check if accountNumber OR email exists
-  });
-
-  if (existingBiller) {
-      return res.status(400).json({ 
-          message: `A biller with this ${existingBiller.accountNumber === accountNumber ? "account number" : "email"} already exists.` 
-      });
+  // Check if user is authenticated
+  if (!req.userId) {
+    return res.status(401).json({ message: "Unauthorized: No user ID found" });
   }
 
-    // Count user's billers
-    const userBillers = await Biller.find({ user: req.user._id });
-
-    const vendorCount = userBillers.filter(b => b.billerType === "vendor").length;
-    const beneficiaryCount = userBillers.filter(b => b.billerType === "beneficiary").length;
-
-    // Restriction function based on billerType
-    if (billerType === "vendor" && vendorCount >= 5) {
-        return res.status(400).json({ message: "You can only have up to 5 vendors, Upgrade to get more." });
-    }
-
-    if (billerType === "beneficiary" && beneficiaryCount >= 1) {
-        return res.status(400).json({ message: "You can only have 1 beneficiary,Upgrade to get more." });
-    }
-  
-    const biller = await Biller.create({
-      user: req.user._id,
-      name,
-      billerType,
-      accountNumber,
-      bankName,
-      serviceType,
-      //phone,
-      email,
-      //profilePicture,
-    });
-  
-    res.status(201).json(biller);
-  } catch (error) {
-    console.error("Error creating biller:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+  // Find the user
+  const user = await User.findById(req.userId);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
   }
-   
+
+  // Create a new biller
+  const newBiller = await Biller.create({
+    name,
+    billerType,
+    accountNumber,
+    bankName,
+    serviceType,
+    email,
+    amount,
+    user: req.userId, // Associate biller with the user
   });
 
+  if (!newBiller) {
+    return res.status(400).json({ message: "Failed to create biller" });
+  }
 
-const getBillers = asyncHandler(async (req, res) => {
-  const billers = await Biller.find({ user: req.user._id });
-  res.status(200).json(billers);
+  // Add the biller to the user's billers array and update user in one step
+  const updatedUser = await User.findByIdAndUpdate(
+    req.userId,
+    { $push: { billers: newBiller._id } },
+    { new: true } // Return the updated user
+  ).populate("billers"); // Populate billers array with actual biller data
+
+  res.status(201).json({
+    message: "Biller created successfully",
+    biller: newBiller,
+    user: updatedUser, // Send updated user with billers populated
+  });
 });
 
+const getBillers = asyncHandler(async (req, res) => {
+  try {
+    // Check if user is authenticated
+    if (!req.userId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user ID found" });
+    }
+
+    // Find the user
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Fetch billers for the logged-in user, populating necessary fields
+    const billers = await Biller.find({ user: req.userId })
+      .populate("biller", "firstName lastName email profilePicture") // ✅ Populate user details
+      .populate("category", "name") // ✅ Populate category name
+      .populate("transactions") // ✅ Populate transactions (if needed)
+      .sort("-createdAt");
+
+    // Check if no billers found
+    if (!billers.length) {
+      return res.status(404).json({ message: "No billers found" });
+    }
+
+    res.status(200).json(billers);
+  } catch (err) {
+    console.error("Error fetching billers:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 const getBillerById = asyncHandler(async (req, res) => {
-  const biller = await Biller.findOne({ _id: req.params.billerId, user: req.user._id });
+  const biller = await Biller.findOne({
+    _id: req.params.billerId,
+    user: req.user._id,
+  });
 
   if (!biller) {
     return res.status(404).json({ message: "Biller not found" });
@@ -87,9 +102,11 @@ const getBillerById = asyncHandler(async (req, res) => {
   res.status(200).json(biller);
 });
 
-
 const updateBiller = asyncHandler(async (req, res) => {
-  const biller = await Biller.findOne({ _id: req.params.billerId, user: req.user._id });
+  const biller = await Biller.findOne({
+    _id: req.params.billerId,
+    user: req.user._id,
+  });
 
   if (!biller) {
     return res.status(404).json({ message: "Biller not found" });
@@ -102,9 +119,11 @@ const updateBiller = asyncHandler(async (req, res) => {
   res.status(200).json(biller);
 });
 
-
 const deleteBiller = asyncHandler(async (req, res) => {
-  const biller = await Biller.findOneAndDelete({ _id: req.params.billerId, user: req.user._id });
+  const biller = await Biller.findOneAndDelete({
+    _id: req.params.billerId,
+    user: req.user._id,
+  });
 
   if (!biller) {
     return res.status(404).json({ message: "Biller not found" });
