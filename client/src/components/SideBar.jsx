@@ -142,28 +142,28 @@ const SideBar = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0  bg-opacity-50 flex justify-center items-center z-50">
-          <div className="  rounded-lg bg-zinc-400 text-black shadow-lg p-6 border-4 relative">
+        <div className="fixed inset-0  bg-opacity-50  justify-center  flex items-center  bg-opacity-50 z-50">
+          <div className="  rounded-lg bg-zinc-300 text-black shadow-lg p-6 relative">
             {/* Close Button */}
             <button
-              className="top-4 left-4  text-lg  "
+              className="top-4 left-4 p-4 text-lg "
               onClick={toggleModal} // Close the modal
             >
               <SquareX className="w-10 h-10 hover:cursor-pointer hover:text-cyan-900 " />
             </button>
             {/* Modal Menu Items */}
-            <ul className="leading-10 text-2xl p-4">
+            <ul className="leading-10 text-xl p-4">
+              <Link to="/billers">
+                <li className="hover:text-cyan-900  font-bold cursor-pointer">
+                  Manage Billers
+                </li>
+              </Link>
               <Link to="/payment">
                 <li className="hover:text-cyan-900 font-bold  cursor-pointer">
                   Make Payment
                 </li>
               </Link>
 
-              <Link to="/billers">
-                <li className="hover:text-cyan-900  font-bold cursor-pointer">
-                  Manage Billers
-                </li>
-              </Link>
               <Link to="/analytics">
                 <li className="hover:text-cyan-900 font-bold  cursor-pointer">
                   Rewards and Analytics

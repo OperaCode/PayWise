@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import BarChart from "../charts/BarChart";
 import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
+import { useNavigate } from "react-router-dom";
 
 
 import cardBg2 from "../assets/cardBg2.webp";
@@ -10,6 +11,7 @@ import axios from "axios";
 
 import { Plus, Scroll, ArrowLeft } from "lucide-react";
 import { Button, Modal, Input, Select, Switch, DatePicker, Upload } from "antd";
+import { Navigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -43,6 +45,9 @@ const ManageBillers = () => {
     "Cable TV",
     "Other",
   ];
+
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Simulate an API call or app initialization delay
@@ -83,7 +88,7 @@ const ManageBillers = () => {
       const fetchBillers = async () => {
         try {
           const token = localStorage.getItem("token");
-          console.log(token)
+          
   
           if (!token) {
             toast.error("User not authenticated!");
@@ -103,6 +108,7 @@ const ManageBillers = () => {
   
           // ✅ Set the billers state directly from response
           setBillers(response.data);
+          //setWalletID()
         } catch (error) {
           console.error("Error fetching billers:", error);
           toast.error(error?.response?.data?.message || "Failed to fetch billers");
@@ -174,7 +180,7 @@ const ManageBillers = () => {
         toast.error("Oops, all fields are required");
         setLoading(false);
         setIsSubmitting(false);
-        return; // ✅ No need to throw an error, just return early
+        return; 
       }
 
       const token = localStorage.getItem("token");
@@ -182,7 +188,7 @@ const ManageBillers = () => {
       //console.log("UserId:", userId);
       //console.log("Token:", token);
 
-      // ✅ Send correct data object
+
       const response = await axios.post(
         `${BASE_URL}/biller/createbiller`,
         biller,
@@ -196,6 +202,7 @@ const ManageBillers = () => {
 
       if (response?.data) {
         const userData = response.data.user;
+        console.log(userData)
 
         toast.success(response.data.message);
       }
@@ -208,21 +215,57 @@ const ManageBillers = () => {
       toast.error(errorMessage);
     } finally {
       setLoading(false);
-      setIsSubmitting(false);
+      navigate("/billers");
     }
   };
 
-  const handleCardClick = (biller) => {
+  const handleCardClick = async(biller) => {
     setSelectedBiller(biller);
     setIsModalOpen(true);
   };
 
-  const handleDeleteBiller = (id) => {
-    if (confirm("Are you sure you want to delete this biller?")) {
-      setBillers((prev) => prev.filter((biller) => biller.id !== id));
+  const handleDeleteBiller = async (id) => {
+    if (!id) {
+      console.error("Error: Biller ID is undefined.");
+      alert("Error: Unable to delete biller. Please try again.");
+      return;
+    }
+  console.log(id)
+    const confirmDelete = confirm("Are you sure you want to delete this biller?");
+    if (!confirmDelete) return;
+  
+    try {
+      const token = localStorage.getItem("token"); // Retrieve auth token
+    
+
+      const response = await axios.delete(
+        `${BASE_URL}/biller/delete/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in Authorization header
+            "Content-Type": "application/json",
+          },
+        });
+  
+
+
+      console.log(response)
+      if (!response.ok) {
+        throw new Error("Failed to delete biller");
+      }
+  
+      // ✅ Remove deleted biller from UI
+      setBillers((prev) => prev.filter((biller) => biller._id !== id));
       setIsModalOpen(false);
+  
+      alert("Biller deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting biller:", error);
+      alert("Error deleting biller. Please try again.");
     }
   };
+  
+
 
   return (
     <>
@@ -558,7 +601,7 @@ const ManageBillers = () => {
 
                       <button
                         className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
-                        onClick={() => handleDeleteBiller(selectedBiller.id)}
+                        onClick={() => handleDeleteBiller(selectedBiller._id)}
                       >
                         Delete
                       </button>

@@ -52,7 +52,7 @@ const DashLayout = ({ children }) => {
         //console.log(response)
         const data = response?.data;
         const user = data?.user
-        console.log(user)
+        //console.log(user)
         // setUser(user);
         setUserName(user.firstName)
         setProfilePicture(user.profilePicture || image)

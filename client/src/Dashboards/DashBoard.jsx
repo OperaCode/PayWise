@@ -63,7 +63,8 @@ const DashBoard = () => {
   const [amount, setAmount] = useState("");
   const [walletBalance, setWalletBalance] = useState("");
   const [walletLinked, setWalletLinked] = useState(false);
-  const [walletAddress, setWalletAddress] = useState("");
+  const [metaMaskAddress, setMetaMaskAddress] = useState("");
+  const [payWalletAddress, setPayWalletAddress] = useState("");
 
   //to show hidden wallet balance
   const [showWallet, setShowWallet] = useState(false);
@@ -84,8 +85,11 @@ const DashBoard = () => {
         });
         console.log(response);
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
-        setWalletAddress(
+        setMetaMaskAddress(
           response?.data?.user?.metamaskWallet || "Wallet not Linked!"
+        );
+        setPayWalletAddress(
+          response?.data?.user?.wallet.walletId || "Wallet not Linked!"
         );
       } catch (error) {
         console.error(error);
@@ -136,9 +140,9 @@ const DashBoard = () => {
   //       return;
   //     }
 
-  //     const walletAddress = accounts[0];
-  //     console.log(walletAddress)
-  //     //setWalletAddress(walletAddress);
+  //     const metaMaskAddress = accounts[0];
+  //     console.log(metaMaskAddress)
+  //     //setMetaMaskAddress(metaMaskAddress);
 
   //     // Ensure userId is retrieved correctly
   //     const userId = localStorage.getItem("userId"); // Adjust based on your auth method
@@ -151,7 +155,7 @@ const DashBoard = () => {
   //     // Send wallet address to the backend
   //     const response = await axios.post(
   //       `${BASE_URL}/user/connect-metamask`,
-  //       { userId, walletAddress }, // Properly structured payload
+  //       { userId, metaMaskAddress }, // Properly structured payload
   //       {
   //         headers: { "Content-Type": "application/json" },
   //         withCredentials: true,
@@ -187,8 +191,8 @@ const DashBoard = () => {
         return;
       }
 
-      const walletAddress = accounts[0];
-      console.log("MetaMask Wallet Address:", walletAddress);
+      const metaMaskAddress = accounts[0];
+      console.log("MetaMask Wallet Address:", metaMaskAddress);
 
       // Get user ID from localStorage (Adjust based on your authentication method)
       const userId = localStorage.getItem("userId");
@@ -202,7 +206,7 @@ const DashBoard = () => {
       // Send wallet address to backend
       const response = await axios.post(
         `${BASE_URL}/user/connect-metamask`,
-        { userId, walletAddress }, // Payload with userId and walletAddress
+        { userId, metaMaskAddress }, // Payload with userId and metaMaskAddress
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
@@ -215,13 +219,14 @@ const DashBoard = () => {
         // Update UI: Save MetaMask address in local state
         setUser((prevUser) => ({
           ...prevUser,
-          metamaskWallet: walletAddress, // Update the UI state
+          metamaskWallet: metaMaskAddress, // Update the UI state
         }));
 
         // Optionally save MetaMask address to localStorage for persistence
-        // localStorage.setItem("metamaskWallet", walletAddress);
+        // localStorage.setItem("metamaskWallet", metaMaskAddress);
 
-        setWalletAddress(walletAddress);
+        setMetaMaskAddress(metaMaskAddress);
+        setWalletLinked(true)
       }
     } catch (error) {
       console.error("Error connecting MetaMask:", error);
@@ -234,6 +239,10 @@ const DashBoard = () => {
       toast.error(errorMessage);
     }
   };
+
+  const connectedWallet = async()=>{
+    
+  }
 
   return (
     <>
@@ -289,7 +298,7 @@ const DashBoard = () => {
                   MetaMask Wallet:{" "}
                   <span className="font-normal">
                     {showWallet
-                      ? walletAddress || "No wallet Linked"
+                      ? metaMaskAddress || "No wallet Linked"
                       : "•••••••••••••••••"}
                   </span>
                 </p>
@@ -384,8 +393,8 @@ const DashBoard = () => {
                 {walletLinked ? (
                   <div className="m-auto text-center">
                     <p className="font-semibold">Your Wallets:</p>
-                    <p>PayWise Wallet: {user?.walletId || "N/A"}</p>
-                    <p>Metamask Wallet: {walletAddress || "N/A"}</p>
+                    <p>PayWise Wallet: {payWalletAddress || "N/A"}</p>
+                    <p>Metamask Wallet: {metaMaskAddress || "N/A"}</p>
                   </div>
                 ) : (
                   <p>You currently have no wallets linked.</p>
