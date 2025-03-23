@@ -118,23 +118,18 @@ const registerUser = asyncHandler(async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
 
-    const { idToken, firstName, lastName, email, password } = req.body;
+    const {firstName, lastName, email, password } = req.body;
 
-    // console.log("idToken:", idToken);
-    // console.log("email:", email);
-    // console.log("password:", password);
-    // console.log("firstName:", firstName);
-    // console.log("lastName:", lastName);
-
+   
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     // Validate password length
-    if (password.length < 8 || password.length > 20) {
+    if (password.length < 8 || password.length > 12) {
       return res
         .status(400)
-        .json({ message: "Password must be between 8 and 20 characters" });
+        .json({ message: "Password must be between 8 and 12 characters" });
     }
 
     // Check if user already exists

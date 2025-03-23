@@ -25,6 +25,33 @@ const createBiller = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
+  // Check if the user has already associated the biller with their account
+  if (user.billers.some((biller) => biller.accountNumber === accountNumber)) {
+    return res.status(400).json({
+      message: "This account number is already associated with your account",
+    });
+  }
+
+  // Count the user's billers based on type
+  const vendorCount = user.billers.filter(
+    (biller) => biller.billerType === "Vendor"
+  ).length;
+  const beneficiaryCount = user.billers.filter(
+    (biller) => biller.billerType === "Beneficiary"
+  ).length;
+  // Enforce limit for vendors and beneficiary
+  if (billerType === "Vendor" && vendorCount <= 5) {
+    return res
+      .status(400)
+      .json({ message: "You can only register up to 5 vendors." });
+  }
+
+  if (billerType === "Beneficiary" && beneficiaryCount <= 1) {
+    return res
+      .status(400)
+      .json({ message: "You can only register 1 beneficiary." });
+  }
+
   // Create a new biller
   const newBiller = await Biller.create({
     name,
@@ -57,34 +84,21 @@ const createBiller = asyncHandler(async (req, res) => {
 
 const getBillers = asyncHandler(async (req, res) => {
   try {
-    // Check if user is authenticated
-    if (!req.userId) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No user ID found" });
-    }
-
     // Find the user
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).populate("billers");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    // ✅ Fetch only the billers associated with this user
+    const billers = user.billers;
 
-    // Fetch billers for the logged-in user, populating necessary fields
-    const billers = await Biller.find({ user: req.userId })
-      .populate("biller", "firstName lastName email profilePicture") // ✅ Populate user details
-      .populate("category", "name") // ✅ Populate category name
-      .populate("transactions") // ✅ Populate transactions (if needed)
-      .sort("-createdAt");
-
-    // Check if no billers found
-    if (!billers.length) {
+    if (!billers || billers.length === 0) {
       return res.status(404).json({ message: "No billers found" });
     }
 
     res.status(200).json(billers);
-  } catch (err) {
-    console.error("Error fetching billers:", err);
+  } catch (error) {
+    console.error("Error fetching billers:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -120,17 +134,31 @@ const updateBiller = asyncHandler(async (req, res) => {
 });
 
 const deleteBiller = asyncHandler(async (req, res) => {
-  const biller = await Biller.findOneAndDelete({
-    _id: req.params.billerId,
-    user: req.user._id,
-  });
+  try {
+    const { billerId } = req.params;
 
-  if (!biller) {
-    return res.status(404).json({ message: "Biller not found" });
+    // Ensure user is authenticated (from protectUser middleware)
+    if (!req.userId) {
+      return res.status(401).json({ message: "Unauthorized: No user ID found" });
+    }
+
+    // Check if the biller exists and belongs to the authenticated user
+    const biller = await Biller.findOneAndDelete({
+      _id: billerId,
+      user: req.userId, // Ensures the user can only delete their own billers
+    });
+
+    if (!biller) {
+      return res.status(404).json({ message: "Biller not found" });
+    }
+
+    res.status(200).json({ message: "Biller deleted successfully", billerId });
+  } catch (error) {
+    console.error("Error deleting biller:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
-
-  res.status(200).json({ message: "Biller deleted successfully" });
 });
+
 
 module.exports = {
   createBiller,
