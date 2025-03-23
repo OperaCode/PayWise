@@ -51,7 +51,7 @@ const flutterwaveConfig = {
 const DashBoard = () => {
   const { user } = useContext(UserContext);
   //const { setLoading } = useContext(LoaderContext);
-  const [walletBalance, setWalletBalance] = useState("");
+
   const [fundModalOpen, setFundModalOpen] = useState(false);
   const [manageTokensModalOpen, setManageTokensModalOpen] = useState(false);
   const [p2pModalOpen, setP2pModalOpen] = useState(false);
@@ -61,7 +61,11 @@ const DashBoard = () => {
   const [loading, setLoading] = useState(true);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [amount, setAmount] = useState("");
+  const [walletBalance, setWalletBalance] = useState("");
+  const [walletLinked, setWalletLinked] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
+
+  //to show hidden wallet balance
   const [showWallet, setShowWallet] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
 
@@ -80,8 +84,9 @@ const DashBoard = () => {
         });
         console.log(response);
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
-        setWalletAddress(response?.data?.user?.metamaskWallet || "Wallet not Linked!");
-      
+        setWalletAddress(
+          response?.data?.user?.metamaskWallet || "Wallet not Linked!"
+        );
       } catch (error) {
         console.error(error);
         toast.error(error?.response?.data?.message);
@@ -115,11 +120,62 @@ const DashBoard = () => {
     }
   };
 
+  // const connectToMetaMask = async () => {
+  //   if (!window.ethereum) {
+  //     toast.error("MetaMask not detected! Redirecting to download...");
+  //     window.location.href = "https://metamask.io/download.html";
+
+  //   }
+
+  //   try {
+  //     const provider = new ethers.BrowserProvider(window.ethereum);
+  //     const accounts = await provider.send("eth_requestAccounts", []);
+
+  //     if (accounts.length === 0) {
+  //       toast.error("No MetaMask account found.");
+  //       return;
+  //     }
+
+  //     const walletAddress = accounts[0];
+  //     console.log(walletAddress)
+  //     //setWalletAddress(walletAddress);
+
+  //     // Ensure userId is retrieved correctly
+  //     const userId = localStorage.getItem("userId"); // Adjust based on your auth method
+  //     console.log(userId)
+  //     if (!userId) {
+  //       toast.error("User not authenticated. Please log in first.");
+  //       return;
+  //     }
+
+  //     // Send wallet address to the backend
+  //     const response = await axios.post(
+  //       `${BASE_URL}/user/connect-metamask`,
+  //       { userId, walletAddress }, // Properly structured payload
+  //       {
+  //         headers: { "Content-Type": "application/json" },
+  //         withCredentials: true,
+  //       }
+  //     );
+
+  //     if (response.status === 200) {
+  //       toast.success("Wallet Connected Succesfully!");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error connecting MetaMask:", error);
+
+  //     // Format and display the error message properly
+  //     const errorMessage = error.response?.data?.message || error.message || "An unexpected error occurred";
+  //     toast.error(`${errorMessage}`);
+
+  //   }
+  // };
+
   const connectToMetaMask = async () => {
     if (!window.ethereum) {
       toast.error("MetaMask not detected! Redirecting to download...");
       window.location.href = "https://metamask.io/download.html";
-     
+      return;
     }
 
     try {
@@ -132,22 +188,21 @@ const DashBoard = () => {
       }
 
       const walletAddress = accounts[0];
-      console.log(walletAddress)
-      //setWalletAddress(walletAddress);
-      
+      console.log("MetaMask Wallet Address:", walletAddress);
 
-      // Ensure userId is retrieved correctly
-      const userId = localStorage.getItem("userId"); // Adjust based on your auth method
-      console.log(userId)
+      // Get user ID from localStorage (Adjust based on your authentication method)
+      const userId = localStorage.getItem("userId");
+      console.log("User ID:", userId);
+
       if (!userId) {
         toast.error("User not authenticated. Please log in first.");
         return;
       }
 
-      // Send wallet address to the backend
+      // Send wallet address to backend
       const response = await axios.post(
         `${BASE_URL}/user/connect-metamask`,
-        { userId, walletAddress }, // Properly structured payload
+        { userId, walletAddress }, // Payload with userId and walletAddress
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
@@ -155,16 +210,28 @@ const DashBoard = () => {
       );
 
       if (response.status === 200) {
-        toast.success("Wallet Connected Succesfully!");
-      } 
+        toast.success("Wallet Connected Successfully!");
+
+        // Update UI: Save MetaMask address in local state
+        setUser((prevUser) => ({
+          ...prevUser,
+          metamaskWallet: walletAddress, // Update the UI state
+        }));
+
+        // Optionally save MetaMask address to localStorage for persistence
+        // localStorage.setItem("metamaskWallet", walletAddress);
+
+        setWalletAddress(walletAddress);
+      }
     } catch (error) {
       console.error("Error connecting MetaMask:", error);
 
-      // Format and display the error message properly
-      const errorMessage = error.response?.data?.message || error.message || "An unexpected error occurred";
-      toast.error(`${errorMessage}`);
-    
-
+      // Format and display error message properly
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+      toast.error(errorMessage);
     }
   };
 
@@ -185,23 +252,21 @@ const DashBoard = () => {
                   <p className="text-sm md:text-lg font-bold">
                     Wallet Balance:
                   </p>
-                  
-                <div className="flex items-center space-x-2">
-                <h2 className="text-xl font-bold">
-                  $
-                  <span className="font-bold">
-                  {showBalance
-                    ? walletBalance || " 0.00 "
-                    : "••••"}
-                  </span>
-                </h2>
-                <button
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="focus:outline-none hover:cursor-pointer"
-                >
-                  {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
-              </div>
+
+                  <div className="flex items-center space-x-2">
+                    <h2 className="text-xl font-bold">
+                      $
+                      <span className="font-bold">
+                        {showBalance ? walletBalance || " 0.00 " : "••••"}
+                      </span>
+                    </h2>
+                    <button
+                      onClick={() => setShowBalance(!showBalance)}
+                      className="focus:outline-none hover:cursor-pointer"
+                    >
+                      {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </button>
+                  </div>
                 </div>
                 <div className="flex gap-2 text-center mt-4">
                   <button
@@ -223,16 +288,16 @@ const DashBoard = () => {
                 <p className="text-xs font-bold">
                   MetaMask Wallet:{" "}
                   <span className="font-normal">
-                  {showWallet
-                    ? walletAddress || "No wallet Linked"
-                    : "•••••••••••••••••"}
+                    {showWallet
+                      ? walletAddress || "No wallet Linked"
+                      : "•••••••••••••••••"}
                   </span>
                 </p>
                 <button
                   onClick={() => setShowWallet(!showWallet)}
                   className="focus:outline-none hover:cursor-pointer"
                 >
-                  {showWallet ?<Eye size={16} /> : <EyeOff size={16} />}
+                  {showWallet ? <Eye size={16} /> : <EyeOff size={16} />}
                 </button>
               </div>
             </div>
@@ -300,7 +365,7 @@ const DashBoard = () => {
             ></div>
             <div className="stars"></div>
 
-            <div className="bg-zinc-200 p-2 rounded-lg shadow-lg w-2/3 lg:w-md relative m-auto">
+            <div className="bg-zinc-200 p-4 rounded-lg shadow-lg w-2/3 lg:w-md relative m-auto">
               <div className="flex-col justify-center p-2 flex m-auto text-center">
                 <X
                   strokeWidth={4}
@@ -309,10 +374,22 @@ const DashBoard = () => {
                   className=" hover:cursor-pointer  hover:scale-110  hover:text-red-400 "
                 />
                 <h2 className="text-xl font-bold ">My Wallets</h2>
-                <p>
+                <p className="text-center font-bold">
                   Here you can manage your paywise wallet or Connect to
                   Metamask.
                 </p>
+              </div>
+              {/* Wallet Display Section */}
+              <div className="p">
+                {walletLinked ? (
+                  <div className="m-auto text-center">
+                    <p className="font-semibold">Your Wallets:</p>
+                    <p>PayWise Wallet: {user?.walletId || "N/A"}</p>
+                    <p>Metamask Wallet: {walletAddress || "N/A"}</p>
+                  </div>
+                ) : (
+                  <p>You currently have no wallets linked.</p>
+                )}
               </div>
               <div className="flex justify-between p-4">
                 <FlutterWaveButton

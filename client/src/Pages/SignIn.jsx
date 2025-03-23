@@ -1,7 +1,12 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 
 import { toast } from "react-toastify";
 import { ThemeContext } from "../context/ThemeContext";
@@ -12,7 +17,7 @@ import image from "../assets/Register.png";
 import logo from "../assets/paywise-logo.png";
 import Loader from "../components/Loader";
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const Login = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -25,7 +30,7 @@ const Login = () => {
     password: "",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false); // Fix: Initialize isSubmitting state
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -47,38 +52,24 @@ const Login = () => {
       }
       setIsSubmitting(true);
 
-      // console.log({formData});
-
-      const response = await axios.post(
-        "http://localhost:3000/user/login",
-        formData,
-        { withCredentials: true }
-      );
-
-
-     
-      
-
+      const response = await axios.post(`${BASE_URL}/user/login`, formData, {
+        withCredentials: true,
+      });
 
       if (response?.data) {
-        console.log("Backend Response:", response.data);
+        //console.log("Backend Response:", response.data);
         const user = response.data.user;
-        console.log("Backend Response:", user);
+        //console.log("Backend Response:", user);
         // Store user data locally
         localStorage.setItem("userId", user._id);
         localStorage.setItem("token", user.token);
-        console.log(user)
+        //console.log(user);
         //console.log(token)
-  
+
         setUser(user);
         navigate("/dashboard");
-        toast.success("Google Sign-In Successful!");
+        toast.success("Login Succesful!, Welcome to Back!");
       }
-
-
-
-
-
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data?.message);
@@ -89,189 +80,127 @@ const Login = () => {
     }
   };
 
-  const loginUser2 = async (e) => {
-    e.preventDefault();
-  
-    try {
-      const { email, password } = formData;
-  
-      if (!email || !password) {
-        toast.error("All fields are required");
-        return;
-      }
-  
-      setIsSubmitting(true);
-  
-      // ✅ Authenticate with Firebase first
-      const auth = getAuth();
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-  
-      console.log("Firebase User:", user);
-  
-      // ✅ Get Firebase ID token
-      const idToken = await user.getIdToken();
-      console.log("Firebase ID Token:", idToken);
-  
-      // ✅ Send ID token to backend for authentication
-      const response = await axios.post(
-        "http://localhost:3000/user/login",
-        { formData, idToken }, // Send ID Token, NOT email/password
-        {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-          }
-      );
+  // const loginUser1 = async (e) => {
+  //   e.preventDefault();
 
+  //   try {
+  //     const { email, password } = formData;
 
-    //   // Send data to the backend
-    //   const response = await axios.post(
-    //     "http://localhost:3000/user/register",
-    //     { firstName, lastName, email, password, idToken }, // Correct structure
-    //     {
-    //       headers: { "Content-Type": "application/json" },
-    //       withCredentials: true,
-    //     }
-    //   );
+  //     if (!email || !password) {
+  //       toast.error("All fields are required");
+  //       return;
+  //     }
 
+  //     setIsSubmitting(true);
 
+  //     // ✅ Initialize Firebase Auth
+  //     const auth = getAuth();
+  //     if (!auth) {
+  //       throw new Error("Firebase authentication not initialized properly.");
+  //     }
 
-  
-      console.log("Login Successful:", response.data);
-      toast.success("Login Successful");
-  
-      // ✅ Store user data in local state or context
-      setUser(response.data);
-      localStorage.setItem("token", response.data.token);
-  
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("🔥 Login Error:", error);
-      toast.error(error?.response?.data?.message || "Login failed");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  //     // ✅ Authenticate with Firebase
+  //     let userCredential;
+  //     try {
+  //       userCredential = await signInWithEmailAndPassword(
+  //         auth,
+  //         email,
+  //         password
+  //       );
+  //     } catch (firebaseError) {
+  //       console.error("🔥 Firebase Authentication Error:", firebaseError);
+  //       if (firebaseError.code === "auth/invalid-credential") {
+  //         toast.error("Invalid email or password. Please try again.");
+  //       } else {
+  //         toast.error(firebaseError.message || "Authentication failed.");
+  //       }
+  //       return;
+  //     }
 
+  //     const user = userCredential.user;
+  //     console.log("✅ Firebase User:", user);
 
+  //     // ✅ Get Firebase ID Token
+  //     let idToken;
+  //     try {
+  //       idToken = await user.getIdToken();
+  //     } catch (tokenError) {
+  //       console.error("🔥 Firebase Token Error:", tokenError);
+  //       toast.error("Failed to retrieve authentication token.");
+  //       return;
+  //     }
 
+  //     console.log("✅ Firebase ID Token:", idToken);
 
-const loginUser1 = async (e) => {
-  e.preventDefault();
-  
-  try {
-    const { email, password } = formData;
+  //     // ✅ Send ID Token to backend
+  //     let response;
+  //     try {
+  //       response = await axios.post(
+  //         "http://localhost:3000/user/login",
+  //         { idToken },
+  //         { withCredentials: true }
+  //       );
+  //     } catch (apiError) {
+  //       console.error("🔥 API Login Error:", apiError);
+  //       toast.error(apiError.response?.data?.message || "Login failed.");
+  //       return;
+  //     }
 
-    if (!email || !password) {
-      toast.error("All fields are required");
-      return;
-    }
+  //     console.log("✅ Login Successful:", response.data);
+  //     toast.success("Login Successful");
 
-    setIsSubmitting(true);
+  //     // ✅ Store user data in state or localStorage
+  //     setUser(response.data);
+  //     localStorage.setItem("token", response.data.token);
 
-    // ✅ Initialize Firebase Auth
-    const auth = getAuth();
-    if (!auth) {
-      throw new Error("Firebase authentication not initialized properly.");
-    }
-
-    // ✅ Authenticate with Firebase
-    let userCredential;
-    try {
-      userCredential = await signInWithEmailAndPassword(auth, email, password);
-    } catch (firebaseError) {
-      console.error("🔥 Firebase Authentication Error:", firebaseError);
-      if (firebaseError.code === "auth/invalid-credential") {
-        toast.error("Invalid email or password. Please try again.");
-      } else {
-        toast.error(firebaseError.message || "Authentication failed.");
-      }
-      return;
-    }
-
-    const user = userCredential.user;
-    console.log("✅ Firebase User:", user);
-
-    // ✅ Get Firebase ID Token
-    let idToken;
-    try {
-      idToken = await user.getIdToken();
-    } catch (tokenError) {
-      console.error("🔥 Firebase Token Error:", tokenError);
-      toast.error("Failed to retrieve authentication token.");
-      return;
-    }
-
-    console.log("✅ Firebase ID Token:", idToken);
-
-    // ✅ Send ID Token to backend
-    let response;
-    try {
-      response = await axios.post(
-        "http://localhost:3000/user/login",
-        { idToken },
-        { withCredentials: true }
-      );
-    } catch (apiError) {
-      console.error("🔥 API Login Error:", apiError);
-      toast.error(apiError.response?.data?.message || "Login failed.");
-      return;
-    }
-
-    console.log("✅ Login Successful:", response.data);
-    toast.success("Login Successful");
-
-    // ✅ Store user data in state or localStorage
-    setUser(response.data);
-    localStorage.setItem("token", response.data.token);
-
-    navigate("/dashboard");
-  } catch (error) {
-    console.error("🔥 Unexpected Error:", error);
-    toast.error(error.message || "An unexpected error occurred.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-
+  //     navigate("/dashboard");
+  //   } catch (error) {
+  //     console.error("🔥 Unexpected Error:", error);
+  //     toast.error(error.message || "An unexpected error occurred.");
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const GoogleLogin = async () => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
-  
+
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log(user)
-  
+      console.log(user);
+
       // Get Firebase ID token
       const idToken = await user.getIdToken();
-    //   console.log("Firebase ID Token:", idToken);
+      //   console.log("Firebase ID Token:", idToken);
       if (idToken) {
         //console.log(idToken)
-        localStorage.setItem('token', idToken);
-        console.log("Token stored in localStorage:", localStorage.getItem("token")); // ✅ Confirm storage
-    }
-    // console.log("Google Auth Token:", idToken);
+        localStorage.setItem("token", idToken);
+        console.log(
+          "Token stored in localStorage:",
+          localStorage.getItem("token")
+        ); 
+      }
+      // console.log("Google Auth Token:", idToken);
 
-      // ✅ Send the ID Token to backend
+      // Send the ID Token to backend
       const response = await axios.post(
         "http://localhost:3000/auth/google-auth",
         { idToken }, // The request body
         {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
         }
       );
       if (response?.data) {
         console.log("Backend Response:", response.data);
         const user = response.data.user;
         console.log("Backend Response:", user);
-        // ✅ Store user data locally
+        // Store user data locally
         localStorage.setItem("userId", user._id);
-        console.log(user)
-  
+        console.log(user);
+
         setUser(user);
         navigate("/dashboard");
         toast.success("Google Sign-In Successful!");
@@ -282,99 +211,47 @@ const loginUser1 = async (e) => {
     }
   };
 
+  // const GoogleLogin = async () => {
+  //     const auth = getAuth();
+  //     const provider = new GoogleAuthProvider();
 
-// const GoogleLogin = async () => {
-//     const auth = getAuth();
-//     const provider = new GoogleAuthProvider();
-  
-//     try {
-//       const result = await signInWithPopup(auth, provider);
-//       const user = result.user;
-  
-//       // Get Firebase ID token
-//       const idToken = await user.getIdToken();
-//       console.log("Firebase ID Token:", idToken);
-  
-//       // ✅ Send the ID Token to backend
-//       const response = await axios.post(
-//         "http://localhost:3000/user/google-auth",
-//         { idToken }
-//       );
-  
-//       if (response?.data) {
-//         console.log("Backend Response:", response);
+  //     try {
+  //       const result = await signInWithPopup(auth, provider);
+  //       const user = result.user;
 
+  //       // Get Firebase ID token
+  //       const idToken = await user.getIdToken();
+  //       console.log("Firebase ID Token:", idToken);
 
-//         console.log("Google Login - Backend Response:", response.data);
-//         console.log("Expected userId:", response.data?.user?._id);
+  //       // Send the ID Token to backend
+  //       const response = await axios.post(
+  //         "http://localhost:3000/user/google-auth",
+  //         { idToken }
+  //       );
+
+  //       if (response?.data) {
+  //         console.log("Backend Response:", response);
+
+  //         console.log("Google Login - Backend Response:", response.data);
+  //         console.log("Expected userId:", response.data?.user?._id);
+
+  //         // Store user ID explicitly
+  //         localStorage.setItem("userId", response.data.user._id);
+  //         //localStorage.setItem("token", response.data.token); // 
+  //         localStorage.setItem("user", JSON.stringify(response.data.user)); // 
+
+  //         setUser(response.data.user);
+  //         navigate("/dashboard", { state: { user: response.data.user } });
+  //         toast.success("✅ Google Sign-In Successful!");
+  //       }
+  //     } catch (error) {
+  //       toast.error("Google Sign-In Error");
+  //       console.error("Google Sign-In Error:", error.message);
+  //     }
+  //   };
 
   
-//         // ✅ Store user ID explicitly
-//         localStorage.setItem("userId", response.data.user._id);
-//         //localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
-//         localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
-  
-//         setUser(response.data.user);
-//         navigate("/dashboard", { state: { user: response.data.user } });
-//         toast.success("✅ Google Sign-In Successful!");
-//       }
-//     } catch (error) {
-//       toast.error("Google Sign-In Error");
-//       console.error("Google Sign-In Error:", error.message);
-//     }
-//   };
-  
-
-
-// const GoogleLogin = async () => {
-//     const auth = getAuth();
-//     const provider = new GoogleAuthProvider();
-  
-//     try {
-//       const result = await signInWithPopup(auth, provider);
-//       const user = result.user;
-  
-//       // ✅ Get Firebase ID Token
-//       const idToken = await user.getIdToken();
-//       console.log("Firebase ID Token:", idToken);
-  
-//       // ✅ Prepare user data for backend
-//       const userData = {
-//         idToken, // Firebase authentication token
-//         firebaseUid: user.uid, // Firebase user ID
-//         email: user.email,
-//         name: user.displayName,
-//         profilePicture: user.photoURL,
-//         emailVerified: user.emailVerified,
-//       };
-  
-//       // ✅ Send ID Token & User Data to Backend
-//       const response = await axios.post("http://localhost:3000/user/google-auth", userData,  { withCredentials: true });
-  
-//       if (response?.data) {
-//         console.log("Google Login - Backend Response:", response.data);
-//         console.log("Expected userId:", response.data?.user?._id);
-  
-//         // ✅ Store user ID & token locally
-//         localStorage.setItem("userId", response.data.user._id);
-//         localStorage.setItem("token", response.data.token); // ✅ Store JWT Token
-//         // localStorage.setItem("user", JSON.stringify(response.data.user)); // ✅ Store User Data
-  
-//         setUser(response.data.user);
-//         navigate("/dashboard");
-//         toast.success("Google Sign-In Successful!");
-//       }
-//     } catch (error) {
-//       toast.error("Google Sign-In Error");
-//       console.error("Google Sign-In Error:", error.message);
-//     }
-//   };
-  
-
-
-
-
-return (
+  return (
     <div className="p-8 h-screen">
       {/* Theme Toggle Button */}
       <div className="flex justify-between px-4 items-center">
@@ -455,7 +332,7 @@ return (
           {/* Show Loader when Logging in */}
           {loading && (
             <div className="loader">
-              <Loader/>
+              <Loader />
             </div>
           )}
 

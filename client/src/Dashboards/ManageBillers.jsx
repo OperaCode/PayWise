@@ -75,6 +75,9 @@ const ManageBillers = () => {
   //     setBiller((prev) => ({ ...prev, [field]: e.value }));
   //   }
   // };
+  
+  
+  // for fetching billrs to frontend
   useEffect(()=>{
   
       const fetchBillers = async () => {
@@ -111,6 +114,8 @@ const ManageBillers = () => {
   },
   []);
 
+
+  //to handle input changes for the forms
   const handleChange = (event) => {
     const { name, value } = event.target;
     setBiller((prev) => ({
@@ -118,6 +123,9 @@ const ManageBillers = () => {
       [name]: value || "",
     }));
   };
+
+
+
 
   const closeModal = async() => {
     setIsModalOpen(false);
@@ -132,60 +140,7 @@ const ManageBillers = () => {
     });
   };
 
-  const handleCreateBiller1 = async () => {
-    const {
-      name,
-      billerType,
-      accountNumber,
-      bankName,
-      serviceType,
-      email,
-      amount,
-    } = formData;
-
-    console.log(formData);
-
-    if (
-      !biller.name ||
-      !biller.billerType ||
-      !biller.accountNumber ||
-      !biller.bankName ||
-      !biller.serviceType ||
-      !biller.email ||
-      !biller.amount
-    ) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
-      const response = await axios.post(
-        `${BASE_URL}/billers/createbiller`,
-        biller,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const data = response.data;
-
-      toast.success("Biller created successfully!");
-      refreshBillers(); // Refresh the billers list after creation
-      closeModal(); // Close the modal if applicable
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to create biller.";
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  
   const handleCreateBiller = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -333,7 +288,7 @@ const ManageBillers = () => {
               </p>
 
               {/* Cards */}
-              <div className="flex gap-4 justify-between  w-full items-center p-4">
+              <div className="flex gap-4 justify-between w-full items-center p-4">
                 
                 {/* Toggle when billerslist is empty */}
                 {billers && billers.length > 0 ? (
@@ -344,7 +299,7 @@ const ManageBillers = () => {
                       // style={{
                       //   backgroundImage: `url(${cardBg2})`,
                       // }}
-                      className="cursor-pointer border bg-center hover:scale-105 shadow-lg rounded-lg p-4 w-50 flex flex-col items-center"
+                      className="cursor-pointer border bg-center hover:scale-105 shadow-lg rounded-lg p-4 w-40 flex flex-col items-center"
                     >
                       <img
                         src={biller.profilePicture || image}
