@@ -79,10 +79,10 @@ app.post("/upload", upload.single("my_file"), async (req, res) => {
 });
 
 // Configure passport
-initializePassport(passport);
-app.use(session({ secret: "paywise-secret", resave: false, saveUninitialized: false }));
-app.use(passport.initialize());
-app.use(passport.session());
+// initializePassport(passport);
+// app.use(session({ secret: "paywise-secret", resave: false, saveUninitialized: false }));
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 // Routes
 app.use("/user", userRoutes);

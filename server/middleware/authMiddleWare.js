@@ -4,9 +4,6 @@ const userModel = require("../models/userModel");
 
 const protectUser = asyncHandler(async(req,res,next) => {
   let token;
-
-  console.log("🔹 Checking authentication...");
-
  
   if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
@@ -34,7 +31,7 @@ const protectUser = asyncHandler(async(req,res,next) => {
       return res.status(401).json({ message: "Unauthorized, user not found" });
     }
 
-    console.log("Authentication successful for user:", foundUser.email);
+    //console.log("Authentication successful for user:", foundUser.email);
     next();
   } catch (error) {
     console.error("Error verifying token:", error);

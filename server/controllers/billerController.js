@@ -160,9 +160,38 @@ const deleteBiller = asyncHandler(async (req, res) => {
 });
 
 
+
+const updateBillerPicture = asyncHandler(async (req, res) => {
+  const { id } = req.params; // Get biller ID from request params
+
+  if (!req.file) {
+    return res.status(400).json({ message: "No image file uploaded" });
+  }
+
+  const biller = await Biller.findById(id);
+  if (!biller) {
+    return res.status(404).json({ message: "Biller not found" });
+  }
+
+  // Upload image to Cloudinary
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    folder: "billers",
+  });
+
+  biller.profilePicture = result.secure_url; // Update biller profile picture
+  await biller.save();
+
+  res.json({
+    message: "Biller profile picture uploaded successfully",
+    profilePicture: biller.profilePicture,
+  });
+});
+
+
 module.exports = {
   createBiller,
   getBillers,
+  updateBillerPicture,
   getBillerById,
   updateBiller,
   deleteBiller,
