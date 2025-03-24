@@ -10,8 +10,8 @@ const {
   sendMetaMaskEmail,
 } = require("../config/EmailConfig.js");
 
-const cloudinary = require("cloudinary").v2;
-const multer = require("multer");
+// const cloudinary = require("cloudinary").v2;
+// const multer = require("multer");
 
 // const admin = require("../middleware/firebaseAdminAuth");
 
@@ -24,11 +24,11 @@ const generateToken = (userId) => {
   });
 };
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// cloudinary.config({
+//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//   api_key: process.env.CLOUDINARY_API_KEY,
+//   api_secret: process.env.CLOUDINARY_API_SECRET,
+// });
 
 // Configure Multer for Local Storage
 // const storage = multer.diskStorage({
@@ -351,14 +351,30 @@ const setTransactionPin = asyncHandler(async (req, res) => {
   }
 });
 
-const uploadProfilePicture = asyncHandler(async (req, res) => {
+const uploadProfilePicture = async (req, res) => {
   try {
-    const { profilePicture } = req.body;
-    const userId = req.params.id;
+    // ✅ Ensure a file is uploaded
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file uploaded" });
+    }
 
+    const userId = req.userId; // ✅ Use userId from middleware
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized, no user ID" });
+    }
+
+    // ✅ Upload image to Cloudinary
+    const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
+      folder: "Users", // ✅ Store in Cloudinary folder
+    });
+
+    console.log("Cloudinary Upload Response:", uploadedImage);
+
+    // ✅ Update user profile picture in database
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { profilePicture },
+      { profilePicture: uploadedImage.secure_url }, // ✅ Save Cloudinary URL
       { new: true }
     );
 
@@ -371,7 +387,8 @@ const uploadProfilePicture = asyncHandler(async (req, res) => {
     console.error("Error updating profile picture:", error);
     res.status(500).json({ message: "Server error" });
   }
-});
+};
+
 
 const getUser = asyncHandler(async (req, res) => {
   try {
