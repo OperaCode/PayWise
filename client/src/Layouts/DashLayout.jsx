@@ -31,13 +31,13 @@ const DashLayout = ({ children }) => {
   const [isUploading, setIsUploading] = useState(false);
 
   // Handle file selection
-  const handleSelectFile = (e) => {
+ const handleSelectFile = (e) => {
     const photo = e.target.files[0];
     if (photo) {
       setFile(photo);
       uploadPhoto(photo); // Pass photo directly
     }
-  };
+  }; 
 
   
 
@@ -70,64 +70,59 @@ const DashLayout = ({ children }) => {
   
   
   const uploadPhoto = async (photo) => {
-    // if (!photo) return toast.eroor("Please select an image");
-
-    // const formData = new FormData();
-    // formData.append("my_file", photo); // Send the selected file
-    // formData.append("userId", user.id);
-
+    if (!photo) {
+      return toast.error("Please select an image");
+    }
+  
     const userId = localStorage.getItem("userId");
     console.log("LocalStorage userId:", userId);
-
+  
+    if (!userId) {
+      return toast.error("User ID not found. Please log in again.");
+    }
+  
     const formData = new FormData();
-    formData.append("my_file", photo); // Send the selected file
+    formData.append("profilePicture", photo); // ✅ Match backend field name
     formData.append("userId", userId);
-
+  
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:3000/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      console.log("Cloudinary Response:", res.data);
-
-      // Update the profile picture state
-      if (res.data.secure_url) {
-        setProfilePicture(res.data.secure_url);
-        // Optionally, update user profile in DB
-      }
-
-      // ✅ Check if the response contains a URL and update the state
-      if (res.data.url) {
-        console.log(res.data.url);
-        setProfilePicture(res.data.url); // ✅ Update profile picture
-        const updateresponse = await axios.put(
-          `http://localhost:3000/user/${userId}/update-profile-picture`,
-          {
-            profilePicture: res.data.url, // ✅ Save to database
+  
+      // ✅ Send request to backend
+      const res = await axios.put(
+        "http://localhost:3000/user/upload-profile-picture", // ✅ Ensure correct endpoint
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
           },
-          { withCredentials: true }
-        );
-
-        if (updateresponse) {
-          console.log(updateresponse);
+          withCredentials: true, // ✅ Ensure cookies are sent if using authentication
         }
+      );
+  
+      console.log("Upload Response:", res.data);
+  
+      // ✅ Check if the response contains the Cloudinary URL
+      if (res.data.user && res.data.user.profilePicture) {
+        const imageUrl = res.data.user.profilePicture;
 
-        // // Update the user state with the new profile picture
-        if (updateresponse.data.user.profilePicture) {
-          setProfilePicture(updateresponse.data.user.profilePicture);
-          console.log(updateresponse.data.user.profilePicture);
-          toast.success("Profile picture updated!");
-        }
+        console.log("New Profile Picture URL:", imageUrl); // ✅ Add this log
+  
+        setProfilePicture(imageUrl); // ✅ Update the profile picture state
+  
+        // ✅ Display success message
+        toast.success("Profile picture updated successfully!");
       } else {
         toast.error("Error uploading profile picture. Please try again.");
       }
     } catch (error) {
       console.error("Upload error:", error);
+      toast.error("Upload failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+  
 
   // const uploadPhoto = async (photo) => {
   //   if (!photo) return toast.error("Please select an image");

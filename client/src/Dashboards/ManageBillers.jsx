@@ -4,7 +4,6 @@ import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
 import { useNavigate } from "react-router-dom";
 
-
 import cardBg2 from "../assets/cardBg2.webp";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -27,6 +26,7 @@ const ManageBillers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBiller, setSelectedBiller] = useState(null);
   const [error, setError] = useState("");
+  const [billerPicture, setBillerPicture] = useState(null);
   const [newBiller, setNewBiller] = useState({
     name: "",
     email: "",
@@ -45,7 +45,6 @@ const ManageBillers = () => {
     "Cable TV",
     "Other",
   ];
-
 
   const navigate = useNavigate();
 
@@ -80,46 +79,40 @@ const ManageBillers = () => {
   //     setBiller((prev) => ({ ...prev, [field]: e.value }));
   //   }
   // };
-  
-  
-  // for fetching billrs to frontend
-  useEffect(()=>{
-  
-      const fetchBillers = async () => {
-        try {
-          const token = localStorage.getItem("token");
-          
-  
-          if (!token) {
-            toast.error("User not authenticated!");
-            return;
-          }
-  
-          console.log("Token:", token);
-  
-          // ✅ Correct API request (use GET and send token in headers)
-          const response = await axios.get(`${BASE_URL}/biller`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-  
-          console.log(response?.data || null);
-  
-          // ✅ Set the billers state directly from response
-          setBillers(response.data);
-          //setWalletID()
-        } catch (error) {
-          console.error("Error fetching billers:", error);
-          toast.error(error?.response?.data?.message || "Failed to fetch billers");
-        }
-  
-      };
-  
-      fetchBillers();
-  },
-  []);
 
+  // for fetching billrs to frontend
+  useEffect(() => {
+    const fetchBillers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          toast.error("User not authenticated!");
+          return;
+        }
+
+        console.log("Token:", token);
+
+        const response = await axios.get(`${BASE_URL}/biller`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log(response?.data || null);
+
+        setBillers(response.data);
+        //setWalletID()
+      } catch (error) {
+        console.error("Error fetching billers:", error);
+        toast.error(
+          error?.response?.data?.message || "Failed to fetch billers"
+        );
+      }
+    };
+
+    fetchBillers();
+  }, []);
 
   //to handle input changes for the forms
   const handleChange = (event) => {
@@ -130,10 +123,15 @@ const ManageBillers = () => {
     }));
   };
 
+  const handleSelectFile = (e) => {
+    const photo = e.target.files[0];
+    if (photo) {
+      setFile(photo);
+      uploadPhoto(photo); // Pass photo directly
+    }
+  }; 
 
-
-
-  const closeModal = async() => {
+  const closeModal = async () => {
     setIsModalOpen(false);
     setSelectedBiller(null);
     setNewBiller({
@@ -146,12 +144,11 @@ const ManageBillers = () => {
     });
   };
 
-  
   const handleCreateBiller = async (e) => {
     e.preventDefault();
     setLoading(true);
     setIsSubmitting(true);
-    setError(""); // Reset error before validation
+    setError("");
 
     try {
       const {
@@ -180,14 +177,13 @@ const ManageBillers = () => {
         toast.error("Oops, all fields are required");
         setLoading(false);
         setIsSubmitting(false);
-        return; 
+        return;
       }
 
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
       //console.log("UserId:", userId);
       //console.log("Token:", token);
-
 
       const response = await axios.post(
         `${BASE_URL}/biller/createbiller`,
@@ -202,7 +198,7 @@ const ManageBillers = () => {
 
       if (response?.data) {
         const userData = response.data.user;
-        console.log(userData)
+        console.log(userData);
 
         toast.success(response.data.message);
       }
@@ -219,7 +215,7 @@ const ManageBillers = () => {
     }
   };
 
-  const handleCardClick = async(biller) => {
+  const handleCardClick = async (biller) => {
     setSelectedBiller(biller);
     setIsModalOpen(true);
   };
@@ -227,45 +223,75 @@ const ManageBillers = () => {
   const handleDeleteBiller = async (id) => {
     if (!id) {
       console.error("Error: Biller ID is undefined.");
-      alert("Error: Unable to delete biller. Please try again.");
+      toast.error("Error: Unable to delete biller. Please try again.");
       return;
     }
-  console.log(id)
-    const confirmDelete = confirm("Are you sure you want to delete this biller?");
+
+    console.log("Attempting to delete biller with ID:", id);
+
+    const confirmDelete = confirm(
+      "Are you sure you want to delete this biller?"
+    );
     if (!confirmDelete) return;
-  
+
     try {
-      const token = localStorage.getItem("token"); // Retrieve auth token
-    
+      const token = localStorage.getItem("token");
 
-      const response = await axios.delete(
-        `${BASE_URL}/biller/delete/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Send token in Authorization header
-            "Content-Type": "application/json",
-          },
-        });
-  
-
-
-      console.log(response)
-      if (!response.ok) {
-        throw new Error("Failed to delete biller");
+      if (!token) {
+        console.error("No token found in localStorage.");
+        toast.error("Authentication error. Please log in again.");
+        return;
       }
-  
-      // ✅ Remove deleted biller from UI
+
+      //console.log("Auth Token:", token);
+      //console.log("Sending DELETE request to:", `${BASE_URL}/biller/${id}`);
+
+      const response = await axios.delete(`${BASE_URL}/biller/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      //console.log("Server Response:", response);
+
       setBillers((prev) => prev.filter((biller) => biller._id !== id));
       setIsModalOpen(false);
-  
-      alert("Biller deleted successfully!");
+
+      toast.success("Biller deleted successfully!");
     } catch (error) {
       console.error("Error deleting biller:", error);
-      alert("Error deleting biller. Please try again.");
+      toast.error("Error deleting biller. Please try again.");
+    }
+  };
+
+  const uploadBillerPhoto = async (id, file) => {
+    if (!id || !file) {
+      alert("Please select a valid image.");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append("image", file); // Append image file to FormData
+  
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(`${BASE_URL}/billers/upload/${id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log(response)
+  
+      alert("Profile picture uploaded successfully!");
+      console.log("Response:", response.data);
+    } catch (error) {
+      console.error("Error uploading biller picture:", error);
+      alert("Failed to upload picture. Try again.");
     }
   };
   
-
 
   return (
     <>
@@ -291,7 +317,7 @@ const ManageBillers = () => {
                         <h3 className="text-lg font-semibold">{biller.name}</h3>
                         <p className="text-sm ">{biller.billerType}</p>
                       </div>
-  
+
                       {/* Right: AutoPay Switch */}
                       <div className="flex items-center gap-3">
                         <Switch
@@ -306,14 +332,18 @@ const ManageBillers = () => {
                       </div>
                     </li>
                   ))
-                ):(
-                  <p className="text-xl font-semibold m-auto text-center p-4"> No biller created, Go back <span className="text-2xl">👈</span> to create a new biller.</p>
+                ) : (
+                  <p className="text-xl font-semibold m-auto text-center p-4">
+                    {" "}
+                    No biller created, Go back{" "}
+                    <span className="text-2xl">👈</span> to create a new biller.
+                  </p>
                 )}
               </ul>
 
               <button
                 onClick={() => setShowFullList(false)}
-                className="mt-4 px-4 py-2  rounded-lg flex gap-2 justify-center hover:scale-105  border-2 items-center  shadow-md cursor-pointer bg-cyan-700  font-semibold hover:bg-red-400 transition duration-200 ease-in hover:cursor-pointer"
+                className="mt-4 px-4 py-2 text-sm rounded-lg flex gap-2 justify-center hover:scale-105  border-2 items-center  shadow-md cursor-pointer bg-cyan-700  font-semibold hover:bg-red-400 transition duration-200 ease-in hover:cursor-pointer"
               >
                 <ArrowLeft /> Back to Profiles
               </button>
@@ -321,7 +351,7 @@ const ManageBillers = () => {
           ) : (
             // Default Profile View with Your Requested Features
             <div className="lg:flex flex-col items-center text-center p-2 ">
-              <h1 className="ont-bold  py-2 font-bold text-xl p-2 text-center">
+              <h1 className="py-2 font-bold text-xl p-2 text-center">
                 Billers Profile
               </h1>
               <p className="text-center mb-4">
@@ -332,7 +362,6 @@ const ManageBillers = () => {
 
               {/* Cards */}
               <div className="flex gap-4 justify-between w-full items-center p-4">
-                
                 {/* Toggle when billerslist is empty */}
                 {billers && billers.length > 0 ? (
                   billers.map((biller) => (
@@ -350,11 +379,17 @@ const ManageBillers = () => {
                         className="rounded-full w-20 h-20 border-2 cursor-pointer hover:opacity-80 transition"
                       />
                       <h3 className="mt-2 font-bold">{biller.name}</h3>
-                      <p className="text-sm font-semibold">{biller.billerType}</p>
+                      <p className="text-sm font-semibold">
+                        {biller.billerType}
+                      </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-2xl font-semibold m-auto"> No biller created, Click here <span className="text-2xl">👉</span> to create a new biller.</p>
+                  <p className="text-2xl font-semibold m-auto">
+                    {" "}
+                    No biller created, Click here{" "}
+                    <span className="text-2xl">👉</span> to create a new biller.
+                  </p>
                 )}
 
                 <button
@@ -403,12 +438,7 @@ const ManageBillers = () => {
                     <div className="w-full space-y-2">
                       <div className="flex gap-2 items-center">
                         <label htmlFor="">Name:</label>
-                        <input
-                          style={{
-                            borderWidth: "1px",
-                            borderRadius: "6px",
-                            padding: "10px",
-                          }}
+                        <Input
                           // className=" border shadow-sm rounded"
                           placeholder="Biller Name"
                           value={selectedBiller.name}
@@ -422,12 +452,7 @@ const ManageBillers = () => {
                       </div>
                       <div className="flex gap-2 items-center">
                         <label htmlFor="">Email:</label>
-                        <input
-                          style={{
-                            borderWidth: "1px",
-                            borderRadius: "6px",
-                            padding: "10px",
-                          }}
+                        <Input
                           // className=" border shadow-sm rounded"
                           placeholder="Biller Name"
                           value={selectedBiller.email}
@@ -439,8 +464,8 @@ const ManageBillers = () => {
                           }
                         />
                       </div>
-                      <div className="flex justify-between">
-                        <div className="flex w-full gap-2">
+                      {/* <div className="flex w-full justify-between">
+                        <div className="flex-1 w-full gap-2">
                           <label htmlFor="">Biller Type</label>
                           <Select
                             placeholder="Biller Type"
@@ -457,7 +482,7 @@ const ManageBillers = () => {
                             }
                           />
                         </div>
-                        <div className="flex  w-full">
+                        <div className="flex-1  w-full">
                           <label htmlFor="">Service Type</label>
                           <Select
                             placeholder="Service Type"
@@ -465,7 +490,7 @@ const ManageBillers = () => {
                               label: type,
                               value: type,
                             }))}
-                            value={selectedBiller.billerType}
+                            value={selectedBiller.serviceType}
                             onChange={(value) =>
                               setSelectedBiller({
                                 ...selectedBiller,
@@ -474,6 +499,58 @@ const ManageBillers = () => {
                             }
                           />
                         </div>
+                      </div> */}
+
+                      <div className="flex justify-between gap-3 w-full">
+                        {/* Biller Type Select */}
+                        <div className="flex w-full">
+                          <label>Biller Type</label>
+                          <select
+                            name="billerType"
+                            value={selectedBiller.billerType}
+                            onChange={(value) =>
+                              setSelectedBiller({
+                                ...selectedBiller,
+                                billerType: value,
+                              })
+                            }
+                            className="border rounded p-2 "
+                          >
+                            <option value="" disabled>
+                              Select Biller Type
+                            </option>
+                            {billerTypes.map((type, index) => (
+                              <option key={index} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Service Type Select */}
+                        <div className="flex w-full">
+                          <label>Service Type</label>
+                          <select
+                            name="serviceType"
+                            value={selectedBiller.serviceType}
+                            onChange={(value) =>
+                              setSelectedBiller({
+                                ...selectedBiller,
+                                billerType: value,
+                              })
+                            }
+                            className="border rounded p-2"
+                          >
+                            <option value="" disabled>
+                              Select Service Type
+                            </option>
+                            {serviceTypes.map((type, index) => (
+                              <option key={index} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
 
                       <div className="flex gap-2 items-center">
@@ -481,12 +558,7 @@ const ManageBillers = () => {
                           {" "}
                           Account Number
                         </label>
-                        <input
-                          style={{
-                            borderWidth: "1px",
-                            borderRadius: "6px",
-                            padding: "10px",
-                          }}
+                        <Input
                           placeholder="Account Number"
                           value={selectedBiller.accountNumber}
                           onChange={(e) =>
@@ -501,12 +573,7 @@ const ManageBillers = () => {
                         <label htmlFor="" className="w-30">
                           Bank Name
                         </label>
-                        <input
-                          style={{
-                            borderWidth: "5px",
-                            borderRadius: "6px",
-                            padding: "10px",
-                          }}
+                        <Input
                           placeholder="Bank Name"
                           value={selectedBiller.accountId}
                           onChange={(e) =>
@@ -519,14 +586,9 @@ const ManageBillers = () => {
                       </div>
                       <div className="flex gap-2 items-center">
                         <label htmlFor="">Wallet Address(optional)</label>
-                        <input
-                          style={{
-                            borderWidth: "1px",
-                            borderRadius: "6px",
-                            padding: "10px",
-                          }}
+                        <Input
                           placeholder="Wallet Address"
-                          value={selectedBiller.accountId}
+                          value={selectedBiller.metamaskWallet}
                           onChange={(e) =>
                             setSelectedBiller({
                               ...selectedBiller,
@@ -535,36 +597,23 @@ const ManageBillers = () => {
                           }
                         />
                       </div>
-                      <div className="flex items-center">
-                        <label htmlFor="">Due Date</label>
-                        <DatePicker
-                          style={{
-                            borderWidth: "1px",
-                            borderRadius: "6px",
-                            padding: "10px",
-                          }}
-                          placeholder="Due Date"
-                          value={
-                            selectedBiller.dueDate
-                              ? moment(selectedBiller.dueDate)
-                              : null
-                          }
-                          onChange={(date, dateString) =>
+                      <div className="flex gap-1 items-center">
+                        <label>Due Date</label>
+                        <input
+                          name="date"
+                          type="date"
+                          value={selectedBiller.duedate}
+                          onChange={(e) =>
                             setSelectedBiller({
                               ...selectedBiller,
-                              dueDate: dateString,
+                              accountId: e.target.value,
                             })
                           }
                         />
                       </div>
                       <div className="flex gap-2 items-center">
                         <label htmlFor="">Amount:</label>
-                        <input
-                          style={{
-                            borderWidth: "1px",
-                            borderRadius: "6px",
-                            padding: "10px",
-                          }}
+                        <Input
                           placeholder="Amount"
                           type="number"
                           value={selectedBiller.amount}
@@ -610,11 +659,27 @@ const ManageBillers = () => {
                 ) : (
                   // Adding a New Biller
                   <div className="flex flex-col items-center">
-                    <img
-                      src={image}
-                      alt={image}
-                      className="w-20 h-20 rounded-full border border-gray-300"
-                    />
+                    <div className="relative">
+
+
+                      <input
+                        type="file"
+                        accept="image/*"
+                        //onChange={handleSelectFile}
+                        onChange={(e) => uploadBillerPhoto(biller._id, e.target.files[0])} 
+                        onClick={uploadBillerPhoto}
+                        className="hidden"
+                        id="profileUpload"
+                        multiple={false}
+                      />
+                      <label htmlFor="profileUpload">
+                        <img
+                          src={billerPicture ? billerPicture : image}
+                          alt="Profile"
+                          className="w-26 h-26 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
+                        />
+                      </label>
+                    </div>
                     <h3 className="mt-2 font-semibold">Name:</h3>
                     <p className="text-gray-500">
                       {biller?.name || "No name provided"}
@@ -624,7 +689,7 @@ const ManageBillers = () => {
                     <div className="w-full space-y-2">
                       <div className="flex gap-2 items-center">
                         <label>Name:</label>
-                        <input
+                        <Input
                           name="name"
                           placeholder="Biller Name"
                           value={biller.name || ""}
@@ -634,7 +699,7 @@ const ManageBillers = () => {
 
                       <div className="flex gap-2 items-center">
                         <label>Email:</label>
-                        <input
+                        <Input
                           name="email"
                           placeholder="Biller Email"
                           value={biller.email || ""}
@@ -642,7 +707,7 @@ const ManageBillers = () => {
                         />
                       </div>
 
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-3 w-full">
                         {/* Biller Type Select */}
                         <div className="flex w-full">
                           <label>Biller Type</label>
@@ -650,7 +715,7 @@ const ManageBillers = () => {
                             name="billerType"
                             value={biller.billerType || ""}
                             onChange={handleChange}
-                            className="border rounded p-2 w-full"
+                            className="border rounded p-2 "
                           >
                             <option value="" disabled>
                               Select Biller Type
@@ -670,7 +735,7 @@ const ManageBillers = () => {
                             name="serviceType"
                             value={biller.serviceType || ""}
                             onChange={handleChange}
-                            className="border rounded p-2 w-full"
+                            className="border rounded p-2"
                           >
                             <option value="" disabled>
                               Select Service Type
@@ -686,7 +751,7 @@ const ManageBillers = () => {
 
                       <div className="flex gap-2 items-center">
                         <label className="w-35">Account Number</label>
-                        <input
+                        <Input
                           name="accountNumber"
                           placeholder="Biller Number"
                           value={biller.accountNumber || ""}
@@ -694,9 +759,9 @@ const ManageBillers = () => {
                         />
                       </div>
 
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-1 items-center">
                         <label className="w-30">Bank Name</label>
-                        <input
+                        <Input
                           name="bankName"
                           placeholder="Bank Name"
                           value={biller.bankName || ""}
@@ -704,9 +769,9 @@ const ManageBillers = () => {
                         />
                       </div>
 
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-1 items-center">
                         <label>Wallet Address (optional)</label>
-                        <input
+                        <Input
                           name="metamaskWallet"
                           placeholder="Wallet Address"
                           value={biller.metamaskWallet || ""}
@@ -714,7 +779,7 @@ const ManageBillers = () => {
                         />
                       </div>
 
-                      <div className="flex items-center">
+                      <div className="flex gap-1 items-center">
                         <label>Due Date</label>
                         <input
                           name="date"
@@ -724,9 +789,9 @@ const ManageBillers = () => {
                         />
                       </div>
 
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-1 items-center">
                         <label>Amount:</label>
-                        <input
+                        <Input
                           name="amount"
                           placeholder="Biller Amount"
                           value={biller.amount || ""}

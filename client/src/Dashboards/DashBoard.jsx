@@ -240,9 +240,7 @@ const DashBoard = () => {
     }
   };
 
-  const connectedWallet = async()=>{
-    
-  }
+  
 
   return (
     <>
