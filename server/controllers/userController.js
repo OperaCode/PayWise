@@ -150,9 +150,9 @@ const registerUser = asyncHandler(async (req, res) => {
       email,
       password,
       wallet: {
-        balance: 100,
-        cowries: 50,
-        walletId: uuidv4(),
+        balance: 0,  
+        cowries: 0, 
+        walletId: uuidv4(), 
       },
     });
 

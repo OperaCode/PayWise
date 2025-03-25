@@ -9,6 +9,107 @@ const bcrypt = require("bcrypt")
 
 
 
+// const fundWallet1 = asyncHandler(async (req, res) => {
+//   try {
+//     console.log("Received Flutterwave payment request:", req.body);
+
+//     const { userId, amount, transactionId } = req.body;
+
+//     if (!transactionId) {
+//       return res.status(400).json({ success: false, message: "Transaction ID is missing." });
+//     }
+
+//     // Corrected API call
+//     const flutterwaveResponse = await fetch(`https://api.flutterwave.com/v3/transactions/${transactionId}/verify`, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+//       },
+//     });
+
+//     let data;
+//     try {
+//       data = await flutterwaveResponse.json();
+//     } catch (error) {
+//       console.error("Failed to parse Flutterwave response:", error);
+//       return res.status(500).json({ success: false, message: "Invalid response from Flutterwave" });
+//     }
+
+//     console.log("Flutterwave Full Response:", JSON.stringify(data, null, 2));
+
+//     // Verify if the payment is successful
+//     if (data.status === "success" && data.data.status === "successful") {
+//       // Update wallet balance (Assuming you have a Wallet model)
+//       // Example: await Wallet.updateOne({ userId }, { $inc: { balance: amount } });
+
+//       res.json({ success: true, message: "Payment verified and wallet funded." });
+//     } else {
+//       res.status(400).json({ success: false, message: "Payment verification failed." });
+//     }
+//   } catch (error) {
+//     console.error("Error handling Flutterwave payment:", error);
+//     res.status(500).json({ success: false, message: "Internal server error." });
+//   }
+// });
+
+const fundWallet = asyncHandler(async (req, res) => {
+  try {
+    console.log("Received Flutterwave payment request:", req.body);
+
+    const { userId, amount, transactionId } = req.body;
+
+    if (!transactionId) {
+      return res.status(400).json({ success: false, message: "Transaction ID is missing." });
+    }
+
+    // Corrected API call
+    const flutterwaveResponse = await fetch(`https://api.flutterwave.com/v3/transactions/${transactionId}/verify`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+      },
+    });
+
+    let data;
+    try {
+      data = await flutterwaveResponse.json();
+    } catch (error) {
+      console.error("Failed to parse Flutterwave response:", error);
+      return res.status(500).json({ success: false, message: "Invalid response from Flutterwave" });
+    }
+
+    console.log("Flutterwave Full Response:", JSON.stringify(data, null, 2));
+
+    if (data.status === "success" && data.data.status === "successful") {
+      // ✅ Find the user by userId
+      let user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      // ✅ Update user's wallet balance
+      user.wallet.balance += amount;
+
+      await user.save(); // ✅ Save the updated user data
+
+      // ✅ Send updated wallet balance to frontend
+      res.json({
+        success: true,
+        message: "Payment verified and wallet funded.",
+        walletBalance: user.wallet.balance, // ✅ Return new balance
+      });
+    } else {
+      res.status(400).json({ success: false, message: "Payment verification failed." });
+    }
+  } catch (error) {
+    console.error("Error handling Flutterwave payment:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
 const transferFunds = asyncHandler(async (req, res) => {
   try {
     const { senderEmail, receiverEmail, amount, method, pin } = req.body;
@@ -177,4 +278,4 @@ const pauseRecurringPayment = asyncHandler(async (req, res) => {
 
 
 
-module.exports = { transferFunds, scheduleTransfer, pauseRecurringPayment };
+module.exports = {fundWallet,transferFunds, scheduleTransfer, pauseRecurringPayment };

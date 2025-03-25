@@ -38,10 +38,10 @@ const userSchema = new mongoose.Schema(
     profilePicture: { type: String, default: null },
     wallet: {
       walletId: { type: String, default: () => crypto.randomUUID() },
-      balance: { type: Number, default: 100 }, // Ensure new users get 100 tokens
-      cowries: { type: Number, default: 100 },
+      balance: { type: Number, default: 0 }, // Ensure new users get 100 tokens
+      cowries: { type: Number, default: 0 },
     },
-    metamaskWallet: { type: String, unique: true, default: null}, // MetaMask Wallet Address
+    metamaskWallet: { type: String, unique: true, sparse: true },
     transactionPin: { type: String, required: false },
     billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Biller" }],
   },
@@ -62,9 +62,6 @@ userSchema.pre("save", async function (next){
   next();
 
 });
-
-
-
 
 
 const User = mongoose.model("User", userSchema)
