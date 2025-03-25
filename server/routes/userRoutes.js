@@ -5,6 +5,7 @@ const User = require("../models/userModel")
 const {userUpload} = require("../config/cloudConfig.js"); // Multer middleware for file uploads
 const {
   registerUser,
+  verifyEmail,
   loginUser,
   uploadProfilePicture,
   connectWallet,
@@ -22,6 +23,7 @@ const { protectUser } = require("../middleware/authMiddleWare");
 const router = express.Router();
 
 router.post("/register", registerUser);
+router.get("/verify-email", verifyEmail)
 router.post("/login", loginUser); 
 router.post('/connect-metamask',connectWallet);
 

@@ -115,34 +115,118 @@ const generateToken = (userId) => {
 //   }
 // });
 
-const registerUser = asyncHandler(async (req, res) => {
-  try {
-    console.log("Incoming request body:", req.body);
+// const registerUser = asyncHandler(async (req, res) => {
+//   try {
+//     console.log("Incoming request body:", req.body);
 
-    const {firstName, lastName, email, password } = req.body;
+//     const {firstName, lastName, email, password } = req.body;
 
    
+//     if (!email || !password || !firstName || !lastName) {
+//       return res.status(400).json({ message: "All fields are required" });
+//     }
+
+//     // Validate password length
+//     if (password.length < 8 || password.length > 12) {
+//       return res
+//         .status(400)
+//         .json({ message: "Password must be between 8 and 12 characters" });
+//     }
+
+//     // Check if user already exists
+//     const userExist = await userModel.findOne({ email });
+//     console.log("Existing user check result:", userExist);
+
+//     if (userExist) {
+//       return res
+//         .status(400)
+//         .json({ message: "User already exists. Please log in." });
+//     }
+
+//     // Create user with wallet
+//     const newUser = await userModel.create({
+//       firstName,
+//       lastName,
+//       email,
+//       password,
+//       wallet: {
+//         balance: 0,  
+//         cowries: 0, 
+//         walletId: uuidv4(), 
+//       },
+//       isVerified: false, // New users are NOT verified initially
+//     });
+
+//     await sendVerificationEmail(newUser.email, newUser.firstName);
+
+//     const token = generateToken(newUser._id);
+
+//     res.cookie("token", token, {
+//       path: "/",
+//       httpOnly: true,
+//       expires: new Date(Date.now() + 86400000),
+//       sameSite: "none",
+//       secure: true,
+//     });
+//     console.log(newUser);
+
+//     await newUser.save();
+
+//     // console.log("User registered successfully:", newUser.email);
+
+//     if (newUser) {
+//       res.status(201).json({
+//         message: `Registration Successful, Verification email sent!`,
+//         user: {
+//           _id: newUser._id,
+//           firstName: newUser.firstName,
+//           lastName: newUser.lastName,
+//           email: newUser.email,
+//           wallet: {
+//             balance: newUser.wallet.balance,
+//             cowries: newUser.wallet.cowries,
+//             walletId: newUser.wallet.walletId,
+//           },
+//           token,
+//         },
+//       });
+//     }
+
+//     console.log(newUser);
+//   } catch (error) {
+//     console.error("Registration Error:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// });
+
+
+const registerUser = asyncHandler(async(req,res) => {
+  try {
+    console.log("Incoming request body:", req.body);
+  
+    const { firstName, lastName, email, password } = req.body;
+  
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
     }
-
+  
     // Validate password length
     if (password.length < 8 || password.length > 12) {
       return res
         .status(400)
         .json({ message: "Password must be between 8 and 12 characters" });
     }
-
+  
     // Check if user already exists
     const userExist = await userModel.findOne({ email });
     console.log("Existing user check result:", userExist);
-
+  
     if (userExist) {
       return res
         .status(400)
         .json({ message: "User already exists. Please log in." });
     }
-
+  
     // Create user with wallet
     const newUser = await userModel.create({
       firstName,
@@ -150,16 +234,24 @@ const registerUser = asyncHandler(async (req, res) => {
       email,
       password,
       wallet: {
-        balance: 0,  
-        cowries: 0, 
-        walletId: uuidv4(), 
+        balance: 0,
+        cowries: 0,
+        walletId: uuidv4(),
       },
+      isVerified: false, // New users are NOT verified initially
+      verificationToken: jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1d" }), 
     });
-
-    await sendVerificationEmail(newUser.email, newUser.firstName);
-
+  
+    // Generate verification link
+    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
+  
+    // Send verification email
+    await sendVerificationEmail(newUser.email, firstName, verificationLink);
+  
+    await newUser.save(); // Save user before sending response
+  
     const token = generateToken(newUser._id);
-
+  
     res.cookie("token", token, {
       path: "/",
       httpOnly: true,
@@ -167,33 +259,30 @@ const registerUser = asyncHandler(async (req, res) => {
       sameSite: "none",
       secure: true,
     });
-    console.log(newUser);
-
-    // console.log("User registered successfully:", newUser.email);
-
-    if (newUser) {
-      res.status(201).json({
-        message: `Registration Successful, Verification email sent!`,
-        user: {
-          _id: newUser._id,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          email: newUser.email,
-          wallet: {
-            balance: newUser.wallet.balance,
-            cowries: newUser.wallet.cowries,
-            walletId: newUser.wallet.walletId,
-          },
-          token,
+  
+    console.log("User registered successfully:", newUser.email);
+  
+    res.status(201).json({
+      message: `Registration Successful! A verification email has been sent.`,
+      user: {
+        _id: newUser._id,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        wallet: {
+          balance: newUser.wallet.balance,
+          cowries: newUser.wallet.cowries,
+          walletId: newUser.wallet.walletId,
         },
-      });
-    }
-
-    console.log(newUser);
+        token,
+      },
+    });
+  
   } catch (error) {
     console.error("Registration Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
+  
 });
 
 // EMAIL LOGIN TRAILS WITH FIREBASE
@@ -243,6 +332,28 @@ const registerUser = asyncHandler(async (req, res) => {
 //   }
 // });
 
+
+const verifyEmail = asyncHandler(async(req,res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) return res.status(400).json({ message: "Invalid token" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.isVerified = true;
+    await user.save();
+
+    res.json({ message: "Email verified successfully!" });
+  } catch (error) {
+    res.status(400).json({ message: "Invalid or expired token" });
+  }
+})
+
+
 const loginUser = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -252,6 +363,13 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User Not Found!" });
     }
+
+
+    // to restrict unverififed users
+    // if (!user.isVerified) {
+    //   return res.status(403).json({ message: "Please verify your email before logging in." });
+    // }
+
 
     // Check password
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -522,6 +640,7 @@ const LogoutUser = asyncHandler(async (req, res) => {
 
 module.exports = {
   registerUser,
+  verifyEmail,
   loginUser,
   uploadProfilePicture,
   connectWallet,

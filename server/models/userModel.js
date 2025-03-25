@@ -21,7 +21,6 @@ const crypto = require("crypto");
 //   { timestamps: true }
 // );
 
-
 // **Ensure wallet gets initialized properly**
 
 const userSchema = new mongoose.Schema(
@@ -31,9 +30,11 @@ const userSchema = new mongoose.Schema(
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
-    password: { 
-      type: String, 
-      required: function () { return !this.googleId && !this.firebaseUID; } // Password required only if NOT Google/Web3
+    password: {
+      type: String,
+      required: function () {
+        return !this.googleId && !this.firebaseUID;
+      }, // Password required only if NOT Google/Web3
     },
     profilePicture: { type: String, default: null },
     wallet: {
@@ -44,25 +45,24 @@ const userSchema = new mongoose.Schema(
     metamaskWallet: { type: String, unique: true, sparse: true },
     transactionPin: { type: String, required: false },
     billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Biller" }],
+    isVerified: { type: Boolean, default: false },
+    verificationToken: String,
   },
   { timestamps: true }
 );
 
-
-userSchema.pre("save", async function (next){
-  if(!this.isModified("password")){
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
     return next();
   }
 
   // hashing of password
-  const salt = await bcrypt.genSalt(10)
+  const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(this.password, salt);
   this.password = hashedPassword;
 
   next();
-
 });
 
-
-const User = mongoose.model("User", userSchema)
-module.exports = User
+const User = mongoose.model("User", userSchema);
+module.exports = User;

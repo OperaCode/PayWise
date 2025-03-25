@@ -14,10 +14,11 @@ import nodemailer from "nodemailer";
   });
 
 
-const sendVerificationEmail = async (email, firstName) => {
+const sendVerificationEmail = async (email, firstName, verificationToken) => {
   try {
    
-    const activationLink = `http://localhost:5173/dashboard`;
+   //const activationLink = `http://localhost:5173/dashboard`;
+    const activationLink = `${process.env.FRONTEND_URL}/verify/${verificationToken}`;
 
     // ✅ Enhanced HTML email with TailwindCSS styling
     const mailOptions = {

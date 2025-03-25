@@ -110,82 +110,50 @@ const fundWallet = asyncHandler(async (req, res) => {
   }
 });
 
-const transferFunds = asyncHandler(async (req, res) => {
+const p2PTransfer = asyncHandler(async (req, res) => {
   try {
-    const { senderEmail, receiverEmail, amount, method, pin } = req.body;
-    //console.log(req.body)
+    const { recipientEmail, amount } = req.body;
+    const senderId = req.user?.id || req.body.senderId; // Ensure senderId is defined
 
-    // Validate data
-    if (!senderEmail || !receiverEmail || !amount || amount <= 0 || !method) {
-      return res.status(400).json({ message: "Invalid transfer request" });
+    if (!recipientEmail || !amount || amount <= 0) {
+      return res.status(400).json({ message: "Invalid transfer details" });
     }
 
-    if (!["wallet", "rewards"].includes(method)) {
-      return res.status(400).json({ message: "Invalid payment method. Choose 'wallet' or 'rewards'." });
-    }
-
-
-    // Fetch sender and receiver
-    const sender = await User.findOne({ email: senderEmail });
-    const receiver = await User.findOne({ email: receiverEmail });
-
+    // Get sender
+    const sender = await User.findOne({ userId: senderId });
+    console.log("Searching for sender with ID:", sender);
     if (!sender) {
       return res.status(404).json({ message: "Sender not found" });
     }
-    if (!receiver) {
-      return res.status(404).json({ message: "Receiver not found" });
+
+    // Get recipient
+   // Get recipient (convert email to lowercase)
+   const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
+   console.log("Searching for recipient with email:", recipientEmail);
+   if (!recipient) return res.status(404).json({ message: "Recipient not found. Ensure the email is correct." });
+
+    // Check sender balance
+    if (sender.wallet.balance < amount) {
+      return res.status(400).json({ message: "Insufficient balance" });
     }
 
-    // Ensure sender has set a transaction PIN
-    if (!sender.transactionPin) {
-      return res.status(400).json({ message: "You must set a transaction PIN before making transfers." });
-    }
+    // Perform transfer
+    sender.wallet.balance -= amount;
+    recipient.wallet.balance += amount;
 
-    // Validate transaction PIN
-    const isPinValid = await bcrypt.compare(pin, sender.transactionPin || "");
-    if (!isPinValid) {
-      return res.status(403).json({ message: "Invalid transaction PIN" });
-    }
-
-    // Validate balance before deducting
-    if (method === "wallet") {
-      if (sender.wallet.balance < amount) {
-        return res.status(400).json({ message: "Insufficient wallet balance" });
-      }
-      sender.wallet.balance -= amount; // Deduct amount
-    } else if (method === "rewards") {
-      if (sender.wallet.rewards < amount) {
-        return res.status(400).json({ message: "Insufficient rewards balance" });
-      }
-      sender.wallet.rewards -= amount;
-    }
-
-    // Update sender's balance
     await sender.save();
-
-    // Increment receiver's balance using `$inc`
-    await User.updateOne(
-      { email: receiverEmail },
-      { $inc: { "wallet.balance": amount } }
-    );
-
-    // Fetch updated receiver balance AFTER transaction
-    const updatedReceiver = await User.findOne({ email: receiverEmail });
+    await recipient.save();
 
     return res.status(200).json({
-      message: "Transfer successful.",
-      senderWalletBalance: sender.wallet.balance,
-      senderRewardsBalance: sender.wallet.rewards,
-      receiverWalletBalance: updatedReceiver.wallet.balance, // Correctly updated balance
-      paymentMethod: method,
+      message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
     });
 
   } catch (error) {
-    console.error("Server Error:", error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error("P2P Transfer Error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-
 });
+
 
 const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
@@ -278,4 +246,4 @@ const pauseRecurringPayment = asyncHandler(async (req, res) => {
 
 
 
-module.exports = {fundWallet,transferFunds, scheduleTransfer, pauseRecurringPayment };
+module.exports = {fundWallet,p2PTransfer, scheduleTransfer, pauseRecurringPayment };
