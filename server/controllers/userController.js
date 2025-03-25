@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
 const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
+const {userUpload,cloudinary} = require("../config/cloudConfig.js"); // Multer middleware for file uploads
 const {
   sendVerificationEmail,
   sendMetaMaskEmail,
@@ -351,30 +352,56 @@ const setTransactionPin = asyncHandler(async (req, res) => {
   }
 });
 
+// const uploadProfilePicture = async (req, res) => {
+//   try {
+//     const { profilePicture } = req.body;
+//     const userId = req.userId; // ✅ Use req.userId from middleware
+
+//     if (!userId) {
+//       return res.status(401).json({ message: "Unauthorized, no user ID" });
+//     }
+
+//     const updatedUser = await User.findByIdAndUpdate(
+//       userId,
+//       { profilePicture },
+//       { new: true }
+//     );
+
+//     if (!updatedUser) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     res.json({ message: "Profile picture updated", user: updatedUser });
+//   } catch (error) {
+//     console.error("Error updating profile picture:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+
 const uploadProfilePicture = async (req, res) => {
   try {
-    // ✅ Ensure a file is uploaded
-    if (!req.file) {
-      return res.status(400).json({ message: "No image file uploaded" });
-    }
-
-    const userId = req.userId; // ✅ Use userId from middleware
-
+    const userId = req.userId; // Get userId from middleware
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized, no user ID" });
     }
 
-    // ✅ Upload image to Cloudinary
+  
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    // Upload to Cloudinary
     const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
-      folder: "Users", // ✅ Store in Cloudinary folder
+      folder: "Users", // Ensure this folder exists in Cloudinary
     });
 
-    console.log("Cloudinary Upload Response:", uploadedImage);
+    console.log("Cloudinary Image URL:", uploadedImage.secure_url); // Debugging log
 
-    // ✅ Update user profile picture in database
+    // Update the user in MongoDB with the Cloudinary URL
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { profilePicture: uploadedImage.secure_url }, // ✅ Save Cloudinary URL
+      { profilePicture: uploadedImage.secure_url }, // Store the image URL
       { new: true }
     );
 
@@ -388,7 +415,6 @@ const uploadProfilePicture = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 const getUser = asyncHandler(async (req, res) => {
   try {

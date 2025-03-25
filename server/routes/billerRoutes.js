@@ -1,25 +1,26 @@
+
+
 const express = require("express");
-const multer = require("multer");
-const { 
-  createBiller, 
-  getBillers, 
-  getBillerById, 
-  updateBillerPicture,
-  updateBiller, 
-  deleteBiller 
+const Biller = require("../models/billerModel")
+const {billerUpload} = require("../config/cloudConfig.js"); // Multer middleware for file uploads
+const {
+  createBiller,
+  getBillers,
+  getBillerById,
+  uploadBillerPicture,
+  updateBiller,
+  deleteBiller,
 } = require("../controllers/billerController");
+
 const { protectUser } = require("../middleware/authMiddleWare");
 
 const router = express.Router();
 
-
-const storage = multer.diskStorage({
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage });
+// const storage = multer.diskStorage({
+//   filename: (req, file, cb) => {
+//     cb(null, `${Date.now()}-${file.originalname}`);
+//   },
+// });
 
 
 
@@ -44,7 +45,14 @@ router.get("/:billerId", protectUser, getBillerById);
 // });
 
 //router.put("/upload/:billerId", protectUser, updateBillerPicture);
-router.put("/upload/:billerId", protectUser, upload.single("image"), updateBillerPicture);
+
+
+router.put(
+  "/upload-biller-picture",
+  protectUser,
+  billerUpload.single("profilePicture"), 
+  uploadBillerPicture
+);
 //router.put("/:billerId/update-biller-picture", updateBillerPicture);
 router.patch("/:billerId", protectUser, updateBiller);
 router.delete("/:billerId", protectUser, deleteBiller);

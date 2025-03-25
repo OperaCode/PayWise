@@ -39,44 +39,7 @@ app.use(
 );
 app.options("*", cors());
 
-// Configure Cloudinary
-// cloudinary.config({
-//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-//   api_key: process.env.CLOUDINARY_API_KEY,
-//   api_secret: process.env.CLOUDINARY_API_SECRET,
-// });
 
-// Function to upload to Cloudinary
-// async function handleUpload(file) {
-//   try {
-//     const res = await cloudinary.uploader.upload(file, { resource_type: "auto" });
-//     return res;
-//   } catch (error) {
-//     throw new Error("Cloudinary upload failed: " + error.message);
-//   }
-// }
-
-// Multer setup for memory storage
-// const storage = new Multer.memoryStorage();
-// const upload = Multer({ storage });
-
-// Upload Route
-// app.post("/upload", upload.single("my_file"), async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ error: "No file uploaded" });
-//     }
-
-//     const b64 = Buffer.from(req.file.buffer).toString("base64");
-//     const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-//     const cldRes = await handleUpload(dataURI);
-
-//     res.json({ message: "File uploaded successfully", url: cldRes.secure_url });
-//   } catch (error) {
-//     console.error("Upload error:", error);
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 
 // Configure passport
 // initializePassport(passport);
