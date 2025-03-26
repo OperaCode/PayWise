@@ -110,27 +110,94 @@ const fundWallet = asyncHandler(async (req, res) => {
   }
 });
 
+const withdrawToBank = asyncHandler(async(req, res)=>{
+  try {
+    const { userId, bankCode, accountNumber, amount } = req.body;
+
+    // Ensure valid data
+    if (!userId || !bankCode || !accountNumber || amount <= 0) {
+      return res.status(400).json({ message: "Invalid withdrawal details" });
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Check if wallet balance is sufficient
+    if (user.wallet.balance < amount) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    // Deduct the amount before initiating the transfer
+    user.wallet.balance -= amount;
+    await user.save();
+
+    // Flutterwave API request
+    const response = await axios.post(
+      "https://api.flutterwave.com/v3/transfers",
+      {
+        account_bank: bankCode, // Bank code (e.g., 044 for Access Bank)
+        account_number: accountNumber,
+        amount: amount,
+        currency: "NGN", // Adjust based on the country
+        narration: "PayWise Wallet Withdrawal",
+        reference: `txn-${Date.now()}`, // Unique reference
+        callback_url: "https://yourapp.com/webhook",
+        debit_currency: "NGN"
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    // If successful, return response
+    if (response.data.status === "success") {
+      return res.status(200).json({
+        message: "Withdrawal request successful! Processing...",
+        updatedBalance: user.wallet.balance,
+        transactionId: response.data.data.id
+      });
+    } else {
+      // If transfer fails, refund the wallet
+      user.wallet.balance += amount;
+      await user.save();
+      return res.status(400).json({ message: "Transfer failed, refunded" });
+    }
+  } catch (error) {
+    console.error("Withdrawal Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
-    const { recipientEmail, amount } = req.body;
-    const senderId = req.user?.id || req.body.senderId; // Ensure senderId is defined
+    const { senderId, recipientEmail, amount } = req.body;
 
-    if (!recipientEmail || !amount || amount <= 0) {
+    if (!senderId || !recipientEmail || !amount || amount <= 0) {
       return res.status(400).json({ message: "Invalid transfer details" });
     }
 
+    console.log("🔹 Searching for sender with ID:", senderId); // Debugging
+
     // Get sender
-    const sender = await User.findOne({ userId: senderId });
-    console.log("Searching for sender with ID:", sender);
+    const sender = await User.findOne({ _id: senderId }); // 🔄 Make sure _id is correct
     if (!sender) {
       return res.status(404).json({ message: "Sender not found" });
     }
 
+    console.log("✅ Sender found:", sender.email);
+
     // Get recipient
-   // Get recipient (convert email to lowercase)
-   const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
-   console.log("Searching for recipient with email:", recipientEmail);
-   if (!recipient) return res.status(404).json({ message: "Recipient not found. Ensure the email is correct." });
+    const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
+    if (!recipient) {
+      return res.status(404).json({ message: "Recipient not found. Ensure the email is correct." });
+    }
+
+    console.log("Sender's wallet before:", sender.wallet.balance);
+    console.log("Recipient's wallet before:", recipient.wallet.balance);
 
     // Check sender balance
     if (sender.wallet.balance < amount) {
@@ -144,15 +211,82 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     await sender.save();
     await recipient.save();
 
+    console.log("Sender's wallet after:", sender.wallet.balance);
+    console.log("Recipient's wallet after:", recipient.wallet.balance);
+
     return res.status(200).json({
       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
+      updatedBalance: sender.wallet.balance,
     });
 
   } catch (error) {
-    console.error("P2P Transfer Error:", error);
+    console.error("❌ P2P Transfer Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
+// ✅ Schedule a One-Time Payment to a Biller
+const schedulePayment = asyncHandler(async (req, res) => {
+  try {
+    const { senderEmail, billerId, amount, startDate, transactionPin } = req.body;
+
+    // 🔹 Validate required fields
+    if (!senderEmail || !billerId || !amount || amount <= 0 || !startDate || !transactionPin) {
+      return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    // 🔹 Find the sender (user scheduling the payment)
+    const sender = await User.findOne({ email: senderEmail });
+    if (!sender) {
+      return res.status(404).json({ message: "Sender not found." });
+    }
+
+    // 🔹 Find the biller
+    const biller = await Biller.findById(billerId);
+    if (!biller) {
+      return res.status(404).json({ message: "Biller not found." });
+    }
+
+    // 🔹 Validate start date
+    const scheduledDate = new Date(startDate);
+    if (isNaN(scheduledDate.getTime()) || scheduledDate < new Date()) {
+      return res.status(400).json({ message: "Invalid start date." });
+    }
+
+    // 🔹 Ensure sender has a transaction PIN
+    if (!sender.transactionPin) {
+      return res.status(400).json({ message: "Set a transaction PIN before scheduling payments." });
+    }
+
+    // 🔹 Validate transaction PIN
+    const isPinValid = await bcrypt.compare(transactionPin, sender.transactionPin);
+    if (!isPinValid) {
+      return res.status(403).json({ message: "Invalid transaction PIN" });
+    }
+
+    // 🔹 Create a scheduled payment record
+    const scheduledPayment = new Payment({
+      user: sender._id,  // Sender
+      biller: biller._id, // Biller being paid
+      amount,
+      scheduledDate, // Date when payment will be executed
+      status: "pending", // Payment remains pending until execution
+    });
+
+    await scheduledPayment.save();
+
+    res.status(201).json({
+      message: "Payment scheduled successfully.",
+      scheduledPayment,
+    });
+
+  } catch (error) {
+    console.error("Error scheduling payment:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 
 
 const scheduleTransfer = asyncHandler(async (req, res) => {
@@ -246,4 +380,4 @@ const pauseRecurringPayment = asyncHandler(async (req, res) => {
 
 
 
-module.exports = {fundWallet,p2PTransfer, scheduleTransfer, pauseRecurringPayment };
+module.exports = {fundWallet,p2PTransfer, scheduleTransfer, pauseRecurringPayment , schedulePayment };
