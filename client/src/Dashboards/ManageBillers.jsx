@@ -48,6 +48,28 @@ const ManageBillers = () => {
 
   const navigate = useNavigate();
 
+
+
+  const resetForm = () => {
+    setNewBiller({  // ✅ Clears all inputs
+      name: "",
+      email: "",
+      billerType: "",
+      serviceType: "",
+      accountNumber: "",
+      bankName: "",
+      //profilePicture: null,
+      amount: "",
+    });
+  };
+
+  const handleCancel = () => {
+    resetForm(); // ✅ Clears inputs
+    setIsModalOpen(false); // ✅ Closes modal
+  };
+
+
+
   useEffect(() => {
     // Simulate an API call or app initialization delay
     setTimeout(() => setLoading(false), 3000);
@@ -123,13 +145,20 @@ const ManageBillers = () => {
     }));
   };
 
+  // Handle file selection
   const handleSelectFile = (e) => {
     const photo = e.target.files[0];
     if (photo) {
       setFile(photo);
-      uploadPhoto(photo); // Pass photo directly
+      uploadBillerPhoto(photo); // Pass photo directly
     }
-  }; 
+  };
+
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0]; 
+    setBillerData({ ...billerData, billerPicture: file });
+  };
 
   const closeModal = async () => {
     setIsModalOpen(false);
@@ -140,6 +169,7 @@ const ManageBillers = () => {
       accountId: "",
       dueDate: "",
       amount: "",
+      profilePicture:null,
       autoPay: false,
     });
   };
@@ -157,7 +187,7 @@ const ManageBillers = () => {
         accountNumber,
         bankName,
         serviceType,
-
+        profilePicture,
         email,
         amount,
       } = biller;
@@ -199,7 +229,8 @@ const ManageBillers = () => {
       if (response?.data) {
         const userData = response.data.user;
         console.log(userData);
-
+        
+        setIsModalOpen(false);
         toast.success(response.data.message);
       }
     } catch (error) {
@@ -211,7 +242,7 @@ const ManageBillers = () => {
       toast.error(errorMessage);
     } finally {
       setLoading(false);
-      navigate("/billers");
+      //navigate("/billers");
     }
   };
 
@@ -265,33 +296,102 @@ const ManageBillers = () => {
     }
   };
 
-  const uploadBillerPhoto = async (id, file) => {
+  const uploadBillerPhoto = async (id, file,) => {
     if (!id || !file) {
       alert("Please select a valid image.");
       return;
     }
-  
+
+    console.log(id,file)
+
     const formData = new FormData();
-    formData.append("image", file); // Append image file to FormData
-  
+    formData.append("profilePicture", file); // ✅ Match backend field name
+
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.put(`${BASE_URL}/billers/upload/${id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log(response)
-  
-      alert("Profile picture uploaded successfully!");
+      const response = await axios.put(
+        `${BASE_URL}/billers//upload-biller-picture`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true, // ✅ Ensures authentication cookies are sent
+        }
+      );
+
+      if (response.data.profilePicture) {
+        alert("Profile picture uploaded successfully!");
+        setBillerProfilePicture(response.data.profilePicture); // ✅ Update UI
+      } else {
+        alert("Upload successful, but no image URL returned.");
+      }
+
       console.log("Response:", response.data);
     } catch (error) {
       console.error("Error uploading biller picture:", error);
       alert("Failed to upload picture. Try again.");
     }
   };
+
+
+  const uploadPhoto = async (photo) => {
+    if (!photo) {
+      return toast.error("Please select an image");
+    }
   
+    const userId = localStorage.getItem("userId");
+    console.log("LocalStorage userId:", userId);
+  
+    if (!userId) {
+      return toast.error("User ID not found. Please log in again.");
+    }
+  
+    const formData = new FormData();
+    formData.append("profilePicture", photo); // ✅ Match backend field name
+    formData.append("userId", userId);
+  
+    try {
+      setLoading(true);
+  
+      // ✅ Send request to backend
+      const res = await axios.put(
+        "http://localhost:3000/user/upload-profile-picture", // ✅ Ensure correct endpoint
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true, // ✅ Ensure cookies are sent if using authentication
+        }
+      );
+  
+      console.log("Upload Response:", res.data);
+  
+      // ✅ Check if the response contains the Cloudinary URL
+      if (res.data.user && res.data.user.profilePicture) {
+        const imageUrl = res.data.user.profilePicture;
+
+        console.log("New Profile Picture URL:", imageUrl); // ✅ Add this log
+  
+        setProfilePicture(imageUrl); // ✅ Update the profile picture state
+  
+        // ✅ Display success message
+        toast.success("Profile picture updated successfully!");
+      } else {
+        toast.error("Error uploading profile picture. Please try again.");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Upload failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
 
   return (
     <>
@@ -660,14 +760,10 @@ const ManageBillers = () => {
                   // Adding a New Biller
                   <div className="flex flex-col items-center">
                     <div className="relative">
-
-
                       <input
                         type="file"
                         accept="image/*"
-                        //onChange={handleSelectFile}
-                        onChange={(e) => uploadBillerPhoto(biller._id, e.target.files[0])} 
-                        onClick={uploadBillerPhoto}
+                        onChange={handleFileChange}
                         className="hidden"
                         id="profileUpload"
                         multiple={false}
@@ -680,6 +776,11 @@ const ManageBillers = () => {
                         />
                       </label>
                     </div>
+                    {loading && (
+                      <span className="text-sm text-gray-500">
+                        Uploading...
+                      </span>
+                    )}
                     <h3 className="mt-2 font-semibold">Name:</h3>
                     <p className="text-gray-500">
                       {biller?.name || "No name provided"}
@@ -824,7 +925,7 @@ const ManageBillers = () => {
 
                       <button
                         className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
-                        onClick={() => handleDeleteBiller(selectedBiller.id)}
+                        onClick={handleCancel}
                       >
                         Cancel
                       </button>

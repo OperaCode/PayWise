@@ -111,7 +111,7 @@ const DashLayout = ({ children }) => {
         setProfilePicture(imageUrl); // ✅ Update the profile picture state
   
         // ✅ Display success message
-        toast.success("Profile picture updated successfully!");
+        toast.success("Profile picture updated!");
       } else {
         toast.error("Error uploading profile picture. Please try again.");
       }
@@ -208,9 +208,9 @@ const DashLayout = ({ children }) => {
               </label>
             </div>
 
-            {loading && (
+            {/* {loading && (
               <span className="text-sm text-gray-500">Uploading...</span>
-            )}
+            )} */}
 
             <button
               onClick={toggleTheme}
