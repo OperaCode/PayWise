@@ -88,9 +88,9 @@ const Register = () => {
       if (response?.data) {
         const userData = response.data.user;
 
-        // ✅ Ensure only the backend ID is stored
+        // Ensure only the backend ID is stored
         localStorage.removeItem("userId"); // Clear any incorrect ID
-        localStorage.setItem("userId", userData._id); // Store correct MongoDB ID
+        localStorage.setItem("userId", userData._id); 
 
         //localStorage.setItem("userId", userData._id);
         setUser(userData);
@@ -102,7 +102,7 @@ const Register = () => {
         error?.response?.data?.message ||
         error.message ||
         "Internal server error";
-      setError(errorMessage); // Set error message
+      setError(errorMessage); 
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -125,11 +125,11 @@ const Register = () => {
       if (idToken) {
         console.log(idToken);
         //localStorage.setItem('token', idToken);
-        //console.log("Token stored in localStorage:", localStorage.getItem("token")); // ✅ Confirm storage
+        //console.log("Token stored in localStorage:", localStorage.getItem("token")); 
       }
       // console.log("Google Auth Token:", idToken);
 
-      // ✅ Send the ID Token to backend
+      // Send the ID Token to backend
       const response = await axios.post(
         "http://localhost:3000/auth/google-auth",
         { idToken }, // The request body
@@ -142,7 +142,7 @@ const Register = () => {
         console.log("Backend Response:", response.data);
         const user = response.data.user;
         console.log("Backend Response:", user);
-        // ✅ Store user data locally
+        // Store user data locally
         localStorage.setItem("userId", user._id);
         console.log(user._id);
 

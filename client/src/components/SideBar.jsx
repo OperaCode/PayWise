@@ -103,7 +103,7 @@ const SideBar = () => {
 
               <Link to="/analytics">
                 <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
-                  <Milestone strokeWidth={3} />
+                  <Milestone size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
                     Rewards and Analytics
                   </li>
@@ -111,7 +111,7 @@ const SideBar = () => {
               </Link>
               <Link to="/messages">
                 <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
-                  <MessageSquareMore strokeWidth={3} />
+                  <MessageSquareMore size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold lg:text-md">
                     Messages
                   </li>
@@ -119,7 +119,7 @@ const SideBar = () => {
               </Link>
 
               <div className="flex gap-2 items-center hover:text-cyan-900 ">
-                <LogOut strokeWidth={3} />
+                <LogOut size={17} strokeWidth={3} />
                 <li
                   className="hover:cursor-pointer hover:text-cyan-900  md:block font-bold lg:text-md"
                   onClick={logoutUser}
@@ -154,23 +154,27 @@ const SideBar = () => {
             {/* Modal Menu Items */}
             <ul className="leading-10 text-xl p-4">
               <Link to="/billers">
-                <li className="hover:text-cyan-900  font-bold cursor-pointer">
+                <TabletSmartphone size={17} strokeWidth={3} />
+                <li className="hover:cursor-pointer  font-bold lg:text-md ">
                   Manage Billers
                 </li>
               </Link>
               <Link to="/payment">
-                <li className="hover:text-cyan-900 font-bold  cursor-pointer">
+                <DollarSign size={17} strokeWidth={3} />
+                <li className="hover:cursor-pointer  font-bold lg:text-md ">
                   Make Payment
                 </li>
               </Link>
 
               <Link to="/analytics">
-                <li className="hover:text-cyan-900 font-bold  cursor-pointer">
+                <Milestone size={17} strokeWidth={3} />
+                <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
                   Rewards and Analytics
                 </li>
               </Link>
               <Link to="/messages">
-                <li className="hover:text-cyan-900 font-bold  cursor-pointer">
+                <MessageSquareMore size={17} strokeWidth={3} />
+                <li className="hover:cursor-pointer font-bold lg:text-md">
                   Messages
                 </li>
               </Link>
@@ -179,6 +183,7 @@ const SideBar = () => {
               </Link>
                */}
             </ul>
+
           </div>
         </div>
       )}

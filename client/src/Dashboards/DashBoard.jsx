@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import image from "../assets/category.png";
 import { UserContext } from "../context/UserContext";
 import Loader from "../components/Loader"; // Import your Loader component
-import walletImages from "../assets/autopay.png";
+import P2pModal from "../modals/P2pModal"
 import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import blkchain5 from "../assets/darkbg.jpg";
 import {
@@ -37,6 +37,7 @@ const DashBoard = () => {
   const [transactionPin, setTransactionPin] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [selectedBiller, setSelectedBiller] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
@@ -122,10 +123,18 @@ const DashBoard = () => {
     setAmount(e.target.value);
   };
 
-  // ✅ Open PIN Modal
+  const handleOpenPinModal = () => {
+    if (!recipientEmail || amount <= 0) {
+      alert("Please enter a valid email and amount.");
+      return;
+    }
+    setShowPinModal(true);
+  };
+
+  // Open PIN Modal
   const openPinModal = () => setIsPinModalOpen(true);
 
-  // ✅ Close PIN Modal
+  // Close PIN Modal
   const closePinModal = () => {
     setIsPinModalOpen(false);
     setTransactionPin("");
@@ -160,6 +169,8 @@ const DashBoard = () => {
           return;
         }
 
+        setIsSending(true); // ✅ Show loading state before sending request
+
         // Send the transaction details to your backend
         try {
           const result = await fetch(`${BASE_URL}/payment/fund-wallet`, {
@@ -181,16 +192,19 @@ const DashBoard = () => {
         } catch (error) {
           console.error("Error updating wallet:", error);
           toast.error("An error occurred. Please try again.");
+        }finally {
+          setIsSending(false); // ✅ Hide loading state after request
         }
       }
       closePaymentModal(); // Close the payment modal
+      setWalletBalance((prevBalance) => Number((prevBalance + amount).toFixed(2)));
     },
     onclose: () => {
       console.log("Payment modal closed");
     },
   };
 
-  // ✅ Handle Scheduled Payment
+  // Handle Scheduled Payment
   const handleSchedulePayment = async () => {
     if (!transactionPin) {
       toast.error("Please enter your transaction PIN.");
@@ -527,7 +541,7 @@ const DashBoard = () => {
                     {...flutterwaveConfig}
                     disabled={!amount || amount <= 0}
                   >
-                    {isSubmitting ? "Processing..." : "Fund Wallet"}
+                    {isSending ? "Processing..." : "Fund Wallet"}
                   </FlutterWaveButton>
                 </div>
 
@@ -696,6 +710,7 @@ const DashBoard = () => {
               </div>
             </div>
           </div>
+          // <P2pModal/>
         )}
         {/* Scehdule Payment Modal */}
         {schedulePayModalOpen && (
@@ -945,7 +960,7 @@ const DashBoard = () => {
               </p>
 
               {/* Form */}
-              <form className="flex flex-col">
+              <div className="flex flex-col">
                 {/* Select Biller */}
                 <label htmlFor="billers" className="font-medium">
                   Choose Biller
@@ -991,13 +1006,13 @@ const DashBoard = () => {
 
                 {/* Submit Button */}
                 <button
-                  onClick={() => setIsPinModalOpen(true)} // Open PIN modal first
+                  onClick={openPinModal}
                   disabled={isSubmitting}
                   className="w-full p-2 bg-green-800 hover:bg-green-600 text-white rounded-md mt-2"
                 >
                   {isSubmitting ? "Sending Request..." : "Schedule Transfer"}
                 </button>
-              </form>
+              </div>
             </div>
 
             {/* Transaction PIN Modal */}

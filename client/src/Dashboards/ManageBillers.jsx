@@ -48,10 +48,9 @@ const ManageBillers = () => {
 
   const navigate = useNavigate();
 
-
-
   const resetForm = () => {
-    setNewBiller({  // ✅ Clears all inputs
+    setNewBiller({
+      // ✅ Clears all inputs
       name: "",
       email: "",
       billerType: "",
@@ -67,8 +66,6 @@ const ManageBillers = () => {
     resetForm(); // ✅ Clears inputs
     setIsModalOpen(false); // ✅ Closes modal
   };
-
-
 
   useEffect(() => {
     // Simulate an API call or app initialization delay
@@ -154,9 +151,8 @@ const ManageBillers = () => {
     }
   };
 
-
   const handleFileChange = (event) => {
-    const file = event.target.files[0]; 
+    const file = event.target.files[0];
     setBillerData({ ...billerData, billerPicture: file });
   };
 
@@ -169,7 +165,7 @@ const ManageBillers = () => {
       accountId: "",
       dueDate: "",
       amount: "",
-      profilePicture:null,
+      profilePicture: null,
       autoPay: false,
     });
   };
@@ -229,7 +225,7 @@ const ManageBillers = () => {
       if (response?.data) {
         const userData = response.data.user;
         console.log(userData);
-        
+
         setIsModalOpen(false);
         toast.success(response.data.message);
       }
@@ -296,13 +292,13 @@ const ManageBillers = () => {
     }
   };
 
-  const uploadBillerPhoto = async (id, file,) => {
+  const uploadBillerPhoto = async (id, file) => {
     if (!id || !file) {
       alert("Please select a valid image.");
       return;
     }
 
-    console.log(id,file)
+    console.log(id, file);
 
     const formData = new FormData();
     formData.append("profilePicture", file); // ✅ Match backend field name
@@ -335,26 +331,25 @@ const ManageBillers = () => {
     }
   };
 
-
   const uploadPhoto = async (photo) => {
     if (!photo) {
       return toast.error("Please select an image");
     }
-  
+
     const userId = localStorage.getItem("userId");
     console.log("LocalStorage userId:", userId);
-  
+
     if (!userId) {
       return toast.error("User ID not found. Please log in again.");
     }
-  
+
     const formData = new FormData();
     formData.append("profilePicture", photo); // ✅ Match backend field name
     formData.append("userId", userId);
-  
+
     try {
       setLoading(true);
-  
+
       // ✅ Send request to backend
       const res = await axios.put(
         "http://localhost:3000/user/upload-profile-picture", // ✅ Ensure correct endpoint
@@ -366,17 +361,17 @@ const ManageBillers = () => {
           withCredentials: true, // ✅ Ensure cookies are sent if using authentication
         }
       );
-  
+
       console.log("Upload Response:", res.data);
-  
+
       // ✅ Check if the response contains the Cloudinary URL
       if (res.data.user && res.data.user.profilePicture) {
         const imageUrl = res.data.user.profilePicture;
 
         console.log("New Profile Picture URL:", imageUrl); // ✅ Add this log
-  
+
         setProfilePicture(imageUrl); // ✅ Update the profile picture state
-  
+
         // ✅ Display success message
         toast.success("Profile picture updated successfully!");
       } else {
@@ -389,9 +384,6 @@ const ManageBillers = () => {
       setLoading(false);
     }
   };
-
-
-
 
   return (
     <>
@@ -536,8 +528,8 @@ const ManageBillers = () => {
 
                     {/* Edit Mode */}
                     <div className="w-full space-y-2">
-                      <div className="flex gap-2 items-center">
-                        <label htmlFor="">Name:</label>
+                      <div className="flex  items-center">
+                        <label htmlFor="" className="w-1/3">Full Name:</label>
                         <Input
                           // className=" border shadow-sm rounded"
                           placeholder="Biller Name"
@@ -550,8 +542,22 @@ const ManageBillers = () => {
                           }
                         />
                       </div>
-                      <div className="flex gap-2 items-center">
-                        <label htmlFor="">Email:</label>
+                      <div className="flex  items-center">
+                        <label htmlFor="" className="w-1/3">Nickname:</label>
+                        <Input
+                          // className=" border shadow-sm rounded"
+                          placeholder="Biller nickname"
+                          value={selectedBiller.name}
+                          onChange={(e) =>
+                            setSelectedBiller({
+                              ...selectedBiller,
+                              nickname: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center">
+                        <label htmlFor="" className="w-1/3">Email:</label>
                         <Input
                           // className=" border shadow-sm rounded"
                           placeholder="Biller Name"
@@ -564,46 +570,9 @@ const ManageBillers = () => {
                           }
                         />
                       </div>
-                      {/* <div className="flex w-full justify-between">
-                        <div className="flex-1 w-full gap-2">
-                          <label htmlFor="">Biller Type</label>
-                          <Select
-                            placeholder="Biller Type"
-                            options={billerTypes.map((type) => ({
-                              label: type,
-                              value: type,
-                            }))}
-                            value={selectedBiller.billerType}
-                            onChange={(value) =>
-                              setSelectedBiller({
-                                ...selectedBiller,
-                                billerType: value,
-                              })
-                            }
-                          />
-                        </div>
-                        <div className="flex-1  w-full">
-                          <label htmlFor="">Service Type</label>
-                          <Select
-                            placeholder="Service Type"
-                            options={billerTypes.map((type) => ({
-                              label: type,
-                              value: type,
-                            }))}
-                            value={selectedBiller.serviceType}
-                            onChange={(value) =>
-                              setSelectedBiller({
-                                ...selectedBiller,
-                                billerType: value,
-                              })
-                            }
-                          />
-                        </div>
-                      </div> */}
 
-                      <div className="flex justify-between gap-3 w-full">
-                        {/* Biller Type Select */}
-                        <div className="flex w-full">
+                      {/* Biller Type Select */}
+                      {/* <div className="flex w-full">
                           <label>Biller Type</label>
                           <select
                             name="billerType"
@@ -625,35 +594,34 @@ const ManageBillers = () => {
                               </option>
                             ))}
                           </select>
-                        </div>
+                        </div> */}
 
-                        {/* Service Type Select */}
-                        <div className="flex w-full">
-                          <label>Service Type</label>
-                          <select
-                            name="serviceType"
-                            value={selectedBiller.serviceType}
-                            onChange={(value) =>
-                              setSelectedBiller({
-                                ...selectedBiller,
-                                billerType: value,
-                              })
-                            }
-                            className="border rounded p-2"
-                          >
-                            <option value="" disabled>
-                              Select Service Type
+                      {/* Service Type Select */}
+                      <div className="flex w-full items-center">
+                        <label className="w-1/3">Service Type</label>
+                        <select
+                          name="serviceType"
+                          value={selectedBiller.serviceType}
+                          onChange={(value) =>
+                            setSelectedBiller({
+                              ...selectedBiller,
+                              billerType: value,
+                            })
+                          }
+                          className="border-2 border-neutral-300 rounded p-2 w-full shadow-md"
+                        >
+                          <option value="" disabled className="">
+                            Select Service Type:
+                          </option>
+                          {serviceTypes.map((type, index) => (
+                            <option key={index} value={type}>
+                              {type}
                             </option>
-                            {serviceTypes.map((type, index) => (
-                              <option key={index} value={type}>
-                                {type}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                          ))}
+                        </select>
                       </div>
-
-                      <div className="flex gap-2 items-center">
+                      {/* Accouint Number */}
+                      {/* <div className="flex gap-2 items-center">
                         <label htmlFor="" className="w-35">
                           {" "}
                           Account Number
@@ -668,8 +636,10 @@ const ManageBillers = () => {
                             })
                           }
                         />
-                      </div>
-                      <div className="flex gap-2 items-center">
+                      </div> */}
+
+                      {/* Bank Name */}
+                      {/* <div className="flex gap-2 items-center">
                         <label htmlFor="" className="w-30">
                           Bank Name
                         </label>
@@ -683,9 +653,12 @@ const ManageBillers = () => {
                             })
                           }
                         />
-                      </div>
-                      <div className="flex gap-2 items-center">
-                        <label htmlFor="">Wallet Address(optional)</label>
+                      </div> */}
+
+                      <div className="flex  items-center">
+                        <label htmlFor="" className="w-1/3">
+                          Wallet ID: <br /><span className="text-xs">(for paywise user)</span>
+                        </label>
                         <Input
                           placeholder="Wallet Address"
                           value={selectedBiller.metamaskWallet}
@@ -697,22 +670,9 @@ const ManageBillers = () => {
                           }
                         />
                       </div>
-                      <div className="flex gap-1 items-center">
-                        <label>Due Date</label>
-                        <input
-                          name="date"
-                          type="date"
-                          value={selectedBiller.duedate}
-                          onChange={(e) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              accountId: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="flex gap-2 items-center">
-                        <label htmlFor="">Amount:</label>
+
+                      <div className="flex items-center">
+                        <label htmlFor="" className="w-1/3">Amount:</label>
                         <Input
                           placeholder="Amount"
                           type="number"
@@ -725,20 +685,9 @@ const ManageBillers = () => {
                           }
                         />
                       </div>
-                      <div className="flex items-center">
-                        <Switch
-                          checked={selectedBiller.autoPay}
-                          onChange={(checked) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              autoPay: checked,
-                            })
-                          }
-                        />
-                        <span className="ml-2">Enable Auto-Pay</span>
-                      </div>
                     </div>
 
+                
                     {/* Action Buttons */}
                     <div className="mt-4 flex justify-between w-full ">
                       <button
@@ -788,8 +737,8 @@ const ManageBillers = () => {
 
                     {/* Edit Mode */}
                     <div className="w-full space-y-2">
-                      <div className="flex gap-2 items-center">
-                        <label>Name:</label>
+                      <div className="flex  items-center">
+                        <label className="w-1/3">Full Name:</label>
                         <Input
                           name="name"
                           placeholder="Biller Name"
@@ -797,9 +746,18 @@ const ManageBillers = () => {
                           onChange={handleChange}
                         />
                       </div>
+                      <div className="flex  items-center">
+                        <label className="w-1/3">Nick Name:</label>
+                        <Input
+                          name="nickname"
+                          placeholder=" Choose a NickName for your Biller"
+                          value={biller.name || ""}
+                          onChange={handleChange}
+                        />
+                      </div>
 
-                      <div className="flex gap-2 items-center">
-                        <label>Email:</label>
+                      <div className="flex items-center">
+                        <label className="w-1/3">Email:</label>
                         <Input
                           name="email"
                           placeholder="Biller Email"
@@ -808,9 +766,8 @@ const ManageBillers = () => {
                         />
                       </div>
 
-                      <div className="flex justify-between gap-3 w-full">
-                        {/* Biller Type Select */}
-                        <div className="flex w-full">
+                      {/* Biller Type Select */}
+                      {/* <div className="flex w-full">
                           <label>Biller Type</label>
                           <select
                             name="billerType"
@@ -827,30 +784,29 @@ const ManageBillers = () => {
                               </option>
                             ))}
                           </select>
-                        </div>
+                        </div> */}
 
-                        {/* Service Type Select */}
-                        <div className="flex w-full">
-                          <label>Service Type</label>
-                          <select
-                            name="serviceType"
-                            value={biller.serviceType || ""}
-                            onChange={handleChange}
-                            className="border rounded p-2"
-                          >
-                            <option value="" disabled>
-                              Select Service Type
+                      {/* Service Type Select */}
+                      <div className="flex w-full">
+                        <label className="w-1/3">Service Type</label>
+                        <select
+                          name="serviceType"
+                          value={biller.serviceType || ""}
+                          onChange={handleChange}
+                          className="border-2 border-neutral-300 rounded p-2 w-full shadow-md"
+                        >
+                          <option value="" disabled>
+                            Select Service Type
+                          </option>
+                          {serviceTypes.map((type, index) => (
+                            <option key={index} value={type}>
+                              {type}
                             </option>
-                            {serviceTypes.map((type, index) => (
-                              <option key={index} value={type}>
-                                {type}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                          ))}
+                        </select>
                       </div>
 
-                      <div className="flex gap-2 items-center">
+                      {/* <div className="flex gap-2 items-center">
                         <label className="w-35">Account Number</label>
                         <Input
                           name="accountNumber"
@@ -858,9 +814,9 @@ const ManageBillers = () => {
                           value={biller.accountNumber || ""}
                           onChange={handleChange}
                         />
-                      </div>
+                      </div> */}
 
-                      <div className="flex gap-1 items-center">
+                      {/* <div className="flex gap-1 items-center">
                         <label className="w-30">Bank Name</label>
                         <Input
                           name="bankName"
@@ -868,10 +824,10 @@ const ManageBillers = () => {
                           value={biller.bankName || ""}
                           onChange={handleChange}
                         />
-                      </div>
+                      </div> */}
 
                       <div className="flex gap-1 items-center">
-                        <label>Wallet Address (optional)</label>
+                        <label className="w-1/3"> Wallet ID: <br /><span className="text-xs">(for paywise user)</span></label>
                         <Input
                           name="metamaskWallet"
                           placeholder="Wallet Address"
@@ -880,18 +836,10 @@ const ManageBillers = () => {
                         />
                       </div>
 
-                      <div className="flex gap-1 items-center">
-                        <label>Due Date</label>
-                        <input
-                          name="date"
-                          type="date"
-                          value={biller.date || ""}
-                          onChange={handleChange}
-                        />
-                      </div>
+                      
 
                       <div className="flex gap-1 items-center">
-                        <label>Amount:</label>
+                        <label className="w-1/3">Amount:</label>
                         <Input
                           name="amount"
                           placeholder="Biller Amount"
@@ -900,17 +848,7 @@ const ManageBillers = () => {
                         />
                       </div>
 
-                      <div className="flex items-center">
-                        <Switch
-                          checked={biller.autoPay || false}
-                          onChange={(checked) =>
-                            handleChange({
-                              target: { name: "autoPay", value: checked },
-                            })
-                          }
-                        />
-                        <span className="ml-2">Enable Auto-Pay</span>
-                      </div>
+                     
                     </div>
 
                     {/* Action Buttons */}
