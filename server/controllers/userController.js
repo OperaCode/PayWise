@@ -5,9 +5,10 @@ const bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
 const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
-const {userUpload,cloudinary} = require("../config/cloudConfig.js"); // Multer middleware for file uploads
+const { userUpload, cloudinary } = require("../config/cloudConfig.js"); // Multer middleware for file uploads
 const {
   sendVerificationEmail,
+  sendWelcomeBackEmail,
   sendMetaMaskEmail,
 } = require("../config/EmailConfig.js");
 
@@ -115,118 +116,33 @@ const generateToken = (userId) => {
 //   }
 // });
 
-// const registerUser = asyncHandler(async (req, res) => {
-//   try {
-//     console.log("Incoming request body:", req.body);
-
-//     const {firstName, lastName, email, password } = req.body;
-
-   
-//     if (!email || !password || !firstName || !lastName) {
-//       return res.status(400).json({ message: "All fields are required" });
-//     }
-
-//     // Validate password length
-//     if (password.length < 8 || password.length > 12) {
-//       return res
-//         .status(400)
-//         .json({ message: "Password must be between 8 and 12 characters" });
-//     }
-
-//     // Check if user already exists
-//     const userExist = await userModel.findOne({ email });
-//     console.log("Existing user check result:", userExist);
-
-//     if (userExist) {
-//       return res
-//         .status(400)
-//         .json({ message: "User already exists. Please log in." });
-//     }
-
-//     // Create user with wallet
-//     const newUser = await userModel.create({
-//       firstName,
-//       lastName,
-//       email,
-//       password,
-//       wallet: {
-//         balance: 0,  
-//         cowries: 0, 
-//         walletId: uuidv4(), 
-//       },
-//       isVerified: false, // New users are NOT verified initially
-//     });
-
-//     await sendVerificationEmail(newUser.email, newUser.firstName);
-
-//     const token = generateToken(newUser._id);
-
-//     res.cookie("token", token, {
-//       path: "/",
-//       httpOnly: true,
-//       expires: new Date(Date.now() + 86400000),
-//       sameSite: "none",
-//       secure: true,
-//     });
-//     console.log(newUser);
-
-//     await newUser.save();
-
-//     // console.log("User registered successfully:", newUser.email);
-
-//     if (newUser) {
-//       res.status(201).json({
-//         message: `Registration Successful, Verification email sent!`,
-//         user: {
-//           _id: newUser._id,
-//           firstName: newUser.firstName,
-//           lastName: newUser.lastName,
-//           email: newUser.email,
-//           wallet: {
-//             balance: newUser.wallet.balance,
-//             cowries: newUser.wallet.cowries,
-//             walletId: newUser.wallet.walletId,
-//           },
-//           token,
-//         },
-//       });
-//     }
-
-//     console.log(newUser);
-//   } catch (error) {
-//     console.error("Registration Error:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// });
-
-
-const registerUser = asyncHandler(async(req,res) => {
+const registerUser = asyncHandler(async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
-  
+
     const { firstName, lastName, email, password } = req.body;
-  
+
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
     }
-  
+
     // Validate password length
     if (password.length < 8 || password.length > 12) {
       return res
         .status(400)
         .json({ message: "Password must be between 8 and 12 characters" });
     }
-  
+
     // Check if user already exists
     const userExist = await userModel.findOne({ email });
     console.log("Existing user check result:", userExist);
-  
+
     if (userExist) {
       return res
         .status(400)
         .json({ message: "User already exists. Please log in." });
     }
-  
+
     // Create user with wallet
     const newUser = await userModel.create({
       firstName,
@@ -239,19 +155,21 @@ const registerUser = asyncHandler(async(req,res) => {
         walletId: uuidv4(),
       },
       isVerified: false, // New users are NOT verified initially
-      verificationToken: jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1d" }), 
+      verificationToken: jwt.sign({ email }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      }),
     });
-  
+
     // Generate verification link
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
-  
+    console.log("Sending verification email to:", newUser.email);
     // Send verification email
     await sendVerificationEmail(newUser.email, firstName, verificationLink);
-  
+
     await newUser.save(); // Save user before sending response
-  
+
     const token = generateToken(newUser._id);
-  
+
     res.cookie("token", token, {
       path: "/",
       httpOnly: true,
@@ -259,9 +177,9 @@ const registerUser = asyncHandler(async(req,res) => {
       sameSite: "none",
       secure: true,
     });
-  
+
     console.log("User registered successfully:", newUser.email);
-  
+
     res.status(201).json({
       message: `Registration Successful! A verification email has been sent.`,
       user: {
@@ -277,12 +195,10 @@ const registerUser = asyncHandler(async(req,res) => {
         token,
       },
     });
-  
   } catch (error) {
     console.error("Registration Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-  
 });
 
 // EMAIL LOGIN TRAILS WITH FIREBASE
@@ -332,8 +248,7 @@ const registerUser = asyncHandler(async(req,res) => {
 //   }
 // });
 
-
-const verifyEmail = asyncHandler(async(req,res) => {
+const verifyEmail = asyncHandler(async (req, res) => {
   try {
     const { token } = req.query;
 
@@ -351,8 +266,7 @@ const verifyEmail = asyncHandler(async(req,res) => {
   } catch (error) {
     res.status(400).json({ message: "Invalid or expired token" });
   }
-})
-
+});
 
 const loginUser = asyncHandler(async (req, res) => {
   try {
@@ -364,12 +278,10 @@ const loginUser = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "User Not Found!" });
     }
 
-
     // to restrict unverififed users
     // if (!user.isVerified) {
     //   return res.status(403).json({ message: "Please verify your email before logging in." });
     // }
-
 
     // Check password
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -398,6 +310,9 @@ const loginUser = asyncHandler(async (req, res) => {
         token, // Only send if using local storage (not recommended for security)
       },
     });
+
+    await sendWelcomeBackEmail(user.email, user.firstName);
+
     console.log(user);
   } catch (error) {
     console.log("Login Error:", error);
@@ -415,14 +330,15 @@ const connectWallet = asyncHandler(async (req, res) => {
   }
 
   try {
-
     // Ensure no other user has this wallet address before updating
     const existingUser = await User.findOne({ metamaskWallet: walletAddress });
 
     if (existingUser && existingUser._id.toString() !== userId) {
-      return res.status(400).json({ message: "This MetaMask wallet address is already in use." });
+      return res
+        .status(400)
+        .json({ message: "This MetaMask wallet address is already in use." });
     }
-    
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { metamaskWallet: walletAddress },
@@ -435,15 +351,12 @@ const connectWallet = asyncHandler(async (req, res) => {
 
     await sendMetaMaskEmail(updatedUser.email, updatedUser.firstName);
 
-    res
-      .status(200)
-      .json({
-        message: "MetaMask wallet connected successfully",
-        user: updatedUser,
-      });
+    res.status(200).json({
+      message: "MetaMask wallet connected successfully",
+      user: updatedUser,
+    });
   } catch (error) {
     console.log("Error updating wallet:", error);
-    
   }
 });
 
@@ -496,7 +409,6 @@ const setTransactionPin = asyncHandler(async (req, res) => {
 //   }
 // };
 
-
 const uploadProfilePicture = async (req, res) => {
   try {
     const userId = req.userId; // Get userId from middleware
@@ -504,7 +416,6 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized, no user ID" });
     }
 
-  
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }

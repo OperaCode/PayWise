@@ -83,46 +83,46 @@ const sendVerificationEmail = async (email, firstName, verificationToken) => {
 
 const sendWelcomeBackEmail = async (email, firstName) => {
   try {
-   
-    const activationLink = `http://localhost:5173/dashboard`;
+    const dashboardLink = `http://localhost:5173/dashboard`;
 
     // ✅ Enhanced HTML email with TailwindCSS styling
     const mailOptions = {
       from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "🚀 Welcome to PayWise - Activate Your Account",
+      subject: "👋 Welcome Back to PayWise!",
       html: `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
-        <title>Verify Your PayWise Account</title>
+        <title>Welcome Back to PayWise</title>
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body class="bg-gray-100">
         <div class="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-md">
-          <h2 class="text-2xl font-bold text-gray-800">Welcome back to <span class="text-green-600">PayWise</span>, ${firstName}! 🎉</h2>
+          <h2 class="text-2xl font-bold text-gray-800">Welcome back, ${firstName}! 🎉</h2>
           
           <p class="text-gray-700 mt-4">
-            Its good to have you here!
-          </p>
-
-
-          <p class="text-gray-600 mt-4">
-            To check your paywise activity, copy and paste this link into your browser:
-          </p>
-
-          <p class="text-blue-500 break-words mt-2">
-            <a href="${activationLink}">${activationLink}</a>
+            We’re glad to see you again at <span class="text-green-600">PayWise</span>.
           </p>
 
           <p class="text-gray-600 mt-4">
-            If you did not initiate this sign in, please reach out to our support team to help us protect your account..
+            You can access your dashboard and manage your transactions by clicking the button below:
+          </p>
+
+          <div class="mt-6 text-center">
+            <a href="${dashboardLink}" class="px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-green-700">
+              Go to Dashboard
+            </a>
+          </div>
+
+          <p class="text-gray-600 mt-6 text-sm">
+            If you didn’t sign in recently, please <a href="mailto:support@paywise.com" class="text-blue-600">contact our support team</a> immediately to secure your account.
           </p>
 
           <div class="border-t mt-6 pt-4 text-center">
             <p class="text-gray-500 text-sm">
-              Need help? Contact our support team at 
+              Need help? Reach us at 
               <a href="mailto:support@paywise.com" class="text-blue-600">support@paywise.com</a>
             </p>
             <p class="text-gray-400 text-xs mt-2">© 2025 PayWise Inc. All rights reserved.</p>
@@ -135,11 +135,12 @@ const sendWelcomeBackEmail = async (email, firstName) => {
 
     // ✅ Send email and log success message
     const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Verification email sent to: ${email}, Message ID: ${info.messageId}`);
+    console.log(`✅ Welcome back email sent to: ${email}, Message ID: ${info.messageId}`);
   } catch (error) {
     console.error("❌ Email sending error:", error.message);
   }
 };
+
 
 const sendMetaMaskEmail = async (email, firstName) => {
   try {
