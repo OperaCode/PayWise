@@ -288,6 +288,19 @@ const schedulePayment = asyncHandler(async (req, res) => {
 });
 
 
+const getUserPaymentHistory = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming user is authenticated
+    const payments = await Payment.find({ user: userId })
+      .populate('biller', 'name') // Fetch biller name
+      .sort({ createdAt: -1 }); // Show recent transactions first
+
+    res.status(200).json(payments);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching payment history', error });
+  }
+};
+
 
 const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
@@ -380,4 +393,4 @@ const pauseRecurringPayment = asyncHandler(async (req, res) => {
 
 
 
-module.exports = {fundWallet,p2PTransfer, scheduleTransfer, pauseRecurringPayment , schedulePayment };
+module.exports = {fundWallet,p2PTransfer, getUserPaymentHistory,scheduleTransfer, pauseRecurringPayment , schedulePayment };

@@ -12,15 +12,14 @@ const PaymentSchema = new mongoose.Schema({
         min: [0.01, "Amount must be greater than 0"], 
     },
     frequency: { type: String, enum: ["daily", "weekly", "monthly"], required: true },
+    status: { type: String, enum: ['pending', 'successful', 'failed'], default: 'pending' },
+    transactionRef: { type: String, unique: true, required: true }, // Unique reference for tracking
     isRecurring: {type: Boolean, default: false},  
     method:{type: Number, enum: ["wallet", "rewards"], require:true},
     nextExecution: { type: Date, required: true },
+    paymentMethod: { type: String, enum: ['wallet', 'card', 'bank_transfer'], required: true },
     startDate: { type: Date, required: true, default: Date.now },
-    paymentMethod: {
-        type: String,
-        enum: ['Wallet', 'Stripe'],
-        default: 'Wallet'
-    },
+
     description: { type: String },
     
 

@@ -4,6 +4,7 @@ const billerSchema = new mongoose.Schema(
   {
     profilePicture: { type: String, default: null },
     name: { type: String, required: true },
+    nickname: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
     billerType: {
       type: String,
