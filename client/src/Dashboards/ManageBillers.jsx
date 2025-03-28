@@ -3,7 +3,7 @@ import BarChart from "../charts/BarChart";
 import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
 import { useNavigate } from "react-router-dom";
-
+import CreateBillerModal from  "../modals/createBillerModal"
 import cardBg2 from "../assets/cardBg2.webp";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -17,10 +17,18 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const ManageBillers = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [biller, setBiller] = useState({});
+  const [biller, setBiller] = useState({
+    firstName: "",
+    nickname: "",
+    email: "",
+    serviceType: "",
+    metamaskWallet: "",
+    amount: "",
+  });
   const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
   //array iof billers from user
   const [billers, setBillers] = useState([]);
+  const [email, setEmail] = useState("");
 
   const [showFullList, setShowFullList] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,6 +68,24 @@ const ManageBillers = () => {
       //profilePicture: null,
       amount: "",
     });
+  };
+
+  const searchBiller = async () => {
+    try {
+      setError(""); // Clear previous errors
+      setBiller(null); // Clear previous results
+
+      const response = await axios.get(`${BASE_URL}/biller/search/${email}`);
+
+      console.log(response.data);
+      const biller = response.data.user;
+      console.log(biller);
+
+      setBiller((prevBiller) => ({ ...prevBiller, ...data })); // Merge with existing state
+    } catch (err) {
+      setError(err.response?.data?.message || "User not found");
+      console.log(err.message);
+    }
   };
 
   const handleCancel = () => {
@@ -529,7 +555,9 @@ const ManageBillers = () => {
                     {/* Edit Mode */}
                     <div className="w-full space-y-2">
                       <div className="flex  items-center">
-                        <label htmlFor="" className="w-1/3">Full Name:</label>
+                        <label htmlFor="" className="w-1/3">
+                          Full Name:
+                        </label>
                         <Input
                           // className=" border shadow-sm rounded"
                           placeholder="Biller Name"
@@ -543,7 +571,9 @@ const ManageBillers = () => {
                         />
                       </div>
                       <div className="flex  items-center">
-                        <label htmlFor="" className="w-1/3">Nickname:</label>
+                        <label htmlFor="" className="w-1/3">
+                          Nickname:
+                        </label>
                         <Input
                           // className=" border shadow-sm rounded"
                           placeholder="Biller nickname"
@@ -557,7 +587,9 @@ const ManageBillers = () => {
                         />
                       </div>
                       <div className="flex items-center">
-                        <label htmlFor="" className="w-1/3">Email:</label>
+                        <label htmlFor="" className="w-1/3">
+                          Email:
+                        </label>
                         <Input
                           // className=" border shadow-sm rounded"
                           placeholder="Biller Name"
@@ -657,7 +689,8 @@ const ManageBillers = () => {
 
                       <div className="flex  items-center">
                         <label htmlFor="" className="w-1/3">
-                          Wallet ID: <br /><span className="text-xs">(for paywise user)</span>
+                          Wallet ID: <br />
+                          <span className="text-xs">(for paywise user)</span>
                         </label>
                         <Input
                           placeholder="Wallet Address"
@@ -672,7 +705,9 @@ const ManageBillers = () => {
                       </div>
 
                       <div className="flex items-center">
-                        <label htmlFor="" className="w-1/3">Amount:</label>
+                        <label htmlFor="" className="w-1/3">
+                          Amount:
+                        </label>
                         <Input
                           placeholder="Amount"
                           type="number"
@@ -687,7 +722,6 @@ const ManageBillers = () => {
                       </div>
                     </div>
 
-                
                     {/* Action Buttons */}
                     <div className="mt-4 flex justify-between w-full ">
                       <button
@@ -707,168 +741,7 @@ const ManageBillers = () => {
                   </div>
                 ) : (
                   // Adding a New Biller
-                  <div className="flex flex-col items-center">
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        id="profileUpload"
-                        multiple={false}
-                      />
-                      <label htmlFor="profileUpload">
-                        <img
-                          src={billerPicture ? billerPicture : image}
-                          alt="Profile"
-                          className="w-26 h-26 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
-                        />
-                      </label>
-                    </div>
-                    {loading && (
-                      <span className="text-sm text-gray-500">
-                        Uploading...
-                      </span>
-                    )}
-                    <h3 className="mt-2 font-semibold">Name:</h3>
-                    <p className="text-gray-500">
-                      {biller?.name || "No name provided"}
-                    </p>
-
-                    {/* Edit Mode */}
-                    <div className="w-full space-y-2">
-                      <div className="flex  items-center">
-                        <label className="w-1/3">Full Name:</label>
-                        <Input
-                          name="name"
-                          placeholder="Biller Name"
-                          value={biller.name || ""}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      <div className="flex  items-center">
-                        <label className="w-1/3">Nick Name:</label>
-                        <Input
-                          name="nickname"
-                          placeholder=" Choose a NickName for your Biller"
-                          value={biller.name || ""}
-                          onChange={handleChange}
-                        />
-                      </div>
-
-                      <div className="flex items-center">
-                        <label className="w-1/3">Email:</label>
-                        <Input
-                          name="email"
-                          placeholder="Biller Email"
-                          value={biller.email || ""}
-                          onChange={handleChange}
-                        />
-                      </div>
-
-                      {/* Biller Type Select */}
-                      {/* <div className="flex w-full">
-                          <label>Biller Type</label>
-                          <select
-                            name="billerType"
-                            value={biller.billerType || ""}
-                            onChange={handleChange}
-                            className="border rounded p-2 "
-                          >
-                            <option value="" disabled>
-                              Select Biller Type
-                            </option>
-                            {billerTypes.map((type, index) => (
-                              <option key={index} value={type}>
-                                {type}
-                              </option>
-                            ))}
-                          </select>
-                        </div> */}
-
-                      {/* Service Type Select */}
-                      <div className="flex w-full">
-                        <label className="w-1/3">Service Type</label>
-                        <select
-                          name="serviceType"
-                          value={biller.serviceType || ""}
-                          onChange={handleChange}
-                          className="border-2 border-neutral-300 rounded p-2 w-full shadow-md"
-                        >
-                          <option value="" disabled>
-                            Select Service Type
-                          </option>
-                          {serviceTypes.map((type, index) => (
-                            <option key={index} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* <div className="flex gap-2 items-center">
-                        <label className="w-35">Account Number</label>
-                        <Input
-                          name="accountNumber"
-                          placeholder="Biller Number"
-                          value={biller.accountNumber || ""}
-                          onChange={handleChange}
-                        />
-                      </div> */}
-
-                      {/* <div className="flex gap-1 items-center">
-                        <label className="w-30">Bank Name</label>
-                        <Input
-                          name="bankName"
-                          placeholder="Bank Name"
-                          value={biller.bankName || ""}
-                          onChange={handleChange}
-                        />
-                      </div> */}
-
-                      <div className="flex gap-1 items-center">
-                        <label className="w-1/3"> Wallet ID: <br /><span className="text-xs">(for paywise user)</span></label>
-                        <Input
-                          name="metamaskWallet"
-                          placeholder="Wallet Address"
-                          value={biller.metamaskWallet || ""}
-                          onChange={handleChange}
-                        />
-                      </div>
-
-                      
-
-                      <div className="flex gap-1 items-center">
-                        <label className="w-1/3">Amount:</label>
-                        <Input
-                          name="amount"
-                          placeholder="Biller Amount"
-                          value={biller.amount || ""}
-                          onChange={handleChange}
-                        />
-                      </div>
-
-                     
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="mt-4 flex justify-between w-full">
-                      <button
-                        className="bg-blue-600 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
-                        onClick={handleCreateBiller}
-                        disabled={loading}
-                      >
-                        {loading ? "Creating..." : "Create Biller"}
-                      </button>
-
-                      <button
-                        className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
-                        onClick={handleCancel}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+                  <CreateBillerModal/>
                 )}
 
                 {/* Close Button */}
