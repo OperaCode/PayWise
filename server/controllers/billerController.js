@@ -185,8 +185,29 @@ const getBillerById = asyncHandler(async (req, res) => {
   res.status(200).json(biller);
 });
 
+
+// Search for a user by email and return details
+const searchUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    // Find user in the database
+    const user = await User.findOne({ email: req.params.email });
+    if (!user) return res.status(404).json({ message: "Biller not found" });
+   
+
+    // Return only the necessary details for user form
+    res.json({
+     user
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error searching for user" });
+  }
+};
+
+
 const updateBiller = asyncHandler(async (req, res) => {
-  const biller = await Biller.findOne({
+  const user = await Biller.findOne({
     _id: req.params.billerId,
     user: req.user._id,
   });
@@ -297,6 +318,7 @@ module.exports = {
   createBiller,
   getBillers,
   uploadBillerPicture,
+  searchUserByEmail,
   getBillerById,
   updateBiller,
   deleteBiller,

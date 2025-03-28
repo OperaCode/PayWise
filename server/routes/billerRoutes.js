@@ -7,6 +7,7 @@ const {
   createBiller,
   getBillers,
   getBillerById,
+  searchUserByEmail,
   uploadBillerPicture,
   updateBiller,
   deleteBiller,
@@ -23,7 +24,7 @@ const router = express.Router();
 // });
 
 
-
+router.get("/search/:email", searchUserByEmail);
 router.post("/createbiller", protectUser, createBiller);
 router.get("/", protectUser, getBillers);
 router.get("/:billerId", protectUser, getBillerById);
