@@ -6,6 +6,7 @@ const User = require("../models/userModel")
 const Biller = require("../models/billerModel")
 const Payment = require("../models/paymentModel")
 const bcrypt = require("bcrypt")
+const { updateBillerAmount } = require("../hooks/aggrAmount");
 
 
 
@@ -52,6 +53,11 @@ const bcrypt = require("bcrypt")
 //     res.status(500).json({ success: false, message: "Internal server error." });
 //   }
 // });
+
+
+
+
+
 
 const fundWallet = asyncHandler(async (req, res) => {
   try {
@@ -214,13 +220,16 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     console.log("Sender's wallet after:", sender.wallet.balance);
     console.log("Recipient's wallet after:", recipient.wallet.balance);
 
+    // Update the biller's total amount
+    await updateBillerAmount(billerId);
+
     return res.status(200).json({
       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
       updatedBalance: sender.wallet.balance,
     });
 
   } catch (error) {
-    console.error("❌ P2P Transfer Error:", error);
+    console.error("P2P Transfer Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });

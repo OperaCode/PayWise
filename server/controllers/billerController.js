@@ -1,9 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const Biller = require("../models/billerModel");
 const User = require("../models/userModel");
-const {billerUpload,cloudinary} = require("../config/cloudConfig.js"); // Multer middleware for file uploads
-
-
+const { billerUpload, cloudinary } = require("../config/cloudConfig.js");
+const { updateBillerAmount } = require("../hooks/aggrAmount");
 
 // const createBiller = asyncHandler(async (req, res) => {
 //   const {
@@ -86,68 +85,54 @@ const {billerUpload,cloudinary} = require("../config/cloudConfig.js"); // Multer
 //   });
 // });
 
+const createBiller = async (req, res) => {
+  try {
+    console.log("Request body:", req.body); // Debugging line
 
-const createBiller = asyncHandler(async (req, res) => {
-  const {
-    name,
-    billerType,
-    accountNumber,
-    bankName,
-    serviceType,
-    email,
-    amount,
-  } = req.body;
+    const { fullName, nickname, email, serviceType, walletId, profilePicture } = req.body;
+    const userId = req.user?.id || req.body.user; // Get user ID from req.user or req.body
 
-  if (!req.userId) {
-    return res.status(401).json({ message: "Unauthorized: No user ID found" });
-  }
-
-  const user = await User.findById(req.userId);
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  let billerImageUrl = "";
-
-  // Check if an image file was uploaded
-  if (req.file) {
-    try {
-      const result = await cloudinary.uploader.upload_stream(
-        { folder: "Billers" }, // Store in the "Billers" folder in Cloudinary
-        (error, result) => {
-          if (error) {
-            console.error("Cloudinary Error:", error);
-            return res.status(500).json({ message: "Failed to upload image" });
-          }
-          billerImageUrl = result.secure_url;
-        }
-      ).end(req.file.buffer);
-    } catch (error) {
-      console.error("Cloudinary Upload Error:", error);
+    if (!fullName || !nickname || !email || !serviceType || !walletId || !userId) {
+      return res.status(400).json({ message: "All fields are required, including user ID!" });
     }
+
+    // 🔍 **Find user and check if they already have this biller**
+    const user = await User.findById(userId).populate("billers");
+    if (!user) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    // 🚨 **Check if user already added this biller**
+    const billerExists = user.billers.some((biller) => biller.email === email);
+    if (billerExists) {
+      return res.status(400).json({ message: "You have already added this biller!" });
+    }
+
+    // 🆕 **Create the new biller**
+    const newBiller = new Biller({
+      name: fullName,
+      nickname,
+      email,
+      serviceType,
+      walletId,
+      profilePicture,
+      user: userId, // Ensure user ID is added
+    });
+
+    await newBiller.save();
+
+    // ✅ **Update the User’s `billers` List Properly**
+    user.billers.push(newBiller._id);
+    await user.save();
+
+    console.log("Updated User Billers:", user.billers); // Debugging
+
+    res.status(201).json({ message: "Biller created successfully!", biller: newBiller });
+  } catch (error) {
+    console.error("Error creating biller:", error);
+    res.status(500).json({ message: "Error creating biller" });
   }
-
-  const newBiller = await Biller.create({
-    name,
-    billerType,
-    accountNumber,
-    bankName,
-    serviceType,
-    email,
-    amount,
-    profilePicture: billerImageUrl, // Save the uploaded image URL
-    user: req.userId,
-  });
-
-  user.billers.push(newBiller._id);
-  await user.save();
-
-  res.status(201).json({
-    message: "Biller created successfully",
-    biller: newBiller,
-  });
-});
-
+};
 
 
 
@@ -158,11 +143,18 @@ const getBillers = asyncHandler(async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    // ✅ Fetch only the billers associated with this user
+    // Fetch only the billers associated with this user
     const billers = user.billers;
 
     if (!billers || billers.length === 0) {
-      return res.status(404).json({ message: "No Biller Found, Please Register Biller!" });
+      return res
+        .status(404)
+        .json({ message: "No Biller Found, Please Register Biller!" });
+    }
+
+    // Recalculate amount for each biller before sending response
+    for (let biller of billers) {
+      await updateBillerAmount(biller._id);
     }
 
     res.status(200).json(billers);
@@ -185,26 +177,35 @@ const getBillerById = asyncHandler(async (req, res) => {
   res.status(200).json(biller);
 });
 
-
 // Search for a user by email and return details
 const searchUserByEmail = async (req, res) => {
   try {
     const { email } = req.params;
 
-    // Find user in the database
-    const user = await User.findOne({ email: req.params.email });
-    if (!user) return res.status(404).json({ message: "Biller not found" });
-   
+    // Find biller in the database
+    const biller = await User.findOne({ email });
+
+    if (!biller) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Construct full name
+    const fullName = `${biller.firstName} ${biller.lastName}`.trim();
 
     // Return only the necessary details for user form
     res.json({
-     user
+      biller: {
+        ...biller.toObject(),
+        fullName, // Attach full name
+      },
     });
+
+    console.log("Biller found:", biller);
   } catch (error) {
-    res.status(500).json({ message: "Error searching for user" });
+    console.error("Error searching for biller:", error);
+    res.status(500).json({ message: "Error searching for biller" });
   }
 };
-
 
 const updateBiller = asyncHandler(async (req, res) => {
   const user = await Biller.findOne({
@@ -216,8 +217,19 @@ const updateBiller = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Biller not found" });
   }
 
+  // Construct full name
+  const fullName = `${biller.firstName} ${biller.lastName}`;
+
+  // Return biller details with full name
+  res.json({
+    biller: {
+      ...biller.toObject(),
+      fullName, // Include full name
+    },
+  });
+
   // Update only provided fields
-  Object.assign(biller, req.body);
+  //Object.assign(biller, req.body);
   await biller.save();
 
   res.status(200).json(biller);
@@ -229,7 +241,9 @@ const deleteBiller = asyncHandler(async (req, res) => {
 
     // Ensure user is authenticated (from protectUser middleware)
     if (!req.userId) {
-      return res.status(401).json({ message: "Unauthorized: No user ID found" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user ID found" });
     }
 
     // Check if the biller exists and belongs to the authenticated user
@@ -248,8 +262,6 @@ const deleteBiller = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
-
-
 
 // const uploadBillerPicture = asyncHandler(async (req, res) => {
 //   const { id } = req.params; // Get biller ID from request params
@@ -277,7 +289,6 @@ const deleteBiller = asyncHandler(async (req, res) => {
 //   });
 // });
 
-
 const uploadBillerPicture = asyncHandler(async (req, res) => {
   const { billerId } = req.params;
 
@@ -286,24 +297,23 @@ const uploadBillerPicture = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: "Unauthorized: No user ID found" });
   }
 
-  
-// Find the biller by ID
-const biller = await Biller.findById(id);
-if (!biller) {
-  return res.status(404).json({ message: "Biller not found" });
-}
+  // Find the biller by ID
+  const biller = await Biller.findById(id);
+  if (!biller) {
+    return res.status(404).json({ message: "Biller not found" });
+  }
 
-// Upload to Cloudinary, ensuring it goes into the "billers" folder
-console.log("Uploading to Cloudinary...");
-const result = await cloudinary.uploader.upload(req.file.path, {
-  folder: "Billers", // ✅ Ensures it goes into the "billers" folder
-  public_id: `biller_${id}`, // Optional: Assign a unique name
-  resource_type: "image", // Ensures it's an image
-});
+  // Upload to Cloudinary, ensuring it goes into the "billers" folder
+  console.log("Uploading to Cloudinary...");
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    folder: "Billers", // ✅ Ensures it goes into the "billers" folder
+    public_id: `biller_${id}`, // Optional: Assign a unique name
+    resource_type: "image", // Ensures it's an image
+  });
 
-console.log("Cloudinary Upload Success:", result);
+  console.log("Cloudinary Upload Success:", result);
 
-console.log(result);
+  console.log(result);
   // ✅ Update biller model, not user model
   biller.profilePicture = result.secure_url;
   await biller.save();
