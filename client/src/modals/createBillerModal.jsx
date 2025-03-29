@@ -11,14 +11,14 @@ const CreateBillerModal = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState("");
+  
   const [biller, setBiller] = useState({
     fullName: "",
     nickname: "",
     email: "",
     serviceType: "",
     profilePicture: "",
-    wallet: "",
-   
+    wallet: { walletId: "" },
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -34,35 +34,24 @@ const CreateBillerModal = () => {
     setIsCreating(true);
     setError("");
   
+    const { fullName, nickname, email, serviceType, wallet } = biller;
+  
+    if (!fullName || !nickname || !email || !serviceType || !wallet.walletId) {
+      toast.error("Oops, all fields are required");
+      setIsCreating(false);
+      return;
+    }
+  
     try {
-      const { firstName, nickname, email, serviceType, walletId, profilePicture } = biller;
-  
-      // Ensure required fields are filled
-      if (!firstName || !email || !serviceType || !nickname) {
-        toast.error("Oops, all fields are required");
-        setIsCreating(false);
-        return;
-      }
-  
       const token = localStorage.getItem("token");
-  
-      let formData = new FormData();
-      formData.append("firstName", firstName);
-      formData.append("nickname", nickname);
-      formData.append("email", email);
-      formData.append("serviceType", serviceType);
-      if (walletId) formData.append("walletId", walletId);
-      if (profilePicture instanceof File) {
-        formData.append("profilePicture", profilePicture);
-      }
   
       const response = await axios.post(
         `${BASE_URL}/biller/createbiller`,
-        formData, // Send as FormData for file uploads
+        { fullName, nickname, email, serviceType, walletId: wallet.walletId }, // Fix: Use wallet.walletId
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
           },
         }
       );
@@ -77,24 +66,30 @@ const CreateBillerModal = () => {
       toast.error(error?.response?.data?.message || "Internal server error");
     } finally {
       setIsCreating(false);
+      setIsModalOpen(false);
     }
   };
   
 
   const handleCancel = () => {
     setBiller({
-      firstName: "",
+      fullName: "",
       nickname: "",
       email: "",
       serviceType: "",
       profilePicture: image,
-      metamaskWallet: "",
-      amount: "",
+      wallet: { walletId: "" }, // Fix: Match initial state
     });
     setIsModalOpen(false);
   };
 
-  const serviceTypes = ["Electricity", "Water", "Internet", "Cable TV", "Other"];
+  const serviceTypes = [
+    "Electricity",
+    "Water",
+    "Internet",
+    "Cable TV",
+    "Other",
+  ];
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -104,12 +99,21 @@ const CreateBillerModal = () => {
     }));
   };
 
+  // Handle wallet ID separately since it's nested inside "wallet"
+  const handleWalletChange = (event) => {
+    const { value } = event.target;
+    setBiller((prev) => ({
+      ...prev,
+      wallet: { ...prev.wallet, walletId: value }, // Fix: Properly update wallet ID
+    }));
+  };
+
   const searchBiller = async () => {
     try {
       setError(""); // Clear previous errors
-      setIsSubmitting(true)
+      setIsSubmitting(true);
       const response = await axios.get(`${BASE_URL}/biller/search/${email}`);
-      console.log(response.data)
+      console.log(response.data);
       if (response?.data?.biller) {
         setBiller(response.data.biller);
       } else {
@@ -118,14 +122,14 @@ const CreateBillerModal = () => {
     } catch (err) {
       setError(err.response?.data?.message || "User not found");
       toast.error(err.response?.data?.message || "User not found");
-    }finally{
-        setIsSubmitting(false)
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="flex flex-col items-center">
-      <div className="flex w-full py-2 items-center">
+      <div className="flex w-full py-2 gap-2 items-center">
         <Input
           name="email"
           placeholder="Search by Email"
@@ -136,7 +140,7 @@ const CreateBillerModal = () => {
           onClick={searchBiller}
           className="w-1/4 text-center rounded hover:scale-105 cursor-pointer bg-cyan-700 text-white px-4 py-2"
         >
-          {isSubmitting? "Searching..." : "Browse"}
+          {isSubmitting ? "Searching..." : "Browse"}
         </button>
       </div>
 
@@ -151,10 +155,7 @@ const CreateBillerModal = () => {
         />
         <label htmlFor="profileUpload">
           <img
-            src={
-              biller.profilePicture? biller.profilePicture
-                : image
-            }
+            src={biller.profilePicture ? biller.profilePicture : image}
             alt="Profile"
             className="w-26 h-26 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
           />
@@ -172,6 +173,7 @@ const CreateBillerModal = () => {
             placeholder="Biller Name"
             value={biller.fullName || ""}
             onChange={handleChange}
+            readOnly
           />
         </div>
 
@@ -192,6 +194,7 @@ const CreateBillerModal = () => {
             placeholder="Biller Email"
             value={biller.email || ""}
             onChange={handleChange}
+            readOnly
           />
         </div>
 
@@ -219,10 +222,10 @@ const CreateBillerModal = () => {
             name="walletId"
             placeholder="Wallet Address"
             value={biller.wallet.walletId || ""}
-            onChange={handleChange}
+            onChange={handleWalletChange}
+            readOnly
           />
         </div>
-
       </div>
 
       <div className="mt-4 flex justify-between w-full">

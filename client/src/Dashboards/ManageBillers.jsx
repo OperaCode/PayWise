@@ -4,6 +4,7 @@ import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
 import { useNavigate } from "react-router-dom";
 import CreateBillerModal from  "../modals/createBillerModal"
+import  EditBillerModal  from "../modals/EditBillerModal"
 import cardBg2 from "../assets/cardBg2.webp";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -129,14 +130,15 @@ const ManageBillers = () => {
   useEffect(() => {
     const fetchBillers = async () => {
       try {
+        const userId = localStorage.getItem("userId");
         const token = localStorage.getItem("token");
 
-        if (!token) {
+        if (!userId) {
           toast.error("User not authenticated!");
           return;
         }
 
-        console.log("Token:", token);
+        console.log("Token:", userId);
 
         const response = await axios.get(`${BASE_URL}/biller`, {
           headers: {
@@ -540,205 +542,8 @@ const ManageBillers = () => {
 
                 {selectedBiller ? (
                   // Viewing or Editing a Biller
-                  // Viewing a Biller Profile
-                  <div className="flex flex-col items-center ">
-                    <img
-                      src={selectedBiller.avatar || image}
-                      alt={selectedBiller.name}
-                      className="w-20 h-20 rounded-full border border-gray-300"
-                    />
-                    <h3 className="mt-2 font-semibold">
-                      {selectedBiller.name}
-                    </h3>
-                    <p className="text-gray-500">{selectedBiller.billerType}</p>
-
-                    {/* Edit Mode */}
-                    <div className="w-full space-y-2">
-                      <div className="flex  items-center">
-                        <label htmlFor="" className="w-1/3">
-                          Full Name:
-                        </label>
-                        <Input
-                          // className=" border shadow-sm rounded"
-                          placeholder="Biller Name"
-                          value={selectedBiller.name}
-                          onChange={(e) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              name: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="flex  items-center">
-                        <label htmlFor="" className="w-1/3">
-                          Nickname:
-                        </label>
-                        <Input
-                          // className=" border shadow-sm rounded"
-                          placeholder="Biller nickname"
-                          value={selectedBiller.name}
-                          onChange={(e) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              nickname: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center">
-                        <label htmlFor="" className="w-1/3">
-                          Email:
-                        </label>
-                        <Input
-                          // className=" border shadow-sm rounded"
-                          placeholder="Biller Name"
-                          value={selectedBiller.email}
-                          onChange={(e) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              email: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      {/* Biller Type Select */}
-                      {/* <div className="flex w-full">
-                          <label>Biller Type</label>
-                          <select
-                            name="billerType"
-                            value={selectedBiller.billerType}
-                            onChange={(value) =>
-                              setSelectedBiller({
-                                ...selectedBiller,
-                                billerType: value,
-                              })
-                            }
-                            className="border rounded p-2 "
-                          >
-                            <option value="" disabled>
-                              Select Biller Type
-                            </option>
-                            {billerTypes.map((type, index) => (
-                              <option key={index} value={type}>
-                                {type}
-                              </option>
-                            ))}
-                          </select>
-                        </div> */}
-
-                      {/* Service Type Select */}
-                      <div className="flex w-full items-center">
-                        <label className="w-1/3">Service Type</label>
-                        <select
-                          name="serviceType"
-                          value={selectedBiller.serviceType}
-                          onChange={(value) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              billerType: value,
-                            })
-                          }
-                          className="border-2 border-neutral-300 rounded p-2 w-full shadow-md"
-                        >
-                          <option value="" disabled className="">
-                            Select Service Type:
-                          </option>
-                          {serviceTypes.map((type, index) => (
-                            <option key={index} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      {/* Accouint Number */}
-                      {/* <div className="flex gap-2 items-center">
-                        <label htmlFor="" className="w-35">
-                          {" "}
-                          Account Number
-                        </label>
-                        <Input
-                          placeholder="Account Number"
-                          value={selectedBiller.accountNumber}
-                          onChange={(e) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              accountId: e.target.value,
-                            })
-                          }
-                        />
-                      </div> */}
-
-                      {/* Bank Name */}
-                      {/* <div className="flex gap-2 items-center">
-                        <label htmlFor="" className="w-30">
-                          Bank Name
-                        </label>
-                        <Input
-                          placeholder="Bank Name"
-                          value={selectedBiller.accountId}
-                          onChange={(e) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              accountId: e.target.value,
-                            })
-                          }
-                        />
-                      </div> */}
-
-                      <div className="flex  items-center">
-                        <label htmlFor="" className="w-1/3">
-                          Wallet ID: <br />
-                          <span className="text-xs">(for paywise user)</span>
-                        </label>
-                        <Input
-                          placeholder="Wallet Address"
-                          value={selectedBiller.metamaskWallet}
-                          onChange={(e) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              accountId: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div className="flex items-center">
-                        <label htmlFor="" className="w-1/3">
-                          Amount:
-                        </label>
-                        <Input
-                          placeholder="Amount"
-                          type="number"
-                          value={selectedBiller.amount}
-                          onChange={(e) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              amount: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="mt-4 flex justify-between w-full ">
-                      <button
-                        className="bg-blue-600 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
-                        // onClick={handleSaveBiller}
-                      >
-                        Update
-                      </button>
-
-                      <button
-                        className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
-                        onClick={() => handleDeleteBiller(selectedBiller._id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
+          
+                  <EditBillerModal/>
                 ) : (
                   // Adding a New Biller
                   <CreateBillerModal/>
