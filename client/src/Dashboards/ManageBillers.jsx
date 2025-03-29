@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import BarChart from "../charts/BarChart";
 import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
+import cardImage from "../assets/profileP.jpg"; 
 import { useNavigate } from "react-router-dom";
-import CreateBillerModal from  "../modals/createBillerModal"
-import  EditBillerModal  from "../modals/EditBillerModal"
+import CreateBillerModal from "../modals/createBillerModal";
+import EditBillerModal from "../modals/EditBillerModal";
 import cardBg2 from "../assets/cardBg2.webp";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -19,12 +20,12 @@ const ManageBillers = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [biller, setBiller] = useState({
-    firstName: "",
+    fullName: "",
     nickname: "",
     email: "",
     serviceType: "",
-    metamaskWallet: "",
-    amount: "",
+    profilePicture: "",
+    wallet: { walletId: "" },
   });
   const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
   //array iof billers from user
@@ -37,16 +38,14 @@ const ManageBillers = () => {
   const [error, setError] = useState("");
   const [billerPicture, setBillerPicture] = useState(null);
   const [newBiller, setNewBiller] = useState({
-    name: "",
+    fullName: "",
+    nickname: "",
     email: "",
-    billerType: "",
     serviceType: "",
-    accountNumber: "",
-    bankName: "",
-    profilePicture: null,
-    amount: "",
+    profilePicture: "",
+    wallet: { walletId: "" },
   });
-  const billerTypes = ["Vendor", " Beneficiary"];
+  // const billerTypes = ["Vendor", " Beneficiary"];
   const serviceTypes = [
     "Electricity",
     "Water",
@@ -55,7 +54,8 @@ const ManageBillers = () => {
     "Other",
   ];
 
-  const navigate = useNavigate();
+
+  
 
   const resetForm = () => {
     setNewBiller({
@@ -71,60 +71,10 @@ const ManageBillers = () => {
     });
   };
 
-  const searchBiller = async () => {
-    try {
-      setError(""); // Clear previous errors
-      setBiller(null); // Clear previous results
-
-      const response = await axios.get(`${BASE_URL}/biller/search/${email}`);
-
-      console.log(response.data);
-      const biller = response.data.user;
-      console.log(biller);
-
-      setBiller((prevBiller) => ({ ...prevBiller, ...data })); // Merge with existing state
-    } catch (err) {
-      setError(err.response?.data?.message || "User not found");
-      console.log(err.message);
-    }
-  };
-
-  const handleCancel = () => {
-    resetForm(); // ✅ Clears inputs
-    setIsModalOpen(false); // ✅ Closes modal
-  };
-
   useEffect(() => {
     // Simulate an API call or app initialization delay
     setTimeout(() => setLoading(false), 3000);
   }, []);
-
-  // const handleChange = (e, fieldName) => {
-  //   if (e && e.target) {
-  //     // Handles standard HTML inputs
-  //     const { name, value } = e.target;
-  //     setBiller((prev) => ({ ...prev, [name]: value }));
-  //   } else if (typeof e === "string" || typeof e === "number") {
-  //     // Handles Ant Design <Select>
-  //     setBiller((prev) => ({ ...prev, [fieldName]: e }));
-  //   } else {
-  //     console.error("Invalid event object:", e);
-  //   }
-
-  //   setError(""); // Clear errors
-  // };
-
-  // Function to handle closing the modal
-
-  // const handleChange = (e, field) => {
-  //   if (e.target) {
-  //     // Normal input fields
-  //     setBiller((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  //   } else {
-  //     // For Select components
-  //     setBiller((prev) => ({ ...prev, [field]: e.value }));
-  //   }
-  // };
 
   // for fetching billrs to frontend
   useEffect(() => {
@@ -170,20 +120,6 @@ const ManageBillers = () => {
     }));
   };
 
-  // Handle file selection
-  const handleSelectFile = (e) => {
-    const photo = e.target.files[0];
-    if (photo) {
-      setFile(photo);
-      uploadBillerPhoto(photo); // Pass photo directly
-    }
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    setBillerData({ ...billerData, billerPicture: file });
-  };
-
   const closeModal = async () => {
     setIsModalOpen(false);
     setSelectedBiller(null);
@@ -196,78 +132,6 @@ const ManageBillers = () => {
       profilePicture: null,
       autoPay: false,
     });
-  };
-
-  const handleCreateBiller = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setIsSubmitting(true);
-    setError("");
-
-    try {
-      const {
-        name,
-        billerType,
-        accountNumber,
-        bankName,
-        serviceType,
-        profilePicture,
-        email,
-        amount,
-      } = biller;
-
-      //console.log("Biller Data:", biller);
-
-      // ✅ Validate all fields before making API call
-      if (
-        !name ||
-        !email ||
-        !billerType ||
-        !serviceType ||
-        !accountNumber ||
-        !bankName ||
-        !amount
-      ) {
-        toast.error("Oops, all fields are required");
-        setLoading(false);
-        setIsSubmitting(false);
-        return;
-      }
-
-      const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
-      //console.log("UserId:", userId);
-      //console.log("Token:", token);
-
-      const response = await axios.post(
-        `${BASE_URL}/biller/createbiller`,
-        biller,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Send token in Authorization header
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response?.data) {
-        const userData = response.data.user;
-        console.log(userData);
-
-        setIsModalOpen(false);
-        toast.success(response.data.message);
-      }
-    } catch (error) {
-      const errorMessage =
-        error?.response?.data?.message ||
-        error.message ||
-        "Internal server error";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-      //navigate("/billers");
-    }
   };
 
   const handleCardClick = async (biller) => {
@@ -359,59 +223,25 @@ const ManageBillers = () => {
     }
   };
 
-  const uploadPhoto = async (photo) => {
-    if (!photo) {
-      return toast.error("Please select an image");
-    }
-
-    const userId = localStorage.getItem("userId");
-    console.log("LocalStorage userId:", userId);
-
-    if (!userId) {
-      return toast.error("User ID not found. Please log in again.");
-    }
-
-    const formData = new FormData();
-    formData.append("profilePicture", photo); // ✅ Match backend field name
-    formData.append("userId", userId);
-
+  const handleSaveBiller = async()=>{
     try {
-      setLoading(true);
-
-      // ✅ Send request to backend
-      const res = await axios.put(
-        "http://localhost:3000/user/upload-profile-picture", // ✅ Ensure correct endpoint
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true, // ✅ Ensure cookies are sent if using authentication
-        }
-      );
-
-      console.log("Upload Response:", res.data);
-
-      // ✅ Check if the response contains the Cloudinary URL
-      if (res.data.user && res.data.user.profilePicture) {
-        const imageUrl = res.data.user.profilePicture;
-
-        console.log("New Profile Picture URL:", imageUrl); // ✅ Add this log
-
-        setProfilePicture(imageUrl); // ✅ Update the profile picture state
-
-        // ✅ Display success message
-        toast.success("Profile picture updated successfully!");
+      const response = await fetch(`${BASE_URL}/billers/${billerId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData),
+      });
+  
+      const result = await response.json();
+      if (result.success) {
+        alert("Biller updated successfully!");
+        // Refresh the biller list or close the modal here
       } else {
-        toast.error("Error uploading profile picture. Please try again.");
+        alert(result.message);
       }
     } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Upload failed. Please try again.");
-    } finally {
-      setLoading(false);
+      console.error("Error updating biller:", error);
     }
-  };
+  }
 
   return (
     <>
@@ -481,7 +311,7 @@ const ManageBillers = () => {
               </p>
 
               {/* Cards */}
-              <div className="flex gap-4 justify-between w-full items-center p-4">
+              <div className="flex gap-2 justify-between w-full items-center p-2">
                 {/* Toggle when billerslist is empty */}
                 {billers && billers.length > 0 ? (
                   billers.map((biller) => (
@@ -491,16 +321,18 @@ const ManageBillers = () => {
                       // style={{
                       //   backgroundImage: `url(${cardBg2})`,
                       // }}
-                      className="cursor-pointer border bg-center hover:scale-105 shadow-lg rounded-lg p-4 w-40 flex flex-col items-center"
+                      className="cursor-pointer border bg-center hover:scale-105 shadow-lg rounded-lg p-3 w-40 flex flex-col items-center"
                     >
                       <img
-                        src={biller.profilePicture || image}
+                        src={
+                          biller?.profilePicture ? biller.profilePicture : cardImage
+                        }
                         alt={biller.name}
-                        className="rounded-full w-20 h-20 border-2 cursor-pointer hover:opacity-80 transition"
+                        className="rounded-full w-24 h-24 border-2 cursor-pointer hover:opacity-80 transition"
                       />
                       <h3 className="mt-2 font-bold">{biller.name}</h3>
                       <p className="text-sm font-semibold">
-                        {biller.billerType}
+                        {biller.serviceType}
                       </p>
                     </div>
                   ))
@@ -541,12 +373,140 @@ const ManageBillers = () => {
                 </h2>
 
                 {selectedBiller ? (
-                  // Viewing or Editing a Biller
-          
-                  <EditBillerModal/>
+                  //Viewing or Editing a Biller
+                 
+                  <div className="flex flex-col items-center ">
+                    <img
+                      src={selectedBiller.profilePicture || image}
+                      alt={selectedBiller.name}
+                      className="w-20 h-20 rounded-full border border-gray-300"
+                    />
+                    <h3 className="mt-2 font-semibold">
+                      {selectedBiller.name}
+                    </h3>
+                    <p className="text-gray-500">{selectedBiller.billerType}</p>
+
+                    {/* Edit Mode */}
+                    <div className="w-full space-y-2">
+                      <div className="flex  items-center">
+                        <label htmlFor="" className="w-1/3">
+                          Full Name:
+                        </label>
+                        <Input
+                          // className=" border shadow-sm rounded"
+                          placeholder="Biller Name"
+                          value={selectedBiller.name}
+                          onChange={(e) =>
+                            setSelectedBiller({
+                              ...selectedBiller,
+                              name: e.target.value,
+                            })
+                          }
+                          readOnly
+                        />
+                      </div>
+                      <div className="flex  items-center">
+                        <label htmlFor="" className="w-1/3">
+                          Nickname:
+                        </label>
+                        <Input
+                          // className=" border shadow-sm rounded"
+                          placeholder="Biller nickname"
+                          value={selectedBiller.nickname}
+                          onChange={(e) =>
+                            setSelectedBiller({
+                              ...selectedBiller,
+                              nickname: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center">
+                        <label htmlFor="" className="w-1/3">
+                          Email:
+                        </label>
+                        <Input
+                          // className=" border shadow-sm rounded"
+                          placeholder="Biller Name"
+                          value={selectedBiller.email}
+                          onChange={(e) =>
+                            setSelectedBiller({
+                              ...selectedBiller,
+                              email: e.target.value,
+                            })
+                          }
+                          readOnly
+                        />
+                      </div>
+
+                      {/* Service Type Select */}
+                      <div className="flex w-full items-center">
+                        <label className="w-1/3">Service Type</label>
+                        <select
+                          name="serviceType"
+                          value={selectedBiller.serviceType}
+                          onChange={(value) =>
+                            setSelectedBiller({
+                              ...selectedBiller,
+                              billerType: value,
+                            })
+                          }
+                          className="border-2 border-neutral-300 rounded p-2 w-full shadow-md"
+                        >
+                          <option value="" disabled className="">
+                            Select Service Type:
+                          </option>
+                          {serviceTypes.map((type, index) => (
+                            <option key={index} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex  items-center">
+                        <label htmlFor="" className="w-1/3">
+                          Wallet ID: <br />
+                          <span className="text-xs">(for paywise user)</span>
+                        </label>
+                        <Input
+                          placeholder="Wallet Address"
+                          value={selectedBiller?.wallet?.walletId || ""}
+                          onChange={(e) =>
+                            setSelectedBiller({
+                              ...selectedBiller,
+                              accountId: e.target.value,
+                            })
+                          }
+                          readOnly
+                        />
+                      </div>
+
+                     
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="mt-4 flex justify-between w-full ">
+                      <button
+                        className="bg-blue-600 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
+                        onClick={handleSaveBiller}
+                      >
+                        Update
+                      </button>
+
+                      <button
+                        className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
+                        onClick={() => handleDeleteBiller(selectedBiller._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+
+                  // <EditBillerModal />
                 ) : (
                   // Adding a New Biller
-                  <CreateBillerModal/>
+                  <CreateBillerModal />
                 )}
 
                 {/* Close Button */}

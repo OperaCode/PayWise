@@ -1,16 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Input, message } from "antd";
+import axios from "axios";
 import image from "../assets/profileP.jpg";
 
 const serviceTypes = ["Electricity", "Water", "Internet", "Cable TV", "Other"];
 
 const EditBillerModal = ({ selectedBiller, setSelectedBiller, onClose, updateBiller, deleteBiller }) => {
   const [biller, setBiller] = useState(selectedBiller || {});
+  const [billers, setBillers] = useState([]);
 
-  // Update local state when a new biller is selected
   useEffect(() => {
     setBiller(selectedBiller || {});
   }, [selectedBiller]);
+
+  useEffect(() => {
+    const fetchBillers = async () => {
+      try {
+        const response = await axios.get("/api/billers");
+        setBillers(response.data);
+      } catch (error) {
+        message.error("Failed to fetch billers");
+      }
+    };
+    fetchBillers();
+  }, []);
 
   const handleChange = (key, value) => {
     setBiller((prev) => ({ ...prev, [key]: value }));
@@ -104,8 +117,6 @@ const EditBillerModal = ({ selectedBiller, setSelectedBiller, onClose, updateBil
           Delete
         </button>
       </div>
-
-      
     </div>
   );
 };

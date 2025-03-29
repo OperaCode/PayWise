@@ -11,7 +11,7 @@ const CreateBillerModal = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState("");
-  
+
   const [biller, setBiller] = useState({
     fullName: "",
     nickname: "",
@@ -34,10 +34,11 @@ const CreateBillerModal = () => {
     setIsCreating(true);
     setError("");
   
-    const { fullName, nickname, email, serviceType, wallet } = biller;
+    const { fullName, nickname, email, serviceType, wallet, profilePicture } = biller;
+    const userId = localStorage.getItem("userId"); // Retrieve user ID from storage
   
-    if (!fullName || !nickname || !email || !serviceType || !wallet.walletId) {
-      toast.error("Oops, all fields are required");
+    if (!fullName || !nickname || !email || !serviceType || !wallet.walletId || !userId) {
+      toast.error("Oops, all fields are required!");
       setIsCreating(false);
       return;
     }
@@ -47,7 +48,15 @@ const CreateBillerModal = () => {
   
       const response = await axios.post(
         `${BASE_URL}/biller/createbiller`,
-        { fullName, nickname, email, serviceType, walletId: wallet.walletId }, // Fix: Use wallet.walletId
+        { 
+          fullName, 
+          nickname, 
+          email, 
+          serviceType, 
+          walletId: wallet.walletId, 
+          profilePicture,
+          user: userId, // Ensure user ID is included
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -58,7 +67,7 @@ const CreateBillerModal = () => {
   
       if (response?.data) {
         toast.success(response.data.message);
-        setIsModalOpen(false);
+        // setIsModalOpen(false);
         handleCancel();
       }
     } catch (error) {
@@ -69,6 +78,7 @@ const CreateBillerModal = () => {
       setIsModalOpen(false);
     }
   };
+  
   
 
   const handleCancel = () => {
@@ -145,26 +155,16 @@ const CreateBillerModal = () => {
       </div>
 
       <div className="relative">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="hidden"
-          id="profileUpload"
-          multiple={false}
+        <img
+          src={biller.profilePicture ? biller.profilePicture : image}
+          alt="Profile"
+          className="w-26 h-26 rounded-full border-2  hover:opacity-80 transition"
         />
-        <label htmlFor="profileUpload">
-          <img
-            src={biller.profilePicture ? biller.profilePicture : image}
-            alt="Profile"
-            className="w-26 h-26 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
-          />
-        </label>
       </div>
 
       <h3 className="mt-2 font-semibold">Name:</h3>
       <p className="text-gray-500">{biller?.fullName || "No name provided"}</p>
-
+      
       <div className="w-full space-y-2">
         <div className="flex items-center">
           <label className="w-1/3">Full Name:</label>
