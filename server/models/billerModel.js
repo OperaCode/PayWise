@@ -27,7 +27,7 @@ const billerSchema = new mongoose.Schema(
       default: null,
     },
     amount: { type: Number, default: 0 }, 
-    totalPayment: { type: Number, default: 0 }, 
+    totalAmountPaid: { type: Number, default: 0 },  
     // accountNumber: {
     //   type: String,
     //   unique: true,  // This makes it a unique field

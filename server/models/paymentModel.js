@@ -19,6 +19,7 @@ const PaymentSchema = new mongoose.Schema({
     nextExecution: { type: Date, required: true },
     paymentMethod: { type: String, enum: ['wallet', 'card', 'bank_transfer'], required: true },
     startDate: { type: Date, required: true, default: Date.now },
+  
     
 
     description: { type: String },

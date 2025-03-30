@@ -178,6 +178,63 @@ const withdrawToBank = asyncHandler(async(req, res)=>{
   }
 });
 
+// const p2PTransfer = asyncHandler(async (req, res) => {
+//   try {
+//     const { senderId, recipientEmail, amount } = req.body;
+
+//     if (!senderId || !recipientEmail || !amount || amount <= 0) {
+//       return res.status(400).json({ message: "Invalid transfer details" });
+//     }
+
+//     console.log("🔹 Searching for sender with ID:", senderId); // Debugging
+
+//     // Get sender
+//     const sender = await User.findOne({ _id: senderId }); // 🔄 Make sure _id is correct
+//     if (!sender) {
+//       return res.status(404).json({ message: "Sender not found" });
+//     }
+
+//     console.log("✅ Sender found:", sender.email);
+
+//     // Get recipient
+//     const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
+//     if (!recipient) {
+//       return res.status(404).json({ message: "Recipient not found. Ensure the email is correct." });
+//     }
+
+//     console.log("Sender's wallet before:", sender.wallet.balance);
+//     console.log("Recipient's wallet before:", recipient.wallet.balance);
+
+//     // Check sender balance
+//     if (sender.wallet.balance < amount) {
+//       return res.status(400).json({ message: "Insufficient balance" });
+//     }
+
+//     // Perform transfer
+//     sender.wallet.balance -= amount;
+//     recipient.wallet.balance += amount;
+
+//     await sender.save();
+//     await recipient.save();
+
+//     console.log("Sender's wallet after:", sender.wallet.balance);
+//     console.log("Recipient's wallet after:", recipient.wallet.balance);
+
+//     // Update the biller's total amount
+//     await updateBillerAmount(billerId);
+
+//     return res.status(200).json({
+//       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
+//       updatedBalance: sender.wallet.balance,
+//     });
+
+//   } catch (error) {
+//     console.error("P2P Transfer Error:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
+
+
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
     const { senderId, recipientEmail, amount } = req.body;
@@ -189,7 +246,7 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     console.log("🔹 Searching for sender with ID:", senderId); // Debugging
 
     // Get sender
-    const sender = await User.findOne({ _id: senderId }); // 🔄 Make sure _id is correct
+    const sender = await User.findById(senderId);
     if (!sender) {
       return res.status(404).json({ message: "Sender not found" });
     }
@@ -220,8 +277,22 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     console.log("Sender's wallet after:", sender.wallet.balance);
     console.log("Recipient's wallet after:", recipient.wallet.balance);
 
-    // Update the biller's total amount
-    await updateBillerAmount(billerId);
+    // Check if the recipient is a registered biller
+    const biller = await Biller.findOne({ email: recipientEmail.toLowerCase() });
+    if (biller) {
+      console.log("✅ Recipient is a registered biller:", biller.name);
+
+      // Update totalAmountPaid in Biller model
+      await Biller.findByIdAndUpdate(
+        biller._id,
+        { $inc: { totalAmountPaid: amount } }, // Increment total payments
+        { new: true }
+      );
+
+      console.log(`🔄 Updated totalAmountPaid for ${biller.name} by $${amount}`);
+    } else {
+      console.log("ℹ️ Recipient is NOT a biller, skipping totalAmountPaid update.");
+    }
 
     return res.status(200).json({
       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
@@ -235,7 +306,7 @@ const p2PTransfer = asyncHandler(async (req, res) => {
 });
 
 
-// ✅ Schedule a One-Time Payment to a Biller
+
 const schedulePayment = asyncHandler(async (req, res) => {
   try {
     const { senderEmail, billerId, amount, startDate, transactionPin } = req.body;
@@ -309,6 +380,41 @@ const getUserPaymentHistory = async (req, res) => {
     res.status(500).json({ message: 'Error fetching payment history', error });
   }
 };
+
+
+const totalPayments = asyncHandler(async(req,rers)=>{
+  try {
+    const totalPayments = await Payment.aggregate([
+        {
+            $group: {
+                _id: "$billerId",
+                totalAmount: { $sum: "$amount" }
+            }
+        },
+        {
+            $lookup: {
+                from: "billers",
+                localField: "_id",
+                foreignField: "_id",
+                as: "billerInfo"
+            }
+        },
+        {
+            $unwind: "$billerInfo"
+        },
+        {
+            $project: {
+                billerName: "$billerInfo.name",
+                totalAmount: 1
+            }
+        }
+    ]);
+
+    res.json(totalPayments);
+} catch (error) {
+    res.status(500).json({ message: error.message });
+}
+});
 
 
 const scheduleTransfer = asyncHandler(async (req, res) => {
@@ -402,4 +508,4 @@ const pauseRecurringPayment = asyncHandler(async (req, res) => {
 
 
 
-module.exports = {fundWallet,p2PTransfer, getUserPaymentHistory,scheduleTransfer, pauseRecurringPayment , schedulePayment };
+module.exports = {fundWallet,p2PTransfer, getUserPaymentHistory, totalPayments,scheduleTransfer, pauseRecurringPayment , schedulePayment };

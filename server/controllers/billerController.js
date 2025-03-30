@@ -4,86 +4,7 @@ const User = require("../models/userModel");
 const { billerUpload, cloudinary } = require("../config/cloudConfig.js");
 const { updateBillerAmount } = require("../hooks/aggrAmount");
 
-// const createBiller = asyncHandler(async (req, res) => {
-//   const {
-//     name,
-//     billerType,
-//     accountNumber,
-//     bankName,
-//     serviceType,
-//     email,
-//     amount,
-//   } = req.body;
 
-//   // Check if user is authenticated
-//   if (!req.userId) {
-//     return res.status(401).json({ message: "Unauthorized: No user ID found" });
-//   }
-
-//   // Find the user
-//   const user = await User.findById(req.userId);
-//   if (!user) {
-//     return res.status(404).json({ message: "User not found" });
-//   }
-
-//   // Validate billerType
-//   if (!["Vendor", "Beneficiary"].includes(billerType)) {
-//     return res.status(400).json({ message: "Invalid biller type" });
-//   }
-
-//   // Check if the user has already added this biller
-//   if (user.billers.some((biller) => biller.accountNumber === accountNumber)) {
-//     return res.status(400).json({
-//       message: "This account number is already associated with your account",
-//     });
-//   }
-
-//   // Count the user's billers by type
-//   const vendorCount = user.billers.filter(
-//     (biller) => biller.billerType === "Vendor"
-//   ).length;
-//   const beneficiaryCount = user.billers.filter(
-//     (biller) => biller.billerType === "Beneficiary"
-//   ).length;
-
-//   // Enforce limit for vendors and beneficiaries
-//   if (billerType === "Vendor" && vendorCount >= 5) {
-//     return res.status(400).json({ message: "You can only register up to 5 vendors." });
-//   }
-
-//   if (billerType === "Beneficiary" && beneficiaryCount >= 1) {
-//     return res.status(400).json({ message: "You can only register 1 beneficiary." });
-//   }
-
-//   // Create a new biller
-//   const newBiller = await Biller.create({
-//     name,
-//     billerType,
-//     accountNumber,
-//     bankName,
-//     serviceType,
-//     email,
-//     amount,
-//     user: req.userId, // Associate biller with the user
-//   });
-
-//   if (!newBiller) {
-//     return res.status(400).json({ message: "Failed to create biller" });
-//   }
-
-//   // Add the biller to the user's billers array and update the user
-//   const updatedUser = await User.findByIdAndUpdate(
-//     req.userId,
-//     { $push: { billers: newBiller._id } },
-//     { new: true } // Return the updated user
-//   ).populate("billers"); // Populate billers array with actual biller data
-
-//   res.status(201).json({
-//     message: "Biller created successfully",
-//     biller: newBiller,
-//     user: updatedUser, // Send updated user with billers populated
-//   });
-// });
 
 const createBiller = async (req, res) => {
   try {
@@ -96,19 +17,19 @@ const createBiller = async (req, res) => {
       return res.status(400).json({ message: "All fields are required, including user ID!" });
     }
 
-    // 🔍 **Find user and check if they already have this biller**
+    // to find user and check if they already have this biller**
     const user = await User.findById(userId).populate("billers");
     if (!user) {
       return res.status(404).json({ message: "User not found!" });
     }
 
-    // 🚨 **Check if user already added this biller**
+    //to check if user already added this biller**
     const billerExists = user.billers.some((biller) => biller.email === email);
     if (billerExists) {
       return res.status(400).json({ message: "You have already added this biller!" });
     }
 
-    // 🆕 **Create the new biller**
+    // create the new biller**
     const newBiller = new Biller({
       name: fullName,
       nickname,
@@ -116,16 +37,16 @@ const createBiller = async (req, res) => {
       serviceType,
       walletId,
       profilePicture,
-      user: userId, // Ensure user ID is added
+      user: userId, 
     });
 
     await newBiller.save();
 
-    // ✅ **Update the User’s `billers` List Properly**
+    // Update the User’s billers List 
     user.billers.push(newBiller._id);
     await user.save();
 
-    console.log("Updated User Billers:", user.billers); // Debugging
+    console.log("Updated User Billers:", user.billers); 
 
     res.status(201).json({ message: "Biller created successfully!", biller: newBiller });
   } catch (error) {
@@ -133,8 +54,6 @@ const createBiller = async (req, res) => {
     res.status(500).json({ message: "Error creating biller" });
   }
 };
-
-
 
 const getBillers = asyncHandler(async (req, res) => {
   try {
@@ -207,33 +126,69 @@ const searchUserByEmail = async (req, res) => {
   }
 };
 
-const updateBiller = asyncHandler(async (req, res) => {
-  const user = await Biller.findOne({
-    _id: req.params.billerId,
-    user: req.user._id,
-  });
+// const updateBiller = asyncHandler(async (req, res) => {
+//   const user = await Biller.findOne({
+//     _id: req.params.billerId,
+//     user: req.user._id,
+//   });
 
-  if (!biller) {
-    return res.status(404).json({ message: "Biller not found" });
+//   if (!biller) {
+//     return res.status(404).json({ message: "Biller not found" });
+//   }
+
+//   // Construct full name
+//   const fullName = `${biller.firstName} ${biller.lastName}`;
+
+//   // Return biller details with full name
+//   res.json({
+//     biller: {
+//       ...biller.toObject(),
+//       fullName, // Include full name
+//     },
+//   });
+
+//   // Update only provided fields
+//   //Object.assign(biller, req.body);
+//   await biller.save();
+
+//   res.status(200).json(biller);
+// });
+
+
+const updateBiller = async (req, res) => {
+  try {
+    const { billerId } = req.params;
+    const { fullName, nickname, email, serviceType, walletId, profilePicture } = req.body;
+
+    if (!billerId) {
+      return res.status(400).json({ message: "Biller ID is required!" });
+    }
+
+    const updatedBiller = await Biller.findByIdAndUpdate(
+      billerId,
+      {
+        name: fullName,
+        nickname,
+        email,
+        serviceType,
+        walletId,
+        profilePicture,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedBiller) {
+      return res.status(404).json({ message: "Biller not found!" });
+    }
+
+    res.json({ success: true, message: "Biller updated successfully!", biller: updatedBiller });
+  } catch (error) {
+    console.error("Error updating biller:", error);
+    res.status(500).json({ success: false, message: "Error updating biller" });
   }
+};
 
-  // Construct full name
-  const fullName = `${biller.firstName} ${biller.lastName}`;
 
-  // Return biller details with full name
-  res.json({
-    biller: {
-      ...biller.toObject(),
-      fullName, // Include full name
-    },
-  });
-
-  // Update only provided fields
-  //Object.assign(biller, req.body);
-  await biller.save();
-
-  res.status(200).json(biller);
-});
 
 const deleteBiller = asyncHandler(async (req, res) => {
   try {
