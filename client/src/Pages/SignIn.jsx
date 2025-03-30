@@ -68,7 +68,7 @@ const Login = () => {
 
         setUser(user);
         navigate("/dashboard");
-        toast.success("Login Succesful!, Welcome to Back!");
+        toast.success("Login Succesful!, Welcome Back!");
       }
     } catch (error) {
       console.error(error);

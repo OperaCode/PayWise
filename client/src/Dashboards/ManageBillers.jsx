@@ -334,6 +334,9 @@ const ManageBillers = () => {
                       <p className="text-sm font-semibold">
                         {biller.serviceType}
                       </p>
+                      <p className="text-sm font-semibold">
+                        ${100}
+                      </p>
                     </div>
                   ))
                 ) : (

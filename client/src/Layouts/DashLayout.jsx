@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
-import image from "../assets/avatar.jpg";
+import image from "../assets/profileP.jpg";
 import Recent from "../components/RecentTransactions";
 import { ThemeContext } from "../context/ThemeContext";
 // import { UserContext } from "../context/UserContext";

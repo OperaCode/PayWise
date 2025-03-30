@@ -154,29 +154,37 @@ const SideBar = () => {
             {/* Modal Menu Items */}
             <ul className="leading-10 text-xl p-4">
               <Link to="/billers">
-                <TabletSmartphone size={17} strokeWidth={3} />
-                <li className="hover:cursor-pointer  font-bold lg:text-md ">
-                  Manage Billers
-                </li>
+              <div className=" gap-2 items-center hover:text-cyan-900 flex ">
+                  <TabletSmartphone size={17} strokeWidth={3} />
+                  <li className="hover:cursor-pointer  font-bold lg:text-md ">
+                    Manage Billers
+                  </li>
+                </div>
               </Link>
               <Link to="/payment">
-                <DollarSign size={17} strokeWidth={3} />
-                <li className="hover:cursor-pointer  font-bold lg:text-md ">
-                  Make Payment
-                </li>
+              <div className=" gap-2 items-center hover:text-cyan-900  flex ">
+                  <DollarSign size={17} strokeWidth={3} />
+                  <li className="hover:cursor-pointer  font-bold lg:text-md ">
+                    Make Payment
+                  </li>
+                </div>
               </Link>
 
               <Link to="/analytics">
-                <Milestone size={17} strokeWidth={3} />
-                <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
-                  Rewards and Analytics
-                </li>
+              <div className=" gap-2 items-center hover:text-cyan-900 flex ">
+                  <Milestone size={17} strokeWidth={3} />
+                  <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
+                    Rewards and Analytics
+                  </li>
+                </div>
               </Link>
               <Link to="/messages">
-                <MessageSquareMore size={17} strokeWidth={3} />
-                <li className="hover:cursor-pointer font-bold lg:text-md">
-                  Messages
-                </li>
+              <div className="gap-2 items-center hover:text-cyan-900  flex ">
+                  <MessageSquareMore size={17} strokeWidth={3} />
+                  <li className="hover:cursor-pointer font-bold lg:text-md">
+                    Messages
+                  </li>
+                </div>
               </Link>
               {/* <Link to="/profile-setting">
                 <li className="hover:text-cyan-900 font-bold  cursor-pointer">Settings</li>
