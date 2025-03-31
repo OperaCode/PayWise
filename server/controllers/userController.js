@@ -32,90 +32,6 @@ const generateToken = (userId) => {
 //   api_secret: process.env.CLOUDINARY_API_SECRET,
 // });
 
-// Configure Multer for Local Storage
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     const uploadDir = path.join(__dirname, "../uploads/");
-//     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-//     cb(null, uploadDir);
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
-//   },
-// });
-
-//REGISTER USER WITH FORMDATA
-// const registerUser = asyncHandler(async (req, res) => {
-//   try {
-//     const { firstName, lastName, email, password } = req.body;
-
-//     if (!firstName || !lastName || !email || !password) {
-//       return res.status(400).json({ message: "All fields are required" });
-//     }
-//     if (password.length < 8 || password.length > 20) {
-//       return res
-//         .status(400)
-//         .json({ message: "Password must be between 8 and 20 characters" });
-//     }
-
-//     const userExist = await userModel.findOne({ email });
-//     if (userExist) {
-//       return res.status(400).json({ message: "User already exists" });
-//     }
-
-//     //Hash password before saving
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
-
-//     // Create a new user with a transaction wallet
-//     const newUser = await userModel.create({
-//       firstName,
-//       lastName,
-//       email,
-//       password,
-//       wallet: {
-//         balance: 100,
-//         cowries: 50,
-//         walletId: uuidv4(),
-//       },
-//     });
-
-//     if (newUser) {
-//       // Generate a token for the user
-//       const token = generateToken(newUser._id);
-
-//       res.cookie("token", token, {
-//         path: "/",
-//         httpOnly: true,
-//         expires: new Date(Date.now() + 86400000), // 1 day
-//         sameSite: "none",
-//         secure: true,
-//       });
-
-//       res.status(201).json({
-//         message: "User registered successfully",
-//         user: {
-//           _id: newUser._id,
-//           firstName: newUser.firstName,
-//           lastName: newUser.lastName,
-//           email: newUser.email,
-//           wallet: {
-//             balance: newUser.wallet.balance,
-//             cowries: newUser.wallet.cowries,
-//             walletId: newUser.wallet.walletId,
-//           },
-//           token,
-//         },
-//       });
-//     } else {
-//       res.status(400).json({ message: "User registration failed" });
-//     }
-//   } catch (error) {
-//     console.error("Registration Error:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// });
-
 const registerUser = asyncHandler(async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
@@ -382,32 +298,6 @@ const setTransactionPin = asyncHandler(async (req, res) => {
     return res.status(500).json({ message: "Server error." });
   }
 });
-
-// const uploadProfilePicture = async (req, res) => {
-//   try {
-//     const { profilePicture } = req.body;
-//     const userId = req.userId; // ✅ Use req.userId from middleware
-
-//     if (!userId) {
-//       return res.status(401).json({ message: "Unauthorized, no user ID" });
-//     }
-
-//     const updatedUser = await User.findByIdAndUpdate(
-//       userId,
-//       { profilePicture },
-//       { new: true }
-//     );
-
-//     if (!updatedUser) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     res.json({ message: "Profile picture updated", user: updatedUser });
-//   } catch (error) {
-//     console.error("Error updating profile picture:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
 
 const uploadProfilePicture = async (req, res) => {
   try {

@@ -6,7 +6,7 @@ const { updateBillerAmount } = require("../hooks/aggrAmount");
 
 
 
-const createBiller = async (req, res) => {
+const createBiller = asyncHandler(async (req, res) => {
   try {
     console.log("Request body:", req.body); // Debugging line
 
@@ -21,6 +21,10 @@ const createBiller = async (req, res) => {
     const user = await User.findById(userId).populate("billers");
     if (!user) {
       return res.status(404).json({ message: "User not found!" });
+    }
+
+    if (user.billers.length >= 5) {
+      return res.status(400).json({ message: "You can only add up to 5 billers!" });
     }
 
     //to check if user already added this biller**
@@ -46,42 +50,47 @@ const createBiller = async (req, res) => {
     user.billers.push(newBiller._id);
     await user.save();
 
-    console.log("Updated User Billers:", user.billers); 
+    //console.log("Updated User Billers:", user.billers); 
 
     res.status(201).json({ message: "Biller created successfully!", biller: newBiller });
   } catch (error) {
     console.error("Error creating biller:", error);
     res.status(500).json({ message: "Error creating biller" });
   }
-};
+});
 
 const getBillers = asyncHandler(async (req, res) => {
   try {
-    // Find the user
-    const user = await User.findById(req.userId).populate("billers");
+    const userId = req.userId; // This is just the ID
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized to access this resource" });
+    }
+
+    // Fetch the user from the database
+    const user = await User.findById(userId).populate("billers");
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    // Fetch only the billers associated with this user
-    const billers = user.billers;
 
-    if (!billers || billers.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No Biller Found, Please Register Biller!" });
+    // Ensure the user has billers
+    if (!user.billers || user.billers.length === 0) {
+      return res.status(404).json({ message: "No Biller Found, Please Register Biller!" });
     }
 
-    // Recalculate amount for each biller before sending response
-    for (let biller of billers) {
+    // Update amounts for each biller
+    for (let biller of user.billers) {
       await updateBillerAmount(biller._id);
     }
 
-    res.status(200).json(billers);
+    res.status(200).json(user.billers);
   } catch (error) {
     console.error("Error fetching billers:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
 
 const getBillerById = asyncHandler(async (req, res) => {
   const biller = await Biller.findOne({
