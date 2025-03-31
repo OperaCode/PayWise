@@ -22,11 +22,7 @@ const PaymentSchema = new mongoose.Schema({
   isRecurring: { type: Boolean, default: false },
   // method:{type: Number, enum: ["wallet", "rewards"], require:true},
   nextExecution: { type: Date },
-  paymentMethod: {
-    type: String,
-    enum: ["wallet", "card", "bank_transfer"],
-    required: true,
-  },
+  
   startDate: { type: Date, required: true, default: Date.now },
 
   description: { type: String },

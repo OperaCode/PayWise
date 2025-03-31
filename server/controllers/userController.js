@@ -205,6 +205,8 @@ const loginUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Invalid Credentials" });
     }
 
+    await sendWelcomeBackEmail(user.email, user.firstName);
+
     // Generate token
     const token = generateToken(user._id);
     res.cookie("token", token, {
@@ -227,7 +229,7 @@ const loginUser = asyncHandler(async (req, res) => {
       },
     });
 
-    await sendWelcomeBackEmail(user.email, user.firstName);
+  
 
     console.log(user);
   } catch (error) {

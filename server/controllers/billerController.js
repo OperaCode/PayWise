@@ -19,6 +19,12 @@ const createBiller = asyncHandler(async (req, res) => {
 
     // to find user and check if they already have this biller**
     const user = await User.findById(userId).populate("billers");
+
+
+    console.log("Fetched User:", user);
+    console.log("User Wallet ID:", user?.wallet?.walletId);
+
+
     if (!user) {
       return res.status(404).json({ message: "User not found!" });
     }
@@ -39,10 +45,13 @@ const createBiller = asyncHandler(async (req, res) => {
       nickname,
       email,
       serviceType,
-      walletId,
+      walletAddress: user.wallet.walletId || null,
       profilePicture,
       user: userId, 
     });
+
+
+    console.log("Biller Before Saving:", newBiller); // Debugging Log
 
     await newBiller.save();
 
@@ -69,6 +78,8 @@ const getBillers = asyncHandler(async (req, res) => {
 
     // Fetch the user from the database
     const user = await User.findById(userId).populate("billers");
+
+   
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
