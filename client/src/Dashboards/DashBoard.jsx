@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import image from "../assets/category.png";
 import { UserContext } from "../context/UserContext";
 import Loader from "../components/Loader"; // Import your Loader component
-import P2pModal from "../modals/P2pModal"
+import P2pModal from "../modals/P2pModal";
 import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import blkchain5 from "../assets/darkbg.jpg";
 import {
@@ -123,6 +123,13 @@ const DashBoard = () => {
     setAmount(e.target.value);
   };
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
+
   const handleOpenPinModal = () => {
     if (!recipientEmail || amount <= 0) {
       alert("Please enter a valid email and amount.");
@@ -192,12 +199,14 @@ const DashBoard = () => {
         } catch (error) {
           console.error("Error updating wallet:", error);
           toast.error("An error occurred. Please try again.");
-        }finally {
+        } finally {
           setIsSending(false); // ✅ Hide loading state after request
         }
       }
       closePaymentModal(); // Close the payment modal
-      setWalletBalance((prevBalance) => Number((prevBalance + amount).toFixed(2)));
+      setWalletBalance((prevBalance) =>
+        Number((prevBalance + amount).toFixed(2))
+      );
     },
     onclose: () => {
       console.log("Payment modal closed");
@@ -387,9 +396,10 @@ const DashBoard = () => {
 
                   <div className="flex items-center space-x-2">
                     <h2 className="text-xl font-bold">
-                      $
+                      
                       <span className="font-bold">
-                        {showBalance ? walletBalance || " 0.00 " : "••••"}
+                        {showBalance ? formatCurrency(walletBalance )|| " 0.00 " : "••••"}
+                        
                       </span>
                     </h2>
                     <button

@@ -80,31 +80,16 @@ const ManageBillers = () => {
   useEffect(() => {
     const fetchBillers = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        const token = localStorage.getItem("token");
-
-        if (!userId) {
-          toast.error("User not authenticated!");
-          return;
-        }
-
-        console.log("Token:", userId);
-
+        const UserId = localStorage.getItem("userId");
+        console.log(UserId);
         const response = await axios.get(`${BASE_URL}/biller`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials: true,
         });
-
-        console.log(response?.data || null);
-
-        setBillers(response.data);
-        //setWalletID()
+        console.log(response);
+        setBillers(response?.data|| []);
       } catch (error) {
-        console.error("Error fetching billers:", error);
-        toast.error(
-          error?.response?.data?.message || "Failed to fetch billers"
-        );
+        console.error(error);
+        toast.error(error?.response?.data?.message);
       }
     };
 
@@ -335,7 +320,7 @@ const ManageBillers = () => {
                         {biller.serviceType}
                       </p>
                       <p className="text-sm font-semibold">
-                        ${100}
+                      ${biller.totalAmountPaid || 0}
                       </p>
                     </div>
                   ))
@@ -474,7 +459,7 @@ const ManageBillers = () => {
                         </label>
                         <Input
                           placeholder="Wallet Address"
-                          value={selectedBiller?.wallet?.walletId || ""}
+                          value={selectedBiller?.walletAddress || ""}
                           onChange={(e) =>
                             setSelectedBiller({
                               ...selectedBiller,
@@ -528,7 +513,7 @@ const ManageBillers = () => {
 
         {/* Bar Chart Section */}
         <div className="lg:w-4xl m-auto p-4">
-          <BarChart />
+          <BarChart  billers={billers} />
         </div>
       </div>
     </>

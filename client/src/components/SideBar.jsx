@@ -30,6 +30,7 @@ const SideBar = () => {
 
   const toggleModal = () => {
     setIsModalOpen((prev) => !prev);
+    
   };
 
   //logOutUser
@@ -153,7 +154,7 @@ const SideBar = () => {
             </button>
             {/* Modal Menu Items */}
             <ul className="leading-10 text-xl p-4">
-              <Link to="/billers">
+              <Link to="/billers" onClick={toggleModal}>
               <div className=" gap-2 items-center hover:text-cyan-900 flex ">
                   <TabletSmartphone size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer  font-bold lg:text-md ">
@@ -161,7 +162,7 @@ const SideBar = () => {
                   </li>
                 </div>
               </Link>
-              <Link to="/payment">
+              <Link to="/payment" onClick={toggleModal}>
               <div className=" gap-2 items-center hover:text-cyan-900  flex ">
                   <DollarSign size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer  font-bold lg:text-md ">
@@ -170,7 +171,7 @@ const SideBar = () => {
                 </div>
               </Link>
 
-              <Link to="/analytics">
+              <Link to="/analytics" onClick={toggleModal}>
               <div className=" gap-2 items-center hover:text-cyan-900 flex ">
                   <Milestone size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
@@ -178,7 +179,7 @@ const SideBar = () => {
                   </li>
                 </div>
               </Link>
-              <Link to="/messages">
+              <Link to="/messages" onClick={toggleModal}>
               <div className="gap-2 items-center hover:text-cyan-900  flex ">
                   <MessageSquareMore size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold lg:text-md">

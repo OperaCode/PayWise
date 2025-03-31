@@ -10,6 +10,7 @@ const Recent = () => {
     const fetchHistory = async () => {
       try {
         const userId = localStorage.getItem("userId");
+        console.log("User ID from localStorage:", userId); // Debugging
         if (!userId) {
           console.error("User ID not found in localStorage");
           return;
@@ -44,8 +45,8 @@ const Recent = () => {
       <div className="p-4 m-auto text-center">
         <table className="w-full text-lg border-collapse border border-gray-300">
           <thead>
-            <tr className="bg-gray-200">
-              <th className="p-2 border border-gray-300">Date</th>
+            <tr className="">
+              <th className="p-2 border border-gray-300 shadow-xs">Date</th>
               <th className="p-2 border border-gray-300">Recipient</th>
               <th className="p-2 border border-gray-300">Amount</th>
               <th className="p-2 border border-gray-300">Status</th>
@@ -63,7 +64,7 @@ const Recent = () => {
               history.map((payment) => (
                 <tr key={payment._id} className="border border-gray-300">
                   <td className="p-2 border border-gray-300">
-                    {new Date(payment.date).toLocaleDateString()}
+                    {new Date(payment.createdAt).toLocaleDateString()}
                   </td>
                   <td className="p-2 border border-gray-300">
                     {payment.biller?.name || "Unknown"}

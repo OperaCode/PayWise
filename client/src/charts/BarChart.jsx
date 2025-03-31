@@ -14,19 +14,23 @@ import { ThemeContext } from "../context/ThemeContext"; // Import theme context
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const BarChart = () => {
+const BarChart = ({ billers }) => {
   const { theme } = useContext(ThemeContext); // Get current theme
+
+  // Extract labels (biller names) and values (totalAmountPaid)
+  const labels = billers.map((biller) => biller.name);
+  const dataValues = billers.map((biller) => biller.totalAmountPaid);
 
   // Define colors based on theme
   const textColor = theme === "dark" ? "#ffffff" : "#000000"; // White in dark mode, black in light mode
   const gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
 
   const data = {
-    labels: ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5", "Vendor 5", "Beneficiary 1"], // Labels for bars
+    labels,
     datasets: [
       {
-        label: "Biller Rating by payments",
-        data: [65, 59, 80, 81, 56, 55, 40], // Data points
+        label: "Total Amount Paid ($)",
+        data: dataValues,
         backgroundColor: [
           "rgba(255, 99, 132, 0.5)",
           "rgba(255, 159, 64, 0.5)",
@@ -57,45 +61,26 @@ const BarChart = () => {
         display: true,
         labels: {
           color: textColor, // Adapt to theme
-          font: {
-            size: 12,
-            weight: "bold",
-          },
+          font: { size: 12, weight: "bold" },
         },
       },
     },
     scales: {
       x: {
-        ticks: {
-          color: textColor, // Adapt to theme
-          font: {
-            size: 12,
-            weight: "bold",
-          },
-        },
-        grid: {
-          color: gridColor, // Adjust grid color
-        },
+        ticks: { color: textColor, font: { size: 12, weight: "bold" } },
+        grid: { color: gridColor }, // Adjust grid color
       },
       y: {
         beginAtZero: true,
-        ticks: {
-          color: textColor, // Adapt to theme
-          font: {
-            size: 12,
-            weight: "bold",
-          },
-        },
-        grid: {
-          color: gridColor, // Adjust grid color
-        },
+        ticks: { color: textColor, font: { size: 12, weight: "bold" } },
+        grid: { color: gridColor },
       },
     },
   };
 
   return (
     <div className="m-auto rounded">
-      <h2 className="font-bold text-xl p-2 text-center">Biller Ratings</h2>
+      <h2 className="font-bold text-xl p-2 text-center">Top Billers</h2>
       <div className="flex justify-center ">
         <Bar data={data} options={options} />
       </div>

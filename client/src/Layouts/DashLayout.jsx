@@ -66,8 +66,6 @@ const DashLayout = ({ children }) => {
     fetchUser();
   }, [setUser]);
 
- 
-  
   
   const uploadPhoto = async (photo) => {
     if (!photo) {

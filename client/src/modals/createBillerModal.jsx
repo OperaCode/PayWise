@@ -126,6 +126,7 @@ const CreateBillerModal = () => {
       console.log(response.data);
       if (response?.data?.biller) {
         setBiller(response.data.biller);
+        console.log(biller)
       } else {
         toast.error("Biller not found");
       }
@@ -221,7 +222,7 @@ const CreateBillerModal = () => {
           <Input
             name="walletId"
             placeholder="Wallet Address"
-            value={biller.wallet.walletId || ""}
+            value={biller?.wallet?.walletId || ""}
             onChange={handleWalletChange}
             readOnly
           />
