@@ -2,12 +2,13 @@ const mongoose = require("mongoose");
 
 const PaymentSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  biller: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Biller",
-    required: true,
-  },
-  recipient: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  // biller: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Biller",
+  //   required: true,
+  // },
+  recipientUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  recipientBiller: { type: mongoose.Schema.Types.ObjectId, ref: 'Biller' },
   amount: {
     type: Number,
     required: true,

@@ -87,7 +87,7 @@ const fundWallet = asyncHandler(async (req, res) => {
     console.log("Flutterwave Full Response:", JSON.stringify(data, null, 2));
 
     if (data.status === "success" && data.data.status === "successful") {
-    
+      // ✅ Find the user by userId
       let user = await User.findById(userId);
 
       if (!user) {
@@ -180,62 +180,6 @@ const withdrawToBank = asyncHandler(async (req, res) => {
   }
 });
 
-// const p2PTransfer = asyncHandler(async (req, res) => {
-//   try {
-//     const { senderId, recipientEmail, amount } = req.body;
-
-//     if (!senderId || !recipientEmail || !amount || amount <= 0) {
-//       return res.status(400).json({ message: "Invalid transfer details" });
-//     }
-
-//     console.log("🔹 Searching for sender with ID:", senderId); // Debugging
-
-//     // Get sender
-//     const sender = await User.findOne({ _id: senderId }); // 🔄 Make sure _id is correct
-//     if (!sender) {
-//       return res.status(404).json({ message: "Sender not found" });
-//     }
-
-//     console.log("✅ Sender found:", sender.email);
-
-//     // Get recipient
-//     const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
-//     if (!recipient) {
-//       return res.status(404).json({ message: "Recipient not found. Ensure the email is correct." });
-//     }
-
-//     console.log("Sender's wallet before:", sender.wallet.balance);
-//     console.log("Recipient's wallet before:", recipient.wallet.balance);
-
-//     // Check sender balance
-//     if (sender.wallet.balance < amount) {
-//       return res.status(400).json({ message: "Insufficient balance" });
-//     }
-
-//     // Perform transfer
-//     sender.wallet.balance -= amount;
-//     recipient.wallet.balance += amount;
-
-//     await sender.save();
-//     await recipient.save();
-
-//     console.log("Sender's wallet after:", sender.wallet.balance);
-//     console.log("Recipient's wallet after:", recipient.wallet.balance);
-
-//     // Update the biller's total amount
-//     await updateBillerAmount(billerId);
-
-//     return res.status(200).json({
-//       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
-//       updatedBalance: sender.wallet.balance,
-//     });
-
-//   } catch (error) {
-//     console.error("P2P Transfer Error:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
     const { senderId, recipientEmail, amount } = req.body;
@@ -244,19 +188,24 @@ const p2PTransfer = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Invalid transfer details" });
     }
 
+    console.log("🔹 Searching for sender with ID:", senderId); // Debugging
+
     // Get sender
-    const sender = await User.findById(senderId);
-    if (!sender) return res.status(404).json({ message: "Sender not found" });
-
-    // Get recipient (User or Biller)
-    const recipientUser = await User.findOne({
-      email: recipientEmail.toLowerCase(),
-    });
-  
-
-    if (!recipientUser ) {
-      return res.status(404).json({ message: "Recipient not found." });
+    const sender = await User.findOne({ _id: senderId }); // 🔄 Make sure _id is correct
+    if (!sender) {
+      return res.status(404).json({ message: "Sender not found" });
     }
+
+    console.log("✅ Sender found:", sender.email);
+
+    // Get recipient
+    const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
+    if (!recipient) {
+      return res.status(404).json({ message: "Recipient not found. Ensure the email is correct." });
+    }
+
+    console.log("Sender's wallet before:", sender.wallet.balance);
+    console.log("Recipient's wallet before:", recipient.wallet.balance);
 
     // Check sender balance
     if (sender.wallet.balance < amount) {
@@ -265,23 +214,12 @@ const p2PTransfer = asyncHandler(async (req, res) => {
 
     // Perform transfer
     sender.wallet.balance -= Number(amount);
-    if (recipientUser) {
-      recipientUser.wallet.balance += Number(amount);
-    }
+    recipient.wallet.balance += Number(amount);
 
-    // Save updated balances
-    await sender.save();
-    if (recipientUser) await recipientUser.save();
-    if (recipientBiller) {
-      recipientBiller.totalAmountPaid += Number(amount);
-      await recipientBiller.save();
-    }
-
-    // Store the Payment with correct recipient reference
     const newPayment = new Payment({
       user: senderId,
-      recipientUser: recipientUser ? recipientUser._id : null,
-      recipientBiller: recipientBiller ? recipientBiller._id : null,
+      recipientUser: recipient instanceof User ? recipient._id : null,
+      recipientBiller: recipient instanceof Biller ? recipient._id : null,
       amount: Number(amount),
       transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       status: "successful",
@@ -289,18 +227,101 @@ const p2PTransfer = asyncHandler(async (req, res) => {
       createdAt: new Date(),
       startDate: new Date(),
     });
+    
+    await newPayment.save();    
+    await sender.save();
+    await recipient.save();
 
-    await newPayment.save();
+    console.log("Sender's wallet after:", sender.wallet.balance);
+    console.log("Recipient's wallet after:", recipient.wallet.balance);
+
+    
 
     return res.status(200).json({
       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
       updatedBalance: sender.wallet.balance,
     });
+
   } catch (error) {
-    console.error("Transfer Error:", error);
+    console.error("P2P Transfer Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+// const p2PTransfer = asyncHandler(async (req, res) => {
+//   try {
+//     const { senderId, recipientEmail, amount } = req.body;
+  
+//     if (!senderId || !recipientEmail || !amount || amount <= 0) {
+//       return res.status(400).json({ message: "Invalid transfer details" });
+//     }
+  
+//     // Get sender
+//     const sender = await User.findById(senderId);
+//     if (!sender) return res.status(404).json({ message: "Sender not found" });
+  
+//     // Get recipient (User or Biller)
+//     const recipient = await User.findOne({ email: recipientEmail.toLowerCase() })
+     
+  
+//     if (!recipient) {
+//       return res.status(404).json({ message: "Recipient not found." });
+//     }
+  
+//     // Check sender balance
+//     if (sender.wallet.balance < amount) {
+//       return res.status(400).json({ message: "Insufficient balance" });
+//     }
+  
+//     // Perform transfer
+//     sender.wallet.balance -= Number(amount);
+//     if (recipient instanceof User) {
+//       recipient.wallet.balance += Number(amount);
+//     } else if (recipient instanceof Biller) {
+//       recipient.totalAmountPaid += Number(amount);
+//     }
+  
+//     // Save updated balances
+//     await sender.save();
+//     if (recipient instanceof User) await recipient.save();
+//     // if (recipient instanceof Biller) await recipient.save();
+  
+//     // Store the Payment with correct recipient reference
+//     const newPayment = new Payment({
+//       user: senderId,
+//       recipientUser: recipient instanceof User ? recipient._id : null,
+//       // recipientBiller: recipient instanceof Biller ? recipient._id : null,
+//       amount: Number(amount),
+//       transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+//       status: "successful",
+//       isRecurring: false,
+//       createdAt: new Date(),
+//       startDate: new Date(),
+//       // Only set 'biller' if the recipient is a Biller
+//       biller: recipient instanceof Biller ? recipient._id : undefined,  // Ensure biller is set only for biller recipients
+//     });
+  
+//     await newPayment.save();
+  
+//     // Determine recipient name
+//     const recipientName = recipient instanceof User
+//       ? recipient.name
+//       : recipient instanceof Biller
+//       ? recipient.name
+//       : recipientEmail;
+  
+//     return res.status(200).json({
+//       message: `Transfer successful! You sent $${amount} to ${recipientName}`,
+//       updatedBalance: sender.wallet.balance,
+//     });
+//   } catch (error) {
+//     console.error("Transfer Error:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+  
+  
+  
+// });
 
 const schedulePayment = asyncHandler(async (req, res) => {
   try {
@@ -384,10 +405,13 @@ const getUserPaymentHistory = async (req, res) => {
     }
 
     const payments = await Payment.find({ user: userId }) 
-      .populate("user", "name") 
-      .populate("biller", "name")
-      //.populate("recipient", "name") 
-      .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })  // Sort by most recent
+    .limit(10)                // Get the 10 most recent payments
+    .populate('user', 'name email')  // Optionally populate sender details
+    .populate('recipientUser', 'name email')  // Optionally populate recipient details
+    .populate('recipientBiller', 'name') // Optionally populate biller details
+
+  
 
     console.log("Fetched Payments:", payments); 
 
