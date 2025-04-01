@@ -7,6 +7,7 @@ const PaymentSchema = new mongoose.Schema({
     ref: "Biller",
     required: true,
   },
+  recipient: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   amount: {
     type: Number,
     required: true,
