@@ -6,6 +6,10 @@ const Payment = require("../models/paymentModel");
 const bcrypt = require("bcrypt");
 const { updateBillerAmount } = require("../hooks/aggrAmount");
 
+
+
+
+
 // const fundWallet1 = asyncHandler(async (req, res) => {
 //   try {
 //     console.log("Received Flutterwave payment request:", req.body);
@@ -180,6 +184,73 @@ const withdrawToBank = asyncHandler(async (req, res) => {
   }
 });
 
+// const p2PTransfer = asyncHandler(async (req, res) => {
+//   try {
+//     const { senderId, recipientEmail, amount } = req.body;
+
+//     if (!senderId || !recipientEmail || !amount || amount <= 0) {
+//       return res.status(400).json({ message: "Invalid transfer details" });
+//     }
+
+//     console.log("🔹 Searching for sender with ID:", senderId); // Debugging
+
+//     // Get sender
+//     const sender = await User.findOne({ _id: senderId }); // 🔄 Make sure _id is correct
+//     if (!sender) {
+//       return res.status(404).json({ message: "Sender not found" });
+//     }
+
+//     console.log("✅ Sender found:", sender.email);
+
+//     // Get recipient
+//     const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
+//     if (!recipient) {
+//       return res.status(404).json({ message: "Recipient not found. Ensure the email is correct." });
+//     }
+
+//     console.log("Sender's wallet before:", sender.wallet.balance);
+//     console.log("Recipient's wallet before:", recipient.wallet.balance);
+
+//     // Check sender balance
+//     if (sender.wallet.balance < amount) {
+//       return res.status(400).json({ message: "Insufficient balance" });
+//     }
+
+//     // Perform transfer
+//     sender.wallet.balance -= Number(amount);
+//     recipient.wallet.balance += Number(amount);
+
+//     // ✅ Save transaction as a P2P transfer (no biller)
+//     const newPayment = new Payment({
+//       user: senderId,
+//       recipientUser: recipient._id, // ✅ Always a user
+//       amount: Number(amount),
+//       transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+//       status: "successful",
+//       isRecurring: false,
+//       createdAt: new Date(),
+//       startDate: new Date(),
+//     });
+
+//     await newPayment.save();    
+//     await sender.save();
+//     await recipient.save();
+
+//     console.log("Sender's wallet after:", sender.wallet.balance);
+//     console.log("Recipient's wallet after:", recipient.wallet.balance);
+
+//     return res.status(200).json({
+//       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
+//       updatedBalance: sender.wallet.balance,
+//     });
+
+//   } catch (error) {
+//     console.error("P2P Transfer Error:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
+
+
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
     const { senderId, recipientEmail, amount } = req.body;
@@ -188,38 +259,38 @@ const p2PTransfer = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Invalid transfer details" });
     }
 
-    console.log("🔹 Searching for sender with ID:", senderId); // Debugging
+    console.log("🔹 Searching for sender with ID:", senderId);
 
     // Get sender
-    const sender = await User.findOne({ _id: senderId }); // 🔄 Make sure _id is correct
+    const sender = await User.findById(senderId);
     if (!sender) {
       return res.status(404).json({ message: "Sender not found" });
     }
-
     console.log("✅ Sender found:", sender.email);
 
-    // Get recipient
-    const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
-    if (!recipient) {
-      return res.status(404).json({ message: "Recipient not found. Ensure the email is correct." });
-    }
-
-    console.log("Sender's wallet before:", sender.wallet.balance);
-    console.log("Recipient's wallet before:", recipient.wallet.balance);
-
+    
+    
     // Check sender balance
     if (sender.wallet.balance < amount) {
       return res.status(400).json({ message: "Insufficient balance" });
     }
-
-    // Perform transfer
+    
+    console.log("Sender's wallet before:", sender.wallet.balance);
+    
+    // Deduct amount from sender's wallet
     sender.wallet.balance -= Number(amount);
-    recipient.wallet.balance += Number(amount);
+    
+    let recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
+    // If recipient is a user, update their wallet balance
+    if (recipient) {
+      recipient.wallet.balance += Number(amount);
+    }
 
+    // Create a new payment record
     const newPayment = new Payment({
       user: senderId,
-      recipientUser: recipient instanceof User ? recipient._id : null,
-      recipientBiller: recipient instanceof Biller ? recipient._id : null,
+      recipientUser: recipient ? recipient._id : null,
+     
       amount: Number(amount),
       transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       status: "successful",
@@ -227,15 +298,21 @@ const p2PTransfer = asyncHandler(async (req, res) => {
       createdAt: new Date(),
       startDate: new Date(),
     });
-    
-    await newPayment.save();    
+
+    await newPayment.save();
     await sender.save();
-    await recipient.save();
+    if (recipient) await recipient.save();
 
     console.log("Sender's wallet after:", sender.wallet.balance);
-    console.log("Recipient's wallet after:", recipient.wallet.balance);
 
-    
+    // ✅ Update totalAmountPaid for biller if the recipient is a biller
+    const biller = await Biller.findOne({ email: recipient.email });
+    if (biller) {
+      console.log("🔹 Updating totalAmountPaid for biller:", recipient.email);
+      biller.totalAmountPaid += Number(amount);
+      await biller.save();
+      console.log("✅ Updated totalAmountPaid:", biller.totalAmountPaid);
+    }
 
     return res.status(200).json({
       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
@@ -248,102 +325,29 @@ const p2PTransfer = asyncHandler(async (req, res) => {
   }
 });
 
-// const p2PTransfer = asyncHandler(async (req, res) => {
-//   try {
-//     const { senderId, recipientEmail, amount } = req.body;
-  
-//     if (!senderId || !recipientEmail || !amount || amount <= 0) {
-//       return res.status(400).json({ message: "Invalid transfer details" });
-//     }
-  
-//     // Get sender
-//     const sender = await User.findById(senderId);
-//     if (!sender) return res.status(404).json({ message: "Sender not found" });
-  
-//     // Get recipient (User or Biller)
-//     const recipient = await User.findOne({ email: recipientEmail.toLowerCase() })
-     
-  
-//     if (!recipient) {
-//       return res.status(404).json({ message: "Recipient not found." });
-//     }
-  
-//     // Check sender balance
-//     if (sender.wallet.balance < amount) {
-//       return res.status(400).json({ message: "Insufficient balance" });
-//     }
-  
-//     // Perform transfer
-//     sender.wallet.balance -= Number(amount);
-//     if (recipient instanceof User) {
-//       recipient.wallet.balance += Number(amount);
-//     } else if (recipient instanceof Biller) {
-//       recipient.totalAmountPaid += Number(amount);
-//     }
-  
-//     // Save updated balances
-//     await sender.save();
-//     if (recipient instanceof User) await recipient.save();
-//     // if (recipient instanceof Biller) await recipient.save();
-  
-//     // Store the Payment with correct recipient reference
-//     const newPayment = new Payment({
-//       user: senderId,
-//       recipientUser: recipient instanceof User ? recipient._id : null,
-//       // recipientBiller: recipient instanceof Biller ? recipient._id : null,
-//       amount: Number(amount),
-//       transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-//       status: "successful",
-//       isRecurring: false,
-//       createdAt: new Date(),
-//       startDate: new Date(),
-//       // Only set 'biller' if the recipient is a Biller
-//       biller: recipient instanceof Biller ? recipient._id : undefined,  // Ensure biller is set only for biller recipients
-//     });
-  
-//     await newPayment.save();
-  
-//     // Determine recipient name
-//     const recipientName = recipient instanceof User
-//       ? recipient.name
-//       : recipient instanceof Biller
-//       ? recipient.name
-//       : recipientEmail;
-  
-//     return res.status(200).json({
-//       message: `Transfer successful! You sent $${amount} to ${recipientName}`,
-//       updatedBalance: sender.wallet.balance,
-//     });
-//   } catch (error) {
-//     console.error("Transfer Error:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-  
-  
-  
-// });
 
-const schedulePayment = asyncHandler(async (req, res) => {
+
+const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
-    const { senderEmail, billerId, amount, startDate, transactionPin } =
-      req.body;
+    const { billerId, amount, startDate, transactionPin } = req.body;
+    console.log(req.body)
+
+    // 🔹 Get userId from req.user (middleware should attach it)
+    const userId = req.userId
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized. Please log in." });
+    }
 
     // 🔹 Validate required fields
-    if (
-      !senderEmail ||
-      !billerId ||
-      !amount ||
-      amount <= 0 ||
-      !startDate ||
-      !transactionPin
-    ) {
+    if (!billerId || !amount || amount <= 0 || !startDate || !transactionPin) {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
     // 🔹 Find the sender (user scheduling the payment)
-    const sender = await User.findOne({ email: senderEmail });
+    const sender = await User.findById(userId);
     if (!sender) {
-      return res.status(404).json({ message: "Sender not found." });
+      return res.status(404).json({ message: "User not found." });
     }
 
     // 🔹 Find the biller
@@ -366,10 +370,7 @@ const schedulePayment = asyncHandler(async (req, res) => {
     }
 
     // 🔹 Validate transaction PIN
-    const isPinValid = await bcrypt.compare(
-      transactionPin,
-      sender.transactionPin
-    );
+    const isPinValid = await bcrypt.compare(transactionPin, sender.transactionPin);
     if (!isPinValid) {
       return res.status(403).json({ message: "Invalid transaction PIN" });
     }
@@ -395,25 +396,26 @@ const schedulePayment = asyncHandler(async (req, res) => {
   }
 });
 
+
 const getUserPaymentHistory = async (req, res) => {
   try {
     const userId = req.userId;
-    console.log("Extracted User ID:", userId); 
+    //console.log("Extracted User ID:", userId); 
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized: No user found" });
     }
 
     const payments = await Payment.find({ user: userId }) 
-    .sort({ createdAt: -1 })  // Sort by most recent
-    .limit(10)                // Get the 10 most recent payments
-    .populate('user', 'name email')  // Optionally populate sender details
-    .populate('recipientUser', 'name email')  // Optionally populate recipient details
-    .populate('recipientBiller', 'name') // Optionally populate biller details
+    .sort({ createdAt: -1 }) 
+    .limit(6)                
+    .populate('user', 'firstName serviceType')  
+    .populate('recipientUser', 'firstName serviceType')  
+    .populate('recipientBiller', 'firstName') 
 
   
 
-    console.log("Fetched Payments:", payments); 
+    //console.log("Fetched Payments:", payments); 
 
     res.status(200).json({ data: payments });
   } catch (error) {
@@ -456,103 +458,25 @@ const totalPayments = asyncHandler(async (req, rers) => {
   }
 });
 
-const scheduleTransfer = asyncHandler(async (req, res) => {
-  try {
-    const {
-      senderEmail,
-      receiverEmail,
-      amount,
-      frequency,
-      isRecurring,
-      startDate,
-      transactionPin,
-    } = req.body;
+// const scheduleTransfer = asyncHandler(async (req, res) => {
+//   try {
+//     const { userId, billerName, amount, dueDate } = req.body;
 
-    // Validate required fields
-    if (
-      !senderEmail ||
-      !receiverEmail ||
-      !amount ||
-      amount <= 0 ||
-      !startDate ||
-      !transactionPin ||
-      !frequency
-    ) {
-      return res.status(400).json({
-        message: "Invalid transfer request. Missing required fields.",
-      });
-    }
+//     const newScheduledPayment = new ScheduledPayment({
+//       billerName,
+//       amount,
+//       dueDate,
+//       status: "pending",
+//     });
 
-    // Fetch sender (user initiating the scheduled transfer)
-    const sender = await User.findOne({ email: senderEmail });
-    if (!sender) {
-      return res.status(404).json({ message: "Sender not found" });
-    }
+//     await newScheduledPayment.save();
 
-    // Fetch receiver (PayWise user receiving the transfer)
-    const receiver = await User.findOne({ email: receiverEmail });
-    if (!receiver) {
-      return res.status(404).json({ message: "Receiver not found" });
-    }
-
-    // Validate frequency
-    const validFrequencies = ["daily", "weekly", "monthly"];
-    if (!validFrequencies.includes(frequency)) {
-      return res.status(400).json({
-        error: "Invalid frequency. Must be 'daily', 'weekly', or 'monthly'.",
-      });
-    }
-
-    // Validate start date for recurring payments
-    const nextExecution = new Date(startDate);
-    if (isNaN(nextExecution.getTime())) {
-      return res.status(400).json({ error: "Invalid startDate format." });
-    }
-
-    if (nextExecution < new Date()) {
-      return res
-        .status(400)
-        .json({ error: "Start date must be in the future." });
-    }
-
-    // Ensure sender has set a transaction PIN
-    if (!sender.transactionPin) {
-      return res.status(400).json({
-        message: "You must set a transaction PIN before making transfers.",
-      });
-    }
-
-    // Validate transaction PIN
-    const isPinValid = await bcrypt.compare(
-      transactionPin,
-      sender.transactionPin
-    );
-    if (!isPinValid) {
-      return res.status(403).json({ message: "Invalid transaction PIN" });
-    }
-
-    // Save the recurring payment in the database
-    const recurringPayment = new Payment({
-      user: sender._id, // Sender of the payment
-      biller: receiver._id, // Receiver of the payment
-      amount,
-      frequency,
-      nextExecution, // Scheduler will update this
-      status: "active",
-      isRecurring: true,
-    });
-
-    await recurringPayment.save();
-
-    res.status(201).json({
-      message: "Recurring payment scheduled successfully",
-      recurringPayment,
-    });
-  } catch (error) {
-    console.error("Error scheduling transfer:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+//     res.json({ success: true, message: "Payment scheduled successfully" });
+//   } catch (error) {
+//     console.error("Error scheduling payment:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
 
 const pauseRecurringPayment = asyncHandler(async (req, res) => {
   try {
@@ -572,5 +496,5 @@ module.exports = {
   totalPayments,
   scheduleTransfer,
   pauseRecurringPayment,
-  schedulePayment,
+  
 };

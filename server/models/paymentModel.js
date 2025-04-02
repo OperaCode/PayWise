@@ -25,7 +25,9 @@ const PaymentSchema = new mongoose.Schema({
   // method:{type: Number, enum: ["wallet", "rewards"], require:true},
   nextExecution: { type: Date },
   
-  startDate: { type: Date, required: true, default: Date.now },
+  startDate: { type: Date,  default: Date.now },
+
+  scheduleDate: { type: Date, required: true },
 
   description: { type: String },
 

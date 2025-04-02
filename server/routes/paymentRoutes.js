@@ -12,7 +12,7 @@ router.post('/fund-wallet', fundWallet);
 router.get('/history/:userId',protectUser,getUserPaymentHistory)
 router.get('/payments', protectUser,totalPayments);
 router.post('/wallet-transfer',protectUser, p2PTransfer);
-router.post('/schedule-transfer', scheduleTransfer);
+router.post('/schedule-transfer',protectUser ,scheduleTransfer);
 router.post('/pause-recurring', pauseRecurringPayment);
 
 
