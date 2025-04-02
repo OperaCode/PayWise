@@ -281,24 +281,33 @@ const connectWallet = asyncHandler(async (req, res) => {
 const setTransactionPin = asyncHandler(async (req, res) => {
   try {
     const { userId, pin } = req.body;
-
+  
     // Validate input
-    if (!userId || !pin || pin.length !== 4) {
+    if (!userId || !pin || pin.trim().length !== 4 || isNaN(pin.trim())) {
       return res
         .status(400)
-        .json({ message: "Invalid PIN format. Must be 4 digits." });
+        .json({ message: "Invalid PIN format. Must be exactly 4 digits." });
     }
-
-    const hashedPin = await bcrypt.hash(pin, 10);
-
-    await User.findByIdAndUpdate(userId, { transactionPin: hashedPin });
-
-    return res
-      .status(200)
-      .json({ message: "Transaction PIN set successfully." });
+  
+    // Hash the PIN before storing it
+    const hashedPin = await bcrypt.hash(pin.trim(), 10);
+  
+    // Find the user and update their PIN
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+  
+    user.transactionPin = hashedPin;
+    await user.save();
+  
+    return res.status(200).json({ message: "Transaction PIN set successfully." });
   } catch (error) {
+    console.error(error); // Log for debugging
     return res.status(500).json({ message: "Server error." });
   }
+  
+  
 });
 
 const uploadProfilePicture = async (req, res) => {
