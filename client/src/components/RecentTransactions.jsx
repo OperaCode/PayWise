@@ -10,17 +10,20 @@ const Recent = () => {
     const fetchHistory = async () => {
       try {
         const userId = localStorage.getItem("userId");
-        console.log("User ID from localStorage:", userId); // Debugging
+       // console.log("User ID from localStorage:", userId); // Debugging
         if (!userId) {
           console.error("User ID not found in localStorage");
           return;
         }
-    
-        const response = await axios.get(`${BASE_URL}/payment/history/${userId}`, {
-          withCredentials: true,
-        });
-    
-        console.log("Fetched Payments Data:", response.data); // Debugging
+
+        const response = await axios.get(
+          `${BASE_URL}/payment/history/${userId}`,
+          {
+            withCredentials: true,
+          }
+        );
+
+       // console.log("Fetched Payments Data:", response.data); // Debugging
         setHistory(response.data.data || []); // Ensure correct data assignment
       } catch (error) {
         console.error(
@@ -29,7 +32,6 @@ const Recent = () => {
         );
       }
     };
-    
 
     fetchHistory();
   }, []);
@@ -48,6 +50,7 @@ const Recent = () => {
             <tr className="">
               <th className="p-2 border border-gray-300 shadow-xs">Date</th>
               <th className="p-2 border border-gray-300">Recipient</th>
+              <th className="p-2 border border-gray-300">Payment Category</th>
               <th className="p-2 border border-gray-300">Amount</th>
               <th className="p-2 border border-gray-300">Status</th>
             </tr>
@@ -67,12 +70,17 @@ const Recent = () => {
                     {new Date(payment.createdAt).toLocaleDateString()}
                   </td>
                   <td className="p-2 border border-gray-300">
-                    {payment.biller?.name || "Unknown"}
+                    {payment.recipientUser?.firstName || "Unknown"}
+                  </td>
+                  <td className="p-2 border border-gray-300">
+                    {payment.recipientBiller?.serviceType || "Transfer"}
                   </td>
                   <td className="p-2 border border-gray-300">
                     ${payment.amount.toFixed(2)}
                   </td>
-                  <td className="p-2 border border-gray-300">{payment.status}</td>
+                  <td className="p-2 border border-gray-300">
+                    {payment.status}
+                  </td>
                 </tr>
               ))
             )}
