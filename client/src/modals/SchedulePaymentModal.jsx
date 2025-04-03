@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import blkchain5 from "../assets/darkbg.jpg";
 import { X } from "lucide-react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -14,7 +15,7 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
   const [transactionPin, setTransactionPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [isSettingPin, setIsSettingPin] = useState(false);
-  const [startDate, setStartDate] =useState("");
+  const [startDate, setStartDate] = useState("");
 
   const openPinModal = () => setIsPinModalOpen(true);
   const closePinModal = () => setIsPinModalOpen(false);
@@ -31,41 +32,152 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
     // Get userId and token from localStorage or wherever they're stored
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
-
+  
     if (!userId) {
-      alert("You must be logged in to schedule a payment.");
+      toast.error("You must be logged in to schedule a payment.");
+      setIsSubmitting(false);
+      return;
+    }
+  
+    // Validate required fields
+    if (!selectedBiller || !amount || !scheduleDate || !transactionPin) {
+      toast.error("All fields are required to schedule a payment.");
       setIsSubmitting(false);
       return;
     }
   
     const paymentData = {
-      userId,  // Include userId in the request body
+      userId,
       billerId: selectedBiller,
       amount,
-      startDate,
+      scheduleDate,
       transactionPin,
     };
+  
+    console.log("Scheduling Payment with data:", paymentData); // Debugging
   
     try {
       const response = await fetch(`${BASE_URL}/payment/schedule-transfer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,  // Ensure token is passed
+          Authorization: `Bearer ${token}`, // Ensure token is passed
         },
         body: JSON.stringify(paymentData),
       });
-
+  
       const result = await response.json();
-      console.log(result);
-      alert(result.success ? "Payment scheduled successfully!" : result.message || "Failed to schedule payment");
+      console.log("Response from server:", result); // Debugging
+  
+      if (result.success) {
+        toast.success("Payment scheduled successfully!");
+        onClose(); // Close modal after successful scheduling
+      } else {
+        toast.error(result.message || "Failed to schedule payment");
+      }
     } catch (error) {
       console.error("Error scheduling payment:", error);
-      alert("An error occurred while scheduling the payment.");
+      toast.error("An error occurred while scheduling the payment.");
     } finally {
       setIsSubmitting(false);
     }
-};
+  };
+  
+
+//   const handleSetPin = async () => {
+//     setIsSettingPin(true);
+  
+//     // Get userId and token from localStorage
+//     const userId = localStorage.getItem("userId");
+//     const token = localStorage.getItem("token");
+  
+//     if (!userId) {
+//       toast.error("You must be logged in to set a PIN.");
+//       setIsSettingPin(false);
+//       return;
+//     }
+  
+//     if (!transactionPin || !confirmPin) {
+//       toast.error("Please enter and confirm your PIN.");
+//       setIsSettingPin(false);
+//       return;
+//     }
+  
+//     if (transactionPin !== confirmPin) {
+//       toast.error("PINs do not match.");
+//       setIsSettingPin(false);
+//       return;
+//     }
+  
+//     try {
+//       const response = await axios.post(
+//         `${BASE_URL}/user/set-pin`,
+//         { userId, pin },
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+  
+//       toast.success(response.data.message || "Transaction PIN set successfully!");
+//       setIsPinModalOpen(false);
+//     } catch (error) {
+//       console.error("Error setting PIN:", error);
+//       toast.error(error.response?.data?.message || "Failed to set PIN.");
+//     } finally {
+//       setIsSettingPin(false);
+//     }
+//   };
+  
+
+const handleSetPin = async () => {
+    setIsSettingPin(true);
+  
+    // Get userId and token from localStorage
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+  
+    if (!userId) {
+      toast.error("You must be logged in to set a PIN.");
+      setIsSettingPin(false);
+      return;
+    }
+  
+    if (!transactionPin || !confirmPin) {
+      toast.error("Please enter and confirm your PIN.");
+      setIsSettingPin(false);
+      return;
+    }
+  
+    if (transactionPin !== confirmPin) {
+      toast.error("PINs do not match.");
+      setIsSettingPin(false);
+      return;
+    }
+  
+    // Validate PIN format before making the request
+    if (transactionPin.trim().length !== 4 || isNaN(transactionPin.trim())) {
+      alert("PIN must be exactly 4 digits.");
+      setIsSettingPin(false);
+      return;
+    }
+  
+    // Log data for debugging
+    console.log('User ID:', userId);
+    console.log('PIN:', transactionPin);
+  
+    try {
+      // Sending POST request to the backend
+      await axios.post(`${BASE_URL}/user/set-pin`, { userId, pin: transactionPin });
+      // Handle successful response (e.g., show a success message)
+      alert('PIN set successfully.');
+    } catch (error) {
+      // Handle error response
+      console.error('Error:', error.response.data);
+      alert(error.response.data.message || 'An error occurred while setting PIN.');
+    } finally {
+      setIsSettingPin(false); // Ensure loading state is reset
+    }
+  };
+  
+  
 
 
   return (
@@ -94,7 +206,9 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
         {/* Form */}
         <div className="flex flex-col">
           {/* Select Biller */}
-          <label htmlFor="billers" className="font-medium">Choose Biller</label>
+          <label htmlFor="billers" className="font-medium">
+            Choose Biller
+          </label>
           <select
             id="billers"
             className="p-2 border w-full rounded-md mb-3"
@@ -110,7 +224,9 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
           </select>
 
           {/* Enter Amount */}
-          <label htmlFor="amount" className="font-medium">Amount</label>
+          <label htmlFor="amount" className="font-medium">
+            Amount
+          </label>
           <input
             id="amount"
             type="number"
@@ -121,13 +237,15 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
           />
 
           {/* Select Date */}
-          <label htmlFor="date" className="font-medium">Due Date</label>
+          <label htmlFor="date" className="font-medium">
+            Due Date
+          </label>
           <input
             id="date"
             type="date"
             className="w-full p-2 border rounded-md mb-3"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            value={scheduleDate}
+            onChange={(e) => setScheduleDate(e.target.value)}
           />
 
           {/* Submit Button */}
@@ -185,15 +303,26 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
               >
                 Cancel
               </button>
-              <button
-                onClick={() => {
-                  closePinModal();
-                  handleSchedulePayment(); // Proceed to process the payment after entering the PIN
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
-              >
-                {isSettingPin ? "Set PIN" : "Confirm Transfer"}
-              </button>
+              {isSettingPin ? (
+                // If user is setting a new PIN
+                <button
+                  onClick={handleSetPin}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
+                >
+                  Set PIN
+                </button>
+              ) : (
+                // If user is confirming a transaction with PIN
+                <button
+                  onClick={() => {
+                    closePinModal();
+                    handleSchedulePayment();
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer"
+                >
+                  Confirm Transfer
+                </button>
+              )}
             </div>
           </div>
         </div>

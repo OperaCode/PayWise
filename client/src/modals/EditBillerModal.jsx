@@ -7,50 +7,48 @@ const serviceTypes = ["Electricity", "Water", "Internet", "Cable TV", "Other"];
 
 const EditBillerModal = ({ selectedBiller, setSelectedBiller, onClose, updateBiller, deleteBiller }) => {
   const [biller, setBiller] = useState(selectedBiller || {});
-  const [billers, setBillers] = useState([]);
+  const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     setBiller(selectedBiller || {});
   }, [selectedBiller]);
 
-  useEffect(() => {
-    const fetchBillers = async () => {
-      try {
-        const response = await axios.get("/api/billers");
-        setBillers(response.data);
-      } catch (error) {
-        message.error("Failed to fetch billers");
-      }
-    };
-    fetchBillers();
-  }, []);
-
   const handleChange = (key, value) => {
     setBiller((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
+    if (!userId) {
+      message.error("You must be logged in to update a biller.");
+      return;
+    }
+    
     if (!biller.name || !biller.email || !biller.billerType || !biller.walletId || !biller.amount) {
       message.error("All fields are required!");
       return;
     }
 
-    updateBiller(biller);
-    message.success("Biller updated successfully!");
-    onClose();
+    try {
+      const response = await axios.put(`/api/billers/${biller._id}`, { ...biller, userId });
+      updateBiller(response.data);
+      message.success("Biller updated successfully!");
+      onClose();
+    } catch (error) {
+      message.error("Failed to update biller");
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!biller._id) return;
-    
-    deleteBiller(biller._id);
-    message.success("Biller deleted successfully!");
-    onClose();
-  };
 
-  const handleClose = () => {
-    setSelectedBiller(null);
-    onClose();
+    try {
+      await axios.delete(`/api/billers/${biller._id}`, { data: { userId } });
+      deleteBiller(biller._id);
+      message.success("Biller deleted successfully!");
+      onClose();
+    } catch (error) {
+      message.error("Failed to delete biller");
+    }
   };
 
   return (
@@ -62,24 +60,22 @@ const EditBillerModal = ({ selectedBiller, setSelectedBiller, onClose, updateBil
       />
       <h3 className="mt-2 font-semibold">{biller.name || "Biller Profile"}</h3>
 
-      {/* Edit Fields */}
       <div className="w-full space-y-2 mt-4">
         <div className="flex items-center">
           <label className="w-1/3">Full Name:</label>
-          <Input placeholder="Biller Name" value={biller.name || ""} onChange={(e) => handleChange("name", e.target.value)} />
+          <Input value={biller.name || ""} onChange={(e) => handleChange("name", e.target.value)} />
         </div>
 
         <div className="flex items-center">
           <label className="w-1/3">Nickname:</label>
-          <Input placeholder="Biller Nickname" value={biller.nickname || ""} onChange={(e) => handleChange("nickname", e.target.value)} />
+          <Input value={biller.nickname || ""} onChange={(e) => handleChange("nickname", e.target.value)} />
         </div>
 
         <div className="flex items-center">
           <label className="w-1/3">Email:</label>
-          <Input placeholder="Email" value={biller.email || ""} onChange={(e) => handleChange("email", e.target.value)} />
+          <Input value={biller.email || ""} onChange={(e) => handleChange("email", e.target.value)} />
         </div>
 
-        {/* Service Type Select */}
         <div className="flex items-center">
           <label className="w-1/3">Service Type:</label>
           <select
@@ -89,25 +85,22 @@ const EditBillerModal = ({ selectedBiller, setSelectedBiller, onClose, updateBil
           >
             <option value="" disabled>Select Service Type:</option>
             {serviceTypes.map((type, index) => (
-              <option key={index} value={type}>
-                {type}
-              </option>
+              <option key={index} value={type}>{type}</option>
             ))}
           </select>
         </div>
 
         <div className="flex items-center">
           <label className="w-1/3">Wallet ID:</label>
-          <Input placeholder="Wallet Address" value={biller.walletId || ""} onChange={(e) => handleChange("walletId", e.target.value)} />
+          <Input value={biller.walletId || ""} onChange={(e) => handleChange("walletId", e.target.value)} />
         </div>
 
         <div className="flex items-center">
           <label className="w-1/3">Amount:</label>
-          <Input placeholder="Amount" type="number" value={biller.amount || ""} onChange={(e) => handleChange("amount", e.target.value)} />
+          <Input type="number" value={biller.amount || ""} onChange={(e) => handleChange("amount", e.target.value)} />
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="mt-4 flex justify-between w-full">
         <button className="bg-blue-600 text-white px-4 py-2 w-1/3 rounded hover:scale-105" onClick={handleUpdate}>
           Update
