@@ -229,7 +229,7 @@ const withdrawToBank = asyncHandler(async (req, res) => {
 //       status: "successful",
 //       isRecurring: false,
 //       createdAt: new Date(),
-//       startDate: new Date(),
+//       scheduleDate: new Date(),
 //     });
 
 //     await newPayment.save();    
@@ -296,7 +296,7 @@ const p2PTransfer = asyncHandler(async (req, res) => {
       status: "successful",
       isRecurring: false,
       createdAt: new Date(),
-      startDate: new Date(),
+      scheduleDate: new Date(),
     });
 
     await newPayment.save();
@@ -329,7 +329,7 @@ const p2PTransfer = asyncHandler(async (req, res) => {
 
 const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
-    const { billerId, amount, startDate, transactionPin } = req.body;
+    const { billerId, amount, scheduleDate, transactionPin } = req.body;
     console.log(req.body)
 
     // 🔹 Get userId from req.user (middleware should attach it)
@@ -340,7 +340,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     }
 
     // 🔹 Validate required fields
-    if (!billerId || !amount || amount <= 0 || !startDate || !transactionPin) {
+    if (!billerId || !amount || amount <= 0 || !scheduleDate || !transactionPin) {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
@@ -357,7 +357,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     }
 
     // 🔹 Validate start date
-    const scheduledDate = new Date(startDate);
+    const scheduledDate = new Date(scheduleDate);
     if (isNaN(scheduledDate.getTime()) || scheduledDate < new Date()) {
       return res.status(400).json({ message: "Invalid start date." });
     }
