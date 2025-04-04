@@ -330,71 +330,65 @@ const p2PTransfer = asyncHandler(async (req, res) => {
 const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
     const { billerId, amount, scheduleDate, transactionPin } = req.body;
-    console.log(req.body)
-
-    // 🔹 Get userId from req.user (middleware should attach it)
-    const userId = req.userId
+    const userId = req.userId; // Extracted from token
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized. Please log in." });
     }
 
-    // 🔹 Validate required fields
-    if (!billerId || !amount || amount <= 0 || !scheduleDate || !transactionPin) {
-      return res.status(400).json({ message: "Missing required fields." });
+    if (!billerId || isNaN(amount) || amount <= 0 || !scheduleDate || !transactionPin) {
+      return res.status(400).json({ message: "Missing or invalid required fields." });
     }
 
-    // 🔹 Find the sender (user scheduling the payment)
-    const sender = await User.findById(userId);
-    if (!sender) {
+    // Find user by userId (attached by the middleware)
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // 🔹 Find the biller
+    // Check if the entered PIN matches the stored hashed PIN
+    const isPinValid = await bcrypt.compare(transactionPin, user.transactionPin);
+    if (!isPinValid) {
+      return res.status(403).json({ message: "Invalid transaction PIN." });
+    }
+
+    // Find the biller (use billerId from request)
     const biller = await Biller.findById(billerId);
     if (!biller) {
       return res.status(404).json({ message: "Biller not found." });
     }
 
-    // 🔹 Validate start date
+    // Validate the scheduled date
     const scheduledDate = new Date(scheduleDate);
     if (isNaN(scheduledDate.getTime()) || scheduledDate < new Date()) {
       return res.status(400).json({ message: "Invalid start date." });
     }
 
-    // 🔹 Ensure sender has a transaction PIN
-    if (!sender.transactionPin) {
-      return res
-        .status(400)
-        .json({ message: "Set a transaction PIN before scheduling payments." });
-    }
-
-    // 🔹 Validate transaction PIN
-    const isPinValid = await bcrypt.compare(transactionPin, sender.transactionPin);
-    if (!isPinValid) {
-      return res.status(403).json({ message: "Invalid transaction PIN" });
-    }
-
-    // 🔹 Create a scheduled payment record
+    // Create the scheduled payment record
     const scheduledPayment = new Payment({
-      user: sender._id, // Sender
-      biller: biller._id, // Biller being paid
+      user: user._id,
+      biller: biller._id,
+      transactionRef: `SCH-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       amount,
-      scheduledDate, // Date when payment will be executed
-      status: "pending", // Payment remains pending until execution
+      scheduledDate,
+      status: "pending",
     });
 
     await scheduledPayment.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Payment scheduled successfully.",
       scheduledPayment,
     });
   } catch (error) {
     console.error("Error scheduling payment:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
   }
 });
+
 
 
 const getUserPaymentHistory = async (req, res) => {
@@ -477,6 +471,7 @@ const totalPayments = asyncHandler(async (req, rers) => {
 //     res.status(500).json({ success: false, message: "Server error" });
 //   }
 // });
+
 
 const pauseRecurringPayment = asyncHandler(async (req, res) => {
   try {
