@@ -15,6 +15,7 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
   const [transactionPin, setTransactionPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [isSettingPin, setIsSettingPin] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [startDate, setStartDate] = useState("");
 
   const openPinModal = () => setIsPinModalOpen(true);
@@ -22,119 +23,77 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
 
   // Handle cancel action (close modal)
   const handleCancel = () => {
-    onClose(); // Trigger the parent component's close function
+    onClose(); 
   };
 
   // Handle Scheduled Payment
   const handleSchedulePayment = async () => {
-    setIsSubmitting(true);
+    setIsProcessing(true);
+    console.log("selectedBiller before API call:", selectedBiller);
+    // 🔹 Ensure `billerId` comes from state or props
+    if (!selectedBiller) {
+      console.error("Error: billerId is undefined");
+      toast.error("Biller is not selected. Please choose a biller.");
+      setIsProcessing(false);
+      return;
+    }
   
-    // Get userId and token from localStorage or wherever they're stored
-    const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
   
-    if (!userId) {
+    if (!token) {
       toast.error("You must be logged in to schedule a payment.");
-      setIsSubmitting(false);
+      setIsProcessing(false);
       return;
     }
-  
-    // Validate required fields
-    if (!selectedBiller || !amount || !scheduleDate || !transactionPin) {
-      toast.error("All fields are required to schedule a payment.");
-      setIsSubmitting(false);
-      return;
-    }
-  
-    const paymentData = {
-      userId,
-      billerId: selectedBiller,
-      amount,
-      scheduleDate,
-      transactionPin,
-    };
-  
-    console.log("Scheduling Payment with data:", paymentData); // Debugging
   
     try {
-      const response = await fetch(`${BASE_URL}/payment/schedule-transfer`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Ensure token is passed
-        },
-        body: JSON.stringify(paymentData),
-      });
-  
-      const result = await response.json();
-      console.log("Response from server:", result); // Debugging
-  
-      if (result.success) {
-        toast.success("Payment scheduled successfully!");
-        onClose(); // Close modal after successful scheduling
-      } else {
-        toast.error(result.message || "Failed to schedule payment");
-      }
+      const response = await axios.post(
+        `${BASE_URL}/payment/schedule-transfer`,
+        { billerId: selectedBiller, amount, scheduleDate, transactionPin },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  console.log(response)
+      toast.success("Payment scheduled successfully.");
     } catch (error) {
       console.error("Error scheduling payment:", error);
-      toast.error("An error occurred while scheduling the payment.");
+      
+      // 🔹 Log full error details
+      console.error("Full error response:", error.response);
+  
+      const errorMessage = error.response?.data?.message || "Failed to schedule payment.";
+      toast.error(errorMessage);
     } finally {
-      setIsSubmitting(false);
+      setIsProcessing(false);
     }
   };
   
-
-//   const handleSetPin = async () => {
-//     setIsSettingPin(true);
   
-//     // Get userId and token from localStorage
-//     const userId = localStorage.getItem("userId");
-//     const token = localStorage.getItem("token");
-  
-//     if (!userId) {
-//       toast.error("You must be logged in to set a PIN.");
-//       setIsSettingPin(false);
-//       return;
-//     }
-  
-//     if (!transactionPin || !confirmPin) {
-//       toast.error("Please enter and confirm your PIN.");
-//       setIsSettingPin(false);
-//       return;
-//     }
-  
-//     if (transactionPin !== confirmPin) {
-//       toast.error("PINs do not match.");
-//       setIsSettingPin(false);
-//       return;
-//     }
-  
-//     try {
-//       const response = await axios.post(
-//         `${BASE_URL}/user/set-pin`,
-//         { userId, pin },
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-  
-//       toast.success(response.data.message || "Transaction PIN set successfully!");
-//       setIsPinModalOpen(false);
-//     } catch (error) {
-//       console.error("Error setting PIN:", error);
-//       toast.error(error.response?.data?.message || "Failed to set PIN.");
-//     } finally {
-//       setIsSettingPin(false);
-//     }
-//   };
   
 
-const handleSetPin = async () => {
+  // Confirm Pin and Schedule Payment
+  const handleConfirm = () => {
+    if (isSettingPin && transactionPin !== confirmPin) {
+      alert("Pins do not match!");
+      return;
+    }
+  
+    handleSchedulePayment(transactionPin); // Use transactionPin
+    onClose();
+  };
+  
+
+ 
+  const handleSetPin = async () => {
     setIsSettingPin(true);
   
-    // Get userId and token from localStorage
-    const userId = localStorage.getItem("userId");
+    // Get token from localStorage
     const token = localStorage.getItem("token");
   
-    if (!userId) {
+    if (!token) {
       toast.error("You must be logged in to set a PIN.");
       setIsSettingPin(false);
       return;
@@ -153,32 +112,37 @@ const handleSetPin = async () => {
     }
   
     // Validate PIN format before making the request
-    if (transactionPin.trim().length !== 4 || isNaN(transactionPin.trim())) {
-      alert("PIN must be exactly 4 digits.");
-      setIsSettingPin(false);
-      return;
-    }
-  
-    // Log data for debugging
-    console.log('User ID:', userId);
-    console.log('PIN:', transactionPin);
+    if (typeof transactionPin !== "string" || transactionPin.length !== 4) {
+        toast.error("Transaction PIN must be a 4-digit string.");
+        setIsProcessing(false);
+        return;
+      }
   
     try {
-      // Sending POST request to the backend
-      await axios.post(`${BASE_URL}/user/set-pin`, { userId, pin: transactionPin });
-      // Handle successful response (e.g., show a success message)
-      alert('PIN set successfully.');
+      // Sending POST request to the backend with Authorization header
+      await axios.post(
+        `${BASE_URL}/user/set-pin`,
+        { pin: transactionPin },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      toast.success("PIN set successfully.");
     } catch (error) {
-      // Handle error response
-      console.error('Error:', error.response.data);
-      alert(error.response.data.message || 'An error occurred while setting PIN.');
+      console.error("Error:", error.response?.data);
+      toast.error(
+        error.response?.data?.message || "An error occurred while setting PIN."
+      );
     } finally {
-      setIsSettingPin(false); // Ensure loading state is reset
+      setIsSettingPin(false);
     }
   };
   
-  
 
+  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -233,7 +197,10 @@ const handleSetPin = async () => {
             placeholder="Enter Amount"
             className="w-full p-2 border rounded-md mb-3"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+                const value = e.target.value;
+                if (value >= 0) setAmount(value);
+              }}
           />
 
           {/* Select Date */}
@@ -314,10 +281,7 @@ const handleSetPin = async () => {
               ) : (
                 // If user is confirming a transaction with PIN
                 <button
-                  onClick={() => {
-                    closePinModal();
-                    handleSchedulePayment();
-                  }}
+                onClick={handleConfirm}
                   className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer"
                 >
                   Confirm Transfer

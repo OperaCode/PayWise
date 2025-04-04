@@ -222,37 +222,7 @@ const DashBoard = () => {
     },
   };
 
-  // Handle Scheduled Payment
-  const handleSchedulePayment = async () => {
-    // if (!transactionPin) {
-    //   toast.error("Please enter your transaction PIN.");
-    //   return;
-    // }
-
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch("/api/schedule-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(paymentData),
-      });
-
-      const result = await response.json();
-      console.log(result)
-      // if (result.success) {
-      //   alert("Payment scheduled successfully!");
-      // } else {
-      //   alert("Failed to schedule payment");
-      // }
-    } catch (error) {
-      console.error("Error scheduling payment:", error);
-    }
-    finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  
   //P2P Transfer
   const handleTransfer = async (e) => {
     e.preventDefault();

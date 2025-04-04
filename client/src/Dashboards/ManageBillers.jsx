@@ -10,7 +10,7 @@ import cardBg2 from "../assets/cardBg2.webp";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-import { Plus, Scroll, ArrowLeft } from "lucide-react";
+import { Plus, CalendarCheck2, ArrowLeft } from "lucide-react";
 import { Button, Modal, Input, Select, Switch, DatePicker, Upload } from "antd";
 import { Navigate } from "react-router-dom";
 
@@ -249,8 +249,8 @@ const ManageBillers = () => {
                     >
                       {/* Left: Biller Info */}
                       <div>
-                        <h3 className="text-lg font-semibold">{biller.name}</h3>
-                        <p className="text-sm ">{biller.billerType}</p>
+                        <h3 className="text-lg font-bold">{biller.name}</h3>
+                        <p className="text-sm font-semibold">{biller.serviceType}</p>
                       </div>
 
                       {/* Right: AutoPay Switch */}
@@ -347,7 +347,7 @@ const ManageBillers = () => {
                 onClick={() => setShowFullList(true)}
                 className="flex gap-2 px-6 m-auto mt-4 justify-center hover:scale-105  border-2 items-center rounded-md shadow-md cursor-pointer w-sm bg-cyan-700 text-white py-3  font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
-                See Full List <Scroll size={20} />
+                Set Active Billers <CalendarCheck2 size={24}  strokeWidth={3} />
               </button>
             </div>
           )}
