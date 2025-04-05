@@ -10,7 +10,7 @@ const Recent = () => {
     const fetchHistory = async () => {
       try {
         const userId = localStorage.getItem("userId");
-       // console.log("User ID from localStorage:", userId); // Debugging
+        // console.log("User ID from localStorage:", userId); // Debugging
         if (!userId) {
           console.error("User ID not found in localStorage");
           return;
@@ -23,8 +23,8 @@ const Recent = () => {
           }
         );
 
-       // console.log("Fetched Payments Data:", response.data); // Debugging
-        setHistory(response.data.data || []); // Ensure correct data assignment
+        console.log("Fetched Payments Data:", response.data); // Debugging
+        setHistory(response.data.data || []);
       } catch (error) {
         console.error(
           "Error fetching payment history:",
@@ -70,10 +70,23 @@ const Recent = () => {
                     {new Date(payment.createdAt).toLocaleDateString()}
                   </td>
                   <td className="p-2 border border-gray-300">
-                    {payment.recipientUser?.firstName || "Unknown"}
+                    {/* {payment.recipientBiller?.name || payment.recipientUser?.firstName || "Unknown"} */}
+                    {payment.recipientBiller?.name ||
+                      (payment.recipientUser
+                        ? `${payment.recipientUser.firstName} ${payment.recipientUser.lastName}`
+                        : "Unknown")}
                   </td>
                   <td className="p-2 border border-gray-300">
-                    {payment.recipientBiller?.serviceType || "Transfer"}
+                    {/* {payment.recipientUser
+                      ? "Transfer"
+                      : payment.recipientBiller
+                      ? "PayLater"
+                      : "N/A"} */}
+                    {payment.recipientBiller?.serviceType
+                      ? payment.recipientBiller.serviceType
+                      : payment.recipientUser
+                      ? "Transfer"
+                      : "Others"}
                   </td>
                   <td className="p-2 border border-gray-300">
                     ${payment.amount.toFixed(2)}
