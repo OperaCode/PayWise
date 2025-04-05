@@ -2,11 +2,6 @@ const mongoose = require("mongoose");
 
 const PaymentSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  // biller: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "Biller",
-  //   required: true,
-  // },
   recipientUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   recipientBiller: { type: mongoose.Schema.Types.ObjectId, ref: 'Biller' },
   amount: {
@@ -28,9 +23,7 @@ const PaymentSchema = new mongoose.Schema({
   // startDate: { type: Date,  default: Date.now },
 
   scheduleDate: { type: Date, default: Date.now   },
-
   description: { type: String },
-
   createdAt: { type: Date, default: Date.now },
 });
 

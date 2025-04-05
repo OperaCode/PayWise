@@ -53,11 +53,11 @@ const userSchema = new mongoose.Schema(
 
 
 // Hash PIN before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("transactionPin")) return next();
-  this.transactionPin = await bcrypt.hash(this.transactionPin, 10);
-  next();
-});
+// userSchema.pre("save", async function (next) {
+//   if (!this.isModified("transactionPin")) return next();
+//   this.transactionPin = await bcrypt.hash(this.transactionPin, 10);
+//   next();
+// });
 
 
 

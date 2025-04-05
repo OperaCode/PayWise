@@ -299,6 +299,7 @@ const setTransactionPin = asyncHandler(async (req, res) => {
 
     // Hash the PIN before saving
     const hashedPin = await bcrypt.hash(pin, 10);
+    console.log("Hashed transaction PIN:", hashedPin);
     user.transactionPin = hashedPin;
     await user.save();
 
