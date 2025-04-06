@@ -56,6 +56,7 @@ const DashBoard = () => {
   const [isSettingPin, setIsSettingPin] = useState(false);
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     // Simulate an API call or app initialization delay
@@ -93,7 +94,6 @@ const DashBoard = () => {
     fetchUser();
   }, []);
 
-
   //fetch biller
   useEffect(() => {
     const fetchBillers = async () => {
@@ -116,7 +116,6 @@ const DashBoard = () => {
         console.log(response?.data || null);
 
         setBillers(response.data);
-      
       } catch (error) {
         console.error("Error fetching billers:", error);
         toast.error(
@@ -126,6 +125,36 @@ const DashBoard = () => {
     };
 
     fetchBillers();
+  }, []);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        // console.log("User ID from localStorage:", userId); // Debugging
+        if (!userId) {
+          console.error("User ID not found in localStorage");
+          return;
+        }
+
+        const response = await axios.get(
+          `${BASE_URL}/payment/history/${userId}`,
+          {
+            withCredentials: true,
+          }
+        );
+
+        console.log("Fetched Payments Data:", response.data); // Debugging
+        setHistory(response.data.data || []);
+      } catch (error) {
+        console.error(
+          "Error fetching payment history:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    fetchHistory();
   }, []);
 
   const handleAmountChange = (e) => {
@@ -222,7 +251,6 @@ const DashBoard = () => {
     },
   };
 
-  
   //P2P Transfer
   const handleTransfer = async (e) => {
     e.preventDefault();
@@ -372,10 +400,10 @@ const DashBoard = () => {
 
                   <div className="flex items-center space-x-2">
                     <h2 className="text-xl font-bold">
-                      
                       <span className="font-bold">
-                        {showBalance ? formatCurrency(walletBalance )|| " 0.00 " : "••••"}
-                        
+                        {showBalance
+                          ? formatCurrency(walletBalance) || " 0.00 "
+                          : "••••"}
                       </span>
                     </h2>
                     <button
@@ -465,8 +493,10 @@ const DashBoard = () => {
         </div>
         {/* Pie Chart */}
         <div className="md:flex justify-center">
-          <DashPieChart />
-          <div className="flex justify-center w-2/3 m-auto">
+          <div className="flex-1 w-90 h-90">
+            <DashPieChart payments={history} />
+          </div>
+          <div className="flex-1 justify-center m-auto">
             <p className="font-semibold text-right">
               All your transactions intelligently sorted into categories!
             </p>
@@ -1063,7 +1093,10 @@ const DashBoard = () => {
           //     </div>
           //   )}
           // </div>
-          <SchedulePaymentModal onClose={() => setSchedulePayModalOpen(false)} billers={billers}/>
+          <SchedulePaymentModal
+            onClose={() => setSchedulePayModalOpen(false)}
+            billers={billers}
+          />
         )}
         {/* AutoPay Modal */}
         {autoPayModalOpen && (
