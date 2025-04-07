@@ -28,6 +28,14 @@ const App = () => {
     setTimeout(() => setLoading(false), 3000);
   }, []);
 
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
+
   return (
     <div className={`app-container ${theme}`}>
          
@@ -40,7 +48,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<DashLayout><DashBoard/></DashLayout>} />
         <Route path="/payment" element={<DashLayout><Payment/></DashLayout>} />
-        <Route path="/billers" element={<DashLayout><ManageBillers/></DashLayout>} />
+        <Route path="/billers" element={<DashLayout><ManageBillers currency={formatCurrency}/></DashLayout>} />
         <Route path="/analytics" element={<DashLayout><Analytics/></DashLayout>} />
         <Route path="/messages" element={<DashLayout><Messages/></DashLayout>} />
       </Routes>

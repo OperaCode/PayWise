@@ -732,7 +732,10 @@ const DashBoard = () => {
           //     </button>
           //   </div>
           // </div>
-          <AutoPayModal/>
+          <AutoPayModal
+          onClose={() => setAutoPayModalOpen(false)}
+          billers={billers}
+          />
         )}
         {/* Transfer Modal */}
         {wiseCoinTransferOpen && (

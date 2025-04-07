@@ -16,7 +16,7 @@ import { Navigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const ManageBillers = () => {
+const ManageBillers = (currency) => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [biller, setBiller] = useState({
@@ -54,6 +54,12 @@ const ManageBillers = () => {
     "Other",
   ];
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
 
   
 
@@ -464,7 +470,7 @@ const ManageBillers = () => {
                   // <EditBillerModal />
                 ) : (
                   // Adding a New Biller
-                  <CreateBillerModal />
+                  <CreateBillerModal currency={formatCurrency} />
                 )}
 
                 {/* Close Button */}

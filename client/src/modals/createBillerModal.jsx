@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const CreateBillerModal = () => {
+const CreateBillerModal = (currency) => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -215,6 +215,17 @@ const CreateBillerModal = () => {
               </Select.Option>
             ))}
           </Select>
+        </div>
+
+        <div className="flex items-center">
+          <label className="w-1/3">Amount:</label>
+          <Input
+            name="amount"
+            placeholder="Enter Amount"
+            value={currency(biller.amount )}
+            onChange={handleChange}
+            
+          />
         </div>
 
         <div className="flex items-center">
