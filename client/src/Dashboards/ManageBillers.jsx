@@ -31,7 +31,7 @@ const ManageBillers = () => {
   //array iof billers from user
   const [billers, setBillers] = useState([]);
   const [email, setEmail] = useState("");
-
+  const [autoPayStates, setAutoPayStates] = useState({});
   const [showFullList, setShowFullList] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBiller, setSelectedBiller] = useState(null);
@@ -169,43 +169,11 @@ const ManageBillers = () => {
     }
   };
 
-  const uploadBillerPhoto = async (id, file) => {
-    if (!id || !file) {
-      alert("Please select a valid image.");
-      return;
-    }
-
-    console.log(id, file);
-
-    const formData = new FormData();
-    formData.append("profilePicture", file); // ✅ Match backend field name
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${BASE_URL}/billers//upload-biller-picture`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true, // ✅ Ensures authentication cookies are sent
-        }
-      );
-
-      if (response.data.profilePicture) {
-        alert("Profile picture uploaded successfully!");
-        setBillerProfilePicture(response.data.profilePicture); // ✅ Update UI
-      } else {
-        alert("Upload successful, but no image URL returned.");
-      }
-
-      console.log("Response:", response.data);
-    } catch (error) {
-      console.error("Error uploading biller picture:", error);
-      alert("Failed to upload picture. Try again.");
-    }
+  const toggleAutoPay = (billerId) => {
+    setAutoPayStates((prevStates) => ({
+      ...prevStates,
+      [billerId]: !prevStates[billerId], // Toggle the auto-pay state
+    }));
   };
 
   const handleSaveBiller = async()=>{
@@ -257,12 +225,14 @@ const ManageBillers = () => {
                       <div className="flex items-center gap-3">
                         <Switch
                           //checked={autoPayStates[biller.id]}
+                          checked={autoPayStates[biller.id] || false}
                           onChange={() => toggleAutoPay(biller.id)}
                         />
                         <span className="text-sm text-gray-700">
                           {/* {autoPayStates[biller.id]
                             ? "Auto-Pay On"
                             : "Enable Auto-Pay"} */}
+                            {autoPayStates[biller.id] ? 'Auto-Pay On' : 'Enable Auto-Pay'}
                         </span>
                       </div>
                     </li>

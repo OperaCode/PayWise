@@ -6,6 +6,7 @@ import P2pModal from "../modals/P2pModal";
 import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import blkchain5 from "../assets/darkbg.jpg";
 import SchedulePaymentModal from "../modals/schedulePaymentModal";
+import AutoPayModal from "../modals/AutoPayModal";
 import {
   SmartphoneNfc,
   HandCoins,
@@ -58,6 +59,7 @@ const DashBoard = () => {
   const [confirmPin, setConfirmPin] = useState("");
   const [history, setHistory] = useState([]);
 
+  //Loading Timeout
   useEffect(() => {
     // Simulate an API call or app initialization delay
     setTimeout(() => setLoading(false), 3000);
@@ -94,7 +96,7 @@ const DashBoard = () => {
     fetchUser();
   }, []);
 
-  //fetch biller
+  //fetch Biller
   useEffect(() => {
     const fetchBillers = async () => {
       try {
@@ -127,6 +129,7 @@ const DashBoard = () => {
     fetchBillers();
   }, []);
 
+  //fetch History
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -166,23 +169,6 @@ const DashBoard = () => {
       style: "currency",
       currency: "USD",
     }).format(amount);
-  };
-
-  const handleOpenPinModal = () => {
-    if (!recipientEmail || amount <= 0) {
-      alert("Please enter a valid email and amount.");
-      return;
-    }
-    setShowPinModal(true);
-  };
-
-  // Open PIN Modal
-  const openPinModal = () => setIsPinModalOpen(true);
-
-  // Close PIN Modal
-  const closePinModal = () => {
-    setIsPinModalOpen(false);
-    setTransactionPin("");
   };
 
   //Fund Wallet
@@ -362,22 +348,6 @@ const DashBoard = () => {
     }
   };
 
-  const handleToggleMode = () => {
-    setIsSettingPin(!isSettingPin);
-    setPin("");
-    setConfirmPin("");
-  };
-
-  const handleConfirm = () => {
-    if (isSettingPin && pin !== confirmPin) {
-      alert("Pins do not match!");
-      return;
-    }
-
-    onConfirm(pin);
-    onClose();
-  };
-
   return (
     <>
       {/* {loading ? (
@@ -477,7 +447,6 @@ const DashBoard = () => {
                   </p>
                 </div>
                 <div className="items-center flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
-                  {/* <img src={analytics} alt="" /> */}
                   <ChartNoAxesCombined classname="hover:text-cyan-900" />
                   <p className="font-bold text-sm hover:text-cyan-900">
                     ANALYTICS
@@ -494,7 +463,7 @@ const DashBoard = () => {
         {/* Pie Chart */}
         <div className="md:flex justify-center">
           <div className="flex-1 w-90 h-90">
-            <DashPieChart payments={history} />
+            <DashPieChart payments={history} currency={formatCurrency}/>
           </div>
           <div className="flex-1 justify-center m-auto">
             <p className="font-semibold text-right">
@@ -730,369 +699,6 @@ const DashBoard = () => {
         )}
         {/* Scehdule Payment Modal */}
         {schedulePayModalOpen && (
-          // <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-          //   <div
-          //     className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-          //     style={{ backgroundImage: `url(${blkchain5})` }}
-          //   ></div>
-
-          //   <div className="bg-zinc-200 p-6 rounded-lg shadow-lg lg:w-xl relative">
-          //     <X
-          //       strokeWidth={7}
-          //       color="#FF0000"
-          //       onClick={() => setSchedulePayModalOpen(false)}
-          //       className=" hover:cursor-pointer hover:scale-110  hover:text-red-400 "
-          //     />
-          //     <h2 className="text-xl font-bold text-center">
-          //       Schedule Payment
-          //     </h2>
-          //     <p className="text-center text-sm font-medium">
-          //       Schedule payments to Registered Billers
-          //     </p>
-          //     <div className=" p-1">
-          //       <form action="" className="flex-col flex items-center">
-          //         {/* Select Biller */}
-          //         <div className="w-full">
-          //           <label htmlFor="billers">Choose Biller</label>
-          //           <select
-          //             className=" p-2 border w-full rounded-md mb-3"
-          //             value={selectedBiller}
-          //             onChange={(e) => setSelectedBiller(e.target.value)}
-          //           >
-          //             <option value="">Select Biller</option>
-          //             {billers.map((biller) => (
-          //               <option key={biller._id} value={biller._id}>
-          //                 {biller.name}
-          //               </option>
-          //             ))}
-          //           </select>
-          //         </div>
-
-          //         {/* ✅ Enter Amount */}
-          //         <div className="w-full">
-          //           <label htmlFor="amount">Amount</label>
-          //           <input
-          //             type="number"
-          //             placeholder="Enter Amount"
-          //             className="w-full p-2 border rounded-md mb-3"
-          //             value={amount}
-          //             onChange={(e) => setAmount(e.target.value)}
-          //           />
-          //         </div>
-
-          //         {/* ✅ Select Date */}
-          //         <div className="w-full">
-          //           <label htmlFor="date">Due Date</label>
-          //           <input
-          //             type="date"
-          //             className="w-full p-2 border rounded-md mb-3"
-          //             value={scheduleDate}
-          //             onChange={(e) => setScheduleDate(e.target.value)}
-          //           />
-          //         </div>
-          //       </form>
-
-          //       <div className="flex items-center justify-center w-full">
-          //         <button
-          //           //onClick={openPinModal}
-          //           onClick={handleSchedulePayment}
-          //           disabled={loading}
-          //           className="w-1/2 hover:cursor-pointer p-2 bg-green-800 m-auto hover:bg-green-600 text-white rounded-md"
-          //         >
-          //           {isSubmitting ? "Sending Request..." : "Schedule Transfer"}
-          //         </button>
-          //         {isPinModalOpen && (
-          //           // <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          //           //   <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-          //           //     <h3 className="text-lg font-bold mb-3">
-          //           //       Enter Transaction PIN
-          //           //     </h3>
-          //           //     <div className="flex border-b mb-4 ">
-          //           //       <button
-          //           //         className={`flex-1 p-2 text-center cursor-pointer ${
-          //           //           activeTab === "Set New Pin"
-          //           //             ? "border-b-2 border-blue-500 text-blue-500"
-          //           //             : "text-gray-500"
-          //           //         }`}
-          //           //         onClick={() => setActiveTab("Set New Pin")}
-          //           //       >
-          //           //         Set New Pin
-          //           //       </button>
-          //           //       <button
-          //           //         className={`flex-1 p-2 text-center cursor-pointer ${
-          //           //           activeTab === "rewards"
-          //           //             ? "border-b-2 border-blue-500 text-blue-500"
-          //           //             : "text-gray-500"
-          //           //         }`}
-          //           //         onClick={() => setActiveTab("rewards")}
-          //           //       >
-          //           //         Enter Pin
-          //           //       </button>
-          //           //     </div>
-          //           //     {/* Content */}
-          //           //     {activeTab === "Set New Pin" ? (
-          //           //       <div className="space-y-3">
-          //           //         <div className="flex justify-between items-center p-2 border rounded cursor-pointer">
-          //           //           <span>
-          //           //             <label htmlFor="">Register Pin</label>
-          //           //             <input type="text" />
-          //           //           </span>
-
-          //           //         </div>
-          //           //         <div className="flex justify-between items-center p-2 border rounded cursor-pointer">
-          //           //           <span>
-          //           //             <label htmlFor="">Confirm Pin</label>
-          //           //             <input type="text" />
-          //           //           </span>
-          //           //         </div>
-          //           //       </div>
-          //           //     ) : (
-          //           //       <div className="space-y-3">
-          //           //         <div className="flex justify-between items-center p-2 border rounded cursor-pointer">
-          //           //         <span>
-          //           //             <label htmlFor="">Enter Pin</label>
-          //           //             <input type="text" />
-          //           //           </span>
-          //           //         </div>
-          //           //       </div>
-          //           //     )}
-
-          //           //     {/* Actions */}
-          //           //     <div className="mt-4 flex justify-between">
-          //           //       <button className="bg-green-500 text-white px-4 py-2 rounded cursor-pointer">
-          //           //         Send
-          //           //       </button>
-          //           //       <button className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer">
-          //           //         Receive
-          //           //       </button>
-          //           //       <button className="bg-yellow-500 text-white px-4 py-2 rounded cursor-pointer">
-          //           //         Convert
-          //           //       </button>
-          //           //     </div>
-
-          //           //     <div className="flex justify-end gap-3">
-          //           //       <button
-          //           //         onClick={closePinModal}
-          //           //         className="px-4 py-2 bg-gray-300 rounded-md"
-          //           //       >
-          //           //         Cancel
-          //           //       </button>
-          //           //       <button
-          //           //         onClick={handleTransfer}
-          //           //         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          //           //         disabled={loading}
-          //           //       >
-          //           //         {isSubmitting
-          //           //           ? "Transferring..."
-          //           //           : "Confirm Transfer"}
-          //           //       </button>
-          //           //     </div>
-          //           //   </div>
-          //           // </div>
-
-          //           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          //             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-          //               <h3 className="text-lg font-bold mb-3">
-          //                 {isSettingPin
-          //                   ? "Set Transaction PIN"
-          //                   : "Enter Transaction PIN"}
-          //               </h3>
-
-          //               {/* PIN Input */}
-          //               <input
-          //                 type="number"
-          //                 placeholder="Enter PIN"
-          //                 className="w-full p-2 border rounded-md mb-3"
-          //                 value={transactionPin}
-          //                 onChange={(e) => setTransactionPin(e.target.value)}
-          //               />
-
-          //               {/* Confirm PIN (only when setting a new PIN) */}
-          //               {isSettingPin && (
-          //                 <input
-          //                   type="number"
-          //                   placeholder="Confirm PIN"
-          //                   className="w-full p-2 border rounded-md mb-3"
-          //                   value={confirmPin}
-          //                   onChange={(e) => setConfirmPin(e.target.value)}
-          //                 />
-          //               )}
-
-          //               {/* Toggle Mode Button */}
-          //               <button
-          //                 onClick={handleToggleMode}
-          //                 className="text-blue-600 text-sm mb-3 hover:underline"
-          //               >
-          //                 {isSettingPin
-          //                   ? "Already have a PIN? Enter it"
-          //                   : "Set a new PIN"}
-          //               </button>
-
-          //               {/* Buttons */}
-          //               <div className="flex justify-end gap-3">
-          //                 <button
-          //                   onClick={closePinModal}
-          //                   className="px-4 py-2 bg-gray-300 rounded-md cursor-pointer"
-          //                 >
-          //                   Cancel
-          //                 </button>
-          //                 <button
-          //                   onClick={handleSchedulePayment}
-          //                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
-          //                 >
-          //                   {isSettingPin ? "Set PIN" : "Confirm Transfer"}
-          //                 </button>
-          //               </div>
-          //             </div>
-          //           </div>
-          //         )}
-          //       </div>
-          //     </div>
-          //   </div>
-          // </div>
-
-          // <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          //   {/* Background Image */}
-          //   <div
-          //     className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-          //     style={{ backgroundImage: `url(${blkchain5})` }}
-          //   ></div>
-
-          //   {/* Modal Content */}
-          //   <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
-          //     {/* Close Button */}
-          //     <X
-          //       strokeWidth={7}
-          //       color="#FF0000"
-          //       onClick={() => setSchedulePayModalOpen(false)}
-          //       className="absolute top-3 right-3 hover:cursor-pointer hover:scale-110 hover:text-red-400"
-          //     />
-
-          //     <h2 className="text-xl font-bold text-center">
-          //       Schedule Payment
-          //     </h2>
-          //     <p className="text-center text-sm font-medium mb-4">
-          //       Schedule payments to Registered Billers
-          //     </p>
-
-          //     {/* Form */}
-          //     <div className="flex flex-col">
-          //       {/* Select Biller */}
-          //       <label htmlFor="billers" className="font-medium">
-          //         Choose Biller
-          //       </label>
-          //       <select
-          //         id="billers"
-          //         className="p-2 border w-full rounded-md mb-3"
-          //         value={selectedBiller}
-          //         onChange={(e) => setSelectedBiller(e.target.value)}
-          //       >
-          //         <option value="">Select Biller</option>
-          //         {billers.map((biller) => (
-          //           <option key={biller._id} value={biller._id}>
-          //             {biller.name}
-          //           </option>
-          //         ))}
-          //       </select>
-
-          //       {/* Enter Amount */}
-          //       <label htmlFor="amount" className="font-medium">
-          //         Amount
-          //       </label>
-          //       <input
-          //         id="amount"
-          //         type="number"
-          //         placeholder="Enter Amount"
-          //         className="w-full p-2 border rounded-md mb-3"
-          //         value={amount}
-          //         onChange={(e) => setAmount(e.target.value)}
-          //       />
-
-          //       {/* Select Date */}
-          //       <label htmlFor="date" className="font-medium">
-          //         Due Date
-          //       </label>
-          //       <input
-          //         id="date"
-          //         type="date"
-          //         className="w-full p-2 border rounded-md mb-3"
-          //         value={scheduleDate}
-          //         onChange={(e) => setScheduleDate(e.target.value)}
-          //       />
-
-          //       {/* Submit Button */}
-          //       <button
-          //         onClick={openPinModal}
-          //         disabled={isSubmitting}
-          //         className="w-full p-2 bg-green-800 hover:bg-green-600 text-white rounded-md mt-2"
-          //       >
-          //         {isSubmitting ? "Sending Request..." : "Schedule Transfer"}
-          //       </button>
-          //     </div>
-          //   </div>
-
-          //   {/* Transaction PIN Modal */}
-          //   {isPinModalOpen && (
-          //     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          //       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-          //         <h3 className="text-lg font-bold mb-3">
-          //           {isSettingPin
-          //             ? "Set Transaction PIN"
-          //             : "Enter Transaction PIN"}
-          //         </h3>
-
-          //         {/* PIN Input */}
-          //         <input
-          //           type="password"
-          //           placeholder="Enter PIN"
-          //           className="w-full p-2 border rounded-md mb-3"
-          //           value={transactionPin}
-          //           onChange={(e) => setTransactionPin(e.target.value)}
-          //         />
-
-          //         {/* Confirm PIN (only when setting a new PIN) */}
-          //         {isSettingPin && (
-          //           <input
-          //             type="password"
-          //             placeholder="Confirm PIN"
-          //             className="w-full p-2 border rounded-md mb-3"
-          //             value={confirmPin}
-          //             onChange={(e) => setConfirmPin(e.target.value)}
-          //           />
-          //         )}
-
-          //         {/* Toggle Mode Button */}
-          //         <button
-          //           onClick={() => setIsSettingPin(!isSettingPin)}
-          //           className="text-blue-600 text-sm mb-3 hover:underline"
-          //         >
-          //           {isSettingPin
-          //             ? "Already have a PIN? Enter it"
-          //             : "Set a new PIN"}
-          //         </button>
-
-          //         {/* Actions */}
-          //         <div className="flex justify-end gap-3">
-          //           <button
-          //             onClick={closePinModal}
-          //             className="px-4 py-2 bg-gray-300 rounded-md cursor-pointer"
-          //           >
-          //             Cancel
-          //           </button>
-          //           <button
-          //             onClick={() => {
-          //               setIsPinModalOpen(false); // Close PIN modal
-          //               handleSchedulePayment(); // Now process the payment
-          //             }}
-          //             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
-          //           >
-          //             {isSettingPin ? "Set PIN" : "Confirm Transfer"}
-          //           </button>
-          //         </div>
-          //       </div>
-          //     </div>
-          //   )}
-          // </div>
           <SchedulePaymentModal
             onClose={() => setSchedulePayModalOpen(false)}
             billers={billers}
@@ -1100,32 +706,33 @@ const DashBoard = () => {
         )}
         {/* AutoPay Modal */}
         {autoPayModalOpen && (
-          <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-            <div
-              className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-              style={{ backgroundImage: `url(${blkchain5})` }}
-            ></div>
-            <div className="stars"></div>
+          // <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
+          //   <div
+          //     className="absolute inset-0 animate-moving-bg bg-cover bg-center"
+          //     style={{ backgroundImage: `url(${blkchain5})` }}
+          //   ></div>
+          //   <div className="stars"></div>
 
-            <div className="bg-zinc-200 p-6 rounded-lg shadow-lg w-2/3 lg:w-2xl relative">
-              <h2 className="text-xl font-bold mb-4">Manage Tokens</h2>
-              <p>Here you can manage your tokens.</p>
-              <div className="flex justify-between w-full">
-                <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md">
-                  Connect Wallet
-                </button>
-                <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md">
-                  Check your WiseCoin
-                </button>
-              </div>
-              <button
-                className=" hover:cursor-pointer mt-4 px-4 py-2 bg-red-500 text-white rounded-md"
-                onClick={() => setAutoPayModalOpen(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+          //   <div className="bg-zinc-200 p-6 rounded-lg shadow-lg w-2/3 lg:w-2xl relative">
+          //     <h2 className="text-xl font-bold mb-4">Manage Tokens</h2>
+          //     <p>Here you can manage your tokens.</p>
+          //     <div className="flex justify-between w-full">
+          //       <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md">
+          //         Connect Wallet
+          //       </button>
+          //       <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md">
+          //         Check your WiseCoin
+          //       </button>
+          //     </div>
+          //     <button
+          //       className=" hover:cursor-pointer mt-4 px-4 py-2 bg-red-500 text-white rounded-md"
+          //       onClick={() => setAutoPayModalOpen(false)}
+          //     >
+          //       Cancel
+          //     </button>
+          //   </div>
+          // </div>
+          <AutoPayModal/>
         )}
         {/* Transfer Modal */}
         {wiseCoinTransferOpen && (
