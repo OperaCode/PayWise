@@ -19,10 +19,16 @@ const PaymentSchema = new mongoose.Schema({
   isRecurring: { type: Boolean, default: false },
   // method:{type: Number, enum: ["wallet", "rewards"], require:true},
   nextExecution: { type: Date },
+  paymentType: {
+    type: String,
+    enum: ['Autopay', 'Scheduled','Transfer'],
+    default: 'scheduled',
+  },
   
   // startDate: { type: Date,  default: Date.now },
 
   scheduleDate: { type: Date, default: Date.now   },
+  paidAt: Date,
   description: { type: String },
   createdAt: { type: Date, default: Date.now },
 });

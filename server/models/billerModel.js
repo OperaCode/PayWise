@@ -13,7 +13,7 @@ const billerSchema = new mongoose.Schema(
     },
     serviceType: {
       type: String,
-      enum: ["Electricity", "Water", "Internet", "Cable TV", "Other"],
+      enum: ["Electricity", "Water", "Internet", "Cable TV"],
       required: true,
     },
     user: {

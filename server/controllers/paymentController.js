@@ -50,6 +50,7 @@ const { updateBillerAmount } = require("../hooks/aggrAmount");
 //   }
 // });
 
+//to fund wallet 
 const fundWallet = asyncHandler(async (req, res) => {
   try {
     console.log("Received Flutterwave payment request:", req.body);
@@ -118,6 +119,7 @@ const fundWallet = asyncHandler(async (req, res) => {
   }
 });
 
+
 const withdrawToBank = asyncHandler(async (req, res) => {
   try {
     const { userId, bankCode, accountNumber, amount } = req.body;
@@ -180,71 +182,7 @@ const withdrawToBank = asyncHandler(async (req, res) => {
   }
 });
 
-// const p2PTransfer = asyncHandler(async (req, res) => {
-//   try {
-//     const { senderId, recipientEmail, amount } = req.body;
 
-//     if (!senderId || !recipientEmail || !amount || amount <= 0) {
-//       return res.status(400).json({ message: "Invalid transfer details" });
-//     }
-
-//     console.log("🔹 Searching for sender with ID:", senderId); // Debugging
-
-//     // Get sender
-//     const sender = await User.findOne({ _id: senderId }); // 🔄 Make sure _id is correct
-//     if (!sender) {
-//       return res.status(404).json({ message: "Sender not found" });
-//     }
-
-//     console.log("✅ Sender found:", sender.email);
-
-//     // Get recipient
-//     const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
-//     if (!recipient) {
-//       return res.status(404).json({ message: "Recipient not found. Ensure the email is correct." });
-//     }
-
-//     console.log("Sender's wallet before:", sender.wallet.balance);
-//     console.log("Recipient's wallet before:", recipient.wallet.balance);
-
-//     // Check sender balance
-//     if (sender.wallet.balance < amount) {
-//       return res.status(400).json({ message: "Insufficient balance" });
-//     }
-
-//     // Perform transfer
-//     sender.wallet.balance -= Number(amount);
-//     recipient.wallet.balance += Number(amount);
-
-//     // ✅ Save transaction as a P2P transfer (no biller)
-//     const newPayment = new Payment({
-//       user: senderId,
-//       recipientUser: recipient._id, // ✅ Always a user
-//       amount: Number(amount),
-//       transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-//       status: "successful",
-//       isRecurring: false,
-//       createdAt: new Date(),
-//       scheduleDate: new Date(),
-//     });
-
-//     await newPayment.save();
-//     await sender.save();
-//     await recipient.save();
-
-//     console.log("Sender's wallet after:", sender.wallet.balance);
-//     console.log("Recipient's wallet after:", recipient.wallet.balance);
-
-//     return res.status(200).json({
-//       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
-//       updatedBalance: sender.wallet.balance,
-//     });
-
-//   } catch (error) {
-//     console.error("P2P Transfer Error:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
 
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
@@ -286,7 +224,7 @@ const p2PTransfer = asyncHandler(async (req, res) => {
       amount: Number(amount),
       transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       status: "successful",
-      isRecurring: false,
+      paymentType: 'Transfer',
       createdAt: new Date(),
       scheduleDate: new Date(),
     });
@@ -316,75 +254,6 @@ const p2PTransfer = asyncHandler(async (req, res) => {
   }
 });
 
-// const scheduleTransfer = asyncHandler(async (req, res) => {
-//   try {
-//     const { billerId, amount, scheduleDate, transactionPin } = req.body;
-//     const userId = req.userId; // Extracted from token
-
-//     // 1. Validate basic fields
-//     if (!userId) {
-//       return res.status(401).json({ message: "Unauthorized. Please log in." });
-//     }
-
-//     if (!billerId || isNaN(amount) || amount <= 0 || !scheduleDate || !transactionPin) {
-//       return res.status(400).json({ message: "Missing or invalid required fields." });
-//     }
-
-//     // 2. Validate the scheduled date
-//     const scheduledDate = new Date(scheduleDate);
-//     if (isNaN(scheduledDate.getTime()) || scheduledDate < new Date()) {
-//       return res.status(400).json({ message: "Invalid schedule date." });
-//     }
-
-//     // 3. Find the user
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found." });
-//     }
-
-//     // 4. Optional: Validate transaction PIN
-//     // const isPinValid = await bcrypt.compare(transactionPin, user.transactionPin);
-//     // if (!isPinValid) {
-//     //   return res.status(403).json({ message: "Invalid transaction PIN." });
-//     // }
-
-//     // 5. Find the biller
-//     const recipient = await Biller.findById({email: billerId.email});
-//     if (!recipient) {
-//       return res.status(404).json({ message: "Biller not found." });
-//     }
-
-//     // 6. Create the scheduled payment
-//     const newPayment = new Payment({
-//       user: userId,
-//       recipientBiller: recipient._id, // your schema field
-//       amount,
-//       transactionRef: `SCH-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-//       scheduleDate: scheduledDate,
-//       isRecurring: false,
-//       status: "pending",
-//     });
-
-//     await newPayment.save();
-
-//     // 7. Update totalAmountPaid (if biller needs pre-update – optional)
-//     recipient.totalAmountPaid += Number(amount);
-//     await recipient.save();
-
-//     // 8. Send response
-//     return res.status(201).json({
-//       message: "Payment scheduled successfully.",
-//       scheduledPayment: newPayment,
-//     });
-
-//   } catch (error) {
-//     console.error("Error scheduling payment:", error);
-//     return res.status(500).json({
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//   }
-// });
 
 const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
@@ -448,7 +317,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
       amount,
       transactionRef: `SCH-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       scheduleDate: scheduledDate,
-      isRecurring: false,
+      paymentType: 'Scheduled',
       status: "pending",
     });
 

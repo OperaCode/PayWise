@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
     profilePicture: { type: String, default: null },
     wallet: {
       walletId: { type: String, default: () => crypto.randomUUID() },
-      balance: { type: Number, default: 0 }, // Ensure new users get 100 tokens
+      balance: { type: Number, default: 0 }, 
       cowries: { type: Number, default: 0 },
     },
     metamaskWallet: { type: String, unique: true, sparse: true },

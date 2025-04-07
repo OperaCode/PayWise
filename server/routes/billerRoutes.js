@@ -29,7 +29,7 @@ router.post("/createbiller", protectUser, createBiller);
 router.get("/", protectUser, getBillers);
 router.get("/:billerId", protectUser, getBillerById);
 
-router.put("/:billerId", protectUser, updateBiller);
+router.put("/update/:billerId", protectUser, updateBiller);
 router.delete("/:billerId", protectUser, deleteBiller);
 
 module.exports = router;
