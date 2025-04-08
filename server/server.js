@@ -1,5 +1,4 @@
 require("dotenv").config();
-require('./config/paymentScheduler');
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -12,6 +11,7 @@ const errorHandler = require("./middleware/errormiddleware");
 //const cloudinary = require("cloudinary").v2;
 // const Multer = require("multer");
 
+require('./config/paymentScheduler');
 const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
 const billerRoutes = require("./routes/billerRoutes");

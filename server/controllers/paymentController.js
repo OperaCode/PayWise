@@ -50,7 +50,7 @@ const { updateBillerAmount } = require("../hooks/aggrAmount");
 //   }
 // });
 
-//to fund wallet 
+//to fund wallet
 const fundWallet = asyncHandler(async (req, res) => {
   try {
     console.log("Received Flutterwave payment request:", req.body);
@@ -119,7 +119,6 @@ const fundWallet = asyncHandler(async (req, res) => {
   }
 });
 
-
 const withdrawToBank = asyncHandler(async (req, res) => {
   try {
     const { userId, bankCode, accountNumber, amount } = req.body;
@@ -182,8 +181,6 @@ const withdrawToBank = asyncHandler(async (req, res) => {
   }
 });
 
-
-
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
     const { senderId, recipientEmail, amount } = req.body;
@@ -199,7 +196,7 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     if (!sender) {
       return res.status(404).json({ message: "Sender not found" });
     }
-    console.log("✅ Sender found:", sender.email);
+    console.log("Sender found:", sender.email);
 
     // Check sender balance
     if (sender.wallet.balance < amount) {
@@ -223,8 +220,8 @@ const p2PTransfer = asyncHandler(async (req, res) => {
       recipientUser: recipient ? recipient._id : null,
       amount: Number(amount),
       transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-      status: "successful",
-      paymentType: 'Transfer',
+      status: "Successful",
+      paymentType: "Transfer",
       createdAt: new Date(),
       scheduleDate: new Date(),
     });
@@ -238,7 +235,7 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     // Update totalAmountPaid for biller if the recipient is a biller
     const biller = await Biller.findOne({ email: recipient.email });
     if (biller) {
-      console.log("🔹 Updating totalAmountPaid for biller:", recipient.email);
+      console.log("Updating totalAmountPaid for biller:", recipient.email);
       biller.totalAmountPaid += Number(amount);
       await biller.save();
       console.log("Updated totalAmountPaid:", biller.totalAmountPaid);
@@ -254,18 +251,14 @@ const p2PTransfer = asyncHandler(async (req, res) => {
   }
 });
 
-
 const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
     const { billerEmail, amount, scheduleDate, transactionPin } = req.body;
     const userId = req.userId; // Extracted from token
 
-    
-
-    // 1. Validate basic fields
-    if (!userId) {
+    // 1. Validate fields
+    if (!userId)
       return res.status(401).json({ message: "Unauthorized. Please log in." });
-    }
 
     if (
       !billerEmail ||
@@ -279,55 +272,47 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
         .json({ message: "Missing or invalid required fields." });
     }
 
-
-    // 2. Validate the scheduled date
+    // 2. Validate scheduled date
     const scheduledDate = new Date(scheduleDate);
+    scheduledDate.setSeconds(0, 0); // Reset seconds and milliseconds
     if (isNaN(scheduledDate.getTime()) || scheduledDate < new Date()) {
       return res.status(400).json({ message: "Invalid schedule date." });
     }
 
-    // 3. Find the user
+    // 3. Find user
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
+    if (!user) return res.status(404).json({ message: "User not found." });
 
-
-    console.log("Transaction PIN from request:", transactionPin);
-    console.log("Stored transaction PIN:", user.transactionPin);
-    
-
-    // 4. Optional: Validate transaction PIN
-    const isPinValid = await bcrypt.compare(transactionPin, user.transactionPin);
-    console.log("Is PIN valid?", isPinValid);
-    if (!isPinValid) {
+    // 4. Check transaction PIN
+    const isPinValid = await bcrypt.compare(
+      transactionPin,
+      user.transactionPin
+    );
+    if (!isPinValid)
       return res.status(403).json({ message: "Invalid transaction PIN." });
-    }
 
-    // 5. Find the biller by email
+    // 5. Find biller
     const recipient = await Biller.findOne({ email: billerEmail });
-    if (!recipient) {
+    if (!recipient)
       return res.status(404).json({ message: "Biller not found." });
-    }
 
-    // 6. Create the scheduled payment
+    // 6. Save scheduled payment
     const newPayment = new Payment({
       user: userId,
       recipientBiller: recipient._id,
       amount,
       transactionRef: `SCH-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-      scheduleDate: scheduledDate,
-      paymentType: 'Scheduled',
-      status: "pending",
+      scheduledDate: scheduledDate, // Use normalized scheduled date
+      paymentType: "Scheduled",
+      status: "Pending", // Keep it as 'pending' until processed
     });
 
     await newPayment.save();
 
-    // 7. Update totalAmountPaid (optional logic)
+    // 7. Update recipient biller
     recipient.totalAmountPaid += Number(amount);
     await recipient.save();
 
-    // 8. Send response
     return res.status(201).json({
       message: "Payment scheduled successfully.",
       scheduledPayment: newPayment,
@@ -359,12 +344,10 @@ const getUserPaymentHistory = async (req, res) => {
     res.status(200).json({ data: payments });
   } catch (error) {
     console.error("Error fetching payment history:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error fetching payment history",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching payment history",
+      error: error.message,
+    });
   }
 };
 
@@ -401,26 +384,6 @@ const totalPayments = asyncHandler(async (req, rers) => {
     res.status(500).json({ message: error.message });
   }
 });
-
-// const scheduleTransfer = asyncHandler(async (req, res) => {
-//   try {
-//     const { userId, billerName, amount, dueDate } = req.body;
-
-//     const newScheduledPayment = new ScheduledPayment({
-//       billerName,
-//       amount,
-//       dueDate,
-//       status: "pending",
-//     });
-
-//     await newScheduledPayment.save();
-
-//     res.json({ success: true, message: "Payment scheduled successfully" });
-//   } catch (error) {
-//     console.error("Error scheduling payment:", error);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// });
 
 const pauseRecurringPayment = asyncHandler(async (req, res) => {
   try {
