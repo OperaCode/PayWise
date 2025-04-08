@@ -23,7 +23,7 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
 
   // Handle cancel action (close modal)
   const handleCancel = () => {
-    onClose(); 
+    onClose();
   };
 
   // Handle Scheduled Payment
@@ -31,6 +31,15 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
     setIsProcessing(true);
     console.log("selectedBiller before API call:", selectedBiller);
     // 🔹 Ensure `selectedBiller` is selected correctly
+    if (!selectedBiller) {
+      console.error("Error: biller is not selected");
+      toast.error("Biller is not selected. Please choose a biller.");
+      setIsProcessing(false);
+      return;
+    }
+
+    // Proceed with payment scheduling logic
+    console.log("selectedBiller before API call:", selectedBiller);
     if (!selectedBiller) {
       console.error("Error: biller is not selected");
       toast.error("Biller is not selected. Please choose a biller.");
@@ -49,7 +58,12 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
     try {
       const response = await axios.post(
         `${BASE_URL}/payment/schedule-transfer`,
-        { billerEmail: selectedBiller.email, amount, scheduleDate, transactionPin },
+        {
+          billerEmail: selectedBiller.email,
+          amount,
+          scheduleDate,
+          transactionPin,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -64,7 +78,8 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
       // 🔹 Log full error details
       console.error("Full error response:", error.response);
 
-      const errorMessage = error.response?.data?.message || "Failed to schedule payment.";
+      const errorMessage =
+        error.response?.data?.message || "Failed to schedule payment.";
       toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
@@ -191,9 +206,9 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
             className="w-full p-2 border rounded-md mb-3"
             value={amount}
             onChange={(e) => {
-                const value = e.target.value;
-                if (value >= 0) setAmount(value);
-              }}
+              const value = e.target.value;
+              if (value >= 0) setAmount(value);
+            }}
           />
 
           {/* Select Date */}

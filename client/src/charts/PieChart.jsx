@@ -7,7 +7,7 @@ import Label from './Labels'
 Chart.register(ArcElement, Tooltip, Legend)
 
 const PieChart = ({ payments, currency}) => {
-  // ✅ Memoize data filtering, grouping and transformation
+  // Memoize data filtering, grouping and transformation
   const { serviceTypes, amounts, totalAmount } = useMemo(() => {
     const grouped = {}
     let total = 0

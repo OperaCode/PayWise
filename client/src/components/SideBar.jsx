@@ -93,14 +93,6 @@ const SideBar = () => {
                 </div>
               </Link>
 
-              <Link to="/payment">
-                <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
-                  <DollarSign size={17} strokeWidth={3} />
-                  <li className="hover:cursor-pointer  font-bold lg:text-md ">
-                    Make Payment
-                  </li>
-                </div>
-              </Link>
 
               <Link to="/analytics">
                 <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
@@ -162,15 +154,6 @@ const SideBar = () => {
                   </li>
                 </div>
               </Link>
-              <Link to="/payment" onClick={toggleModal}>
-              <div className=" gap-2 items-center hover:text-cyan-900  flex ">
-                  <DollarSign size={17} strokeWidth={3} />
-                  <li className="hover:cursor-pointer  font-bold lg:text-md ">
-                    Make Payment
-                  </li>
-                </div>
-              </Link>
-
               <Link to="/analytics" onClick={toggleModal}>
               <div className=" gap-2 items-center hover:text-cyan-900 flex ">
                   <Milestone size={17} strokeWidth={3} />

@@ -51,6 +51,7 @@ const Recent = () => {
               <th className="p-2 border border-gray-300 shadow-xs">Date</th>
               <th className="p-2 border border-gray-300">Recipient</th>
               <th className="p-2 border border-gray-300">Payment Category</th>
+              <th className="p-2 border border-gray-300">Payment Type</th>
               <th className="p-2 border border-gray-300">Amount</th>
               <th className="p-2 border border-gray-300">Status</th>
             </tr>
@@ -84,9 +85,16 @@ const Recent = () => {
                       : "N/A"} */}
                     {payment.recipientBiller?.serviceType
                       ? payment.recipientBiller.serviceType
-                      : payment.recipientUser
+                      : "Others"
+                      }
+                  </td>
+                  <td className="p-2 border border-gray-300">
+                    {/* {payment.recipientUser
                       ? "Transfer"
-                      : "Others"}
+                      : payment.recipientBiller
+                      ? "PayLater"
+                      : "N/A"} */}
+                    {payment?.paymentType}
                   </td>
                   <td className="p-2 border border-gray-300">
                     ${payment.amount.toFixed(2)}

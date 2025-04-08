@@ -457,7 +457,7 @@ const DashBoard = () => {
           </div>
           {/* Line Graph */}
           <div className="flex-1 w-full lg:w-50">
-            <Line />
+            <Line payments={history} />
           </div>
         </div>
         {/* Pie Chart */}
@@ -489,7 +489,7 @@ const DashBoard = () => {
                 onClick={() => setFundModalOpen(false)}
                 className=" hover:cursor-pointer  hover:scale-110  hover:text-red-400 "
               />
-              <h2 className="text-xl font-bold text-center">My Wallets</h2>
+              <h2 className="text-xl font-bold text-center">Fund Wallet</h2>
               <p className="text-center text-sm font-medium">
                 Fund your paywise wallet or Connect to Metamask.
               </p>

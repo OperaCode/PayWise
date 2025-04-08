@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import BarChart from "../charts/BarChart";
 import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
-import cardImage from "../assets/profileP.jpg"; 
+import cardImage from "../assets/profileP.jpg";
 import { useNavigate } from "react-router-dom";
 import CreateBillerModal from "../modals/createBillerModal";
 import EditBillerModal from "../modals/EditBillerModal";
@@ -37,6 +37,13 @@ const ManageBillers = (currency) => {
   const [selectedBiller, setSelectedBiller] = useState(null);
   const [error, setError] = useState("");
   const [billerPicture, setBillerPicture] = useState(null);
+  const [updatedData, setUpdatedData] = useState({
+    fullName: "",
+    nickname: "",
+    email: "",
+    serviceType: "",
+    amount: "",
+  });
   const [newBiller, setNewBiller] = useState({
     fullName: "",
     nickname: "",
@@ -60,8 +67,6 @@ const ManageBillers = (currency) => {
       currency: "USD",
     }).format(amount);
   };
-
-  
 
   const resetForm = () => {
     setNewBiller({
@@ -92,7 +97,7 @@ const ManageBillers = (currency) => {
           withCredentials: true,
         });
         console.log(response);
-        setBillers(response?.data|| []);
+        setBillers(response?.data || []);
       } catch (error) {
         console.error(error);
         toast.error(error?.response?.data?.message);
@@ -103,11 +108,11 @@ const ManageBillers = (currency) => {
   }, []);
 
   //to handle input changes for the forms
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setBiller((prev) => ({
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUpdatedData((prev) => ({
       ...prev,
-      [name]: value || "",
+      [name]: name === "amount" ? parseFloat(value) : value,
     }));
   };
 
@@ -182,25 +187,97 @@ const ManageBillers = (currency) => {
     }));
   };
 
-  const handleSaveBiller = async()=>{
-    try {
-      const response = await fetch(`${BASE_URL}/billers/${billerId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
+  // const handleSaveBiller = async()=>{
+  //   try {
+
+  //     const response = await fetch(`${BASE_URL}/billers/${billerId}`, {
+  //       method: "PUT",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(updatedData),
+  //     });
+
+  //     const result = await response.json();
+  //     if (result.success) {
+  //       alert("Biller updated successfully!");
+  //       // Refresh the biller list or close the modal here
+  //     } else {
+  //       alert(result.message);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating biller:", error);
+  //   }
+  // }
+
+  useEffect(() => {
+    if (selectedBiller) {
+      setUpdatedData({
+        nickname: selectedBiller.nickname,
+        serviceType: selectedBiller.serviceType,
+        amount: selectedBiller.amount,
       });
-  
+    }
+  }, [selectedBiller]);
+
+  const handleSaveBiller = async () => {
+    try {
+      if (!selectedBiller || !selectedBiller._id) {
+        toast.error("No biller selected to update.");
+        return;
+      }
+
+      const billerId = selectedBiller._id;
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        toast.error("Unauthorized. Please log in again.");
+        return;
+      }
+
+      const updatedPayload = {
+        nickname: updatedData.nickname || selectedBiller.nickname,
+        serviceType: updatedData.serviceType || selectedBiller.serviceType,
+        amount: updatedData.amount ?? selectedBiller.amount,
+      };
+
+      // Basic frontend validation
+      if (
+        !updatedPayload.nickname ||
+        !updatedPayload.serviceType ||
+        updatedPayload.amount === "" ||
+        updatedPayload.amount == null
+      ) {
+        alert("Please fill in all the editable fields.");
+        return;
+      }
+
+      const response = await fetch(`${BASE_URL}/biller/update/${billerId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedPayload),
+      });
+
+      console.log("Sent Payload:", updatedPayload);
+
       const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to update biller");
+      }
+
       if (result.success) {
         alert("Biller updated successfully!");
-        // Refresh the biller list or close the modal here
+        // Close modal or refresh list
       } else {
-        alert(result.message);
+        alert(result.message || "Update failed");
       }
     } catch (error) {
       console.error("Error updating biller:", error);
+      alert(error.message || "An error occurred while updating the biller.");
     }
-  }
+  };
 
   return (
     <>
@@ -224,7 +301,9 @@ const ManageBillers = (currency) => {
                       {/* Left: Biller Info */}
                       <div>
                         <h3 className="text-lg font-bold">{biller.name}</h3>
-                        <p className="text-sm font-semibold">{biller.serviceType}</p>
+                        <p className="text-sm font-semibold">
+                          {biller.serviceType}
+                        </p>
                       </div>
 
                       {/* Right: AutoPay Switch */}
@@ -238,7 +317,9 @@ const ManageBillers = (currency) => {
                           {/* {autoPayStates[biller.id]
                             ? "Auto-Pay On"
                             : "Enable Auto-Pay"} */}
-                            {autoPayStates[biller.id] ? 'Auto-Pay On' : 'Enable Auto-Pay'}
+                          {autoPayStates[biller.id]
+                            ? "Auto-Pay On"
+                            : "Enable Auto-Pay"}
                         </span>
                       </div>
                     </li>
@@ -286,7 +367,9 @@ const ManageBillers = (currency) => {
                     >
                       <img
                         src={
-                          biller?.profilePicture ? biller.profilePicture : cardImage
+                          biller?.profilePicture
+                            ? biller.profilePicture
+                            : cardImage
                         }
                         alt={biller.name}
                         className="rounded-full w-24 h-24 border-2 cursor-pointer hover:opacity-80 transition"
@@ -296,7 +379,7 @@ const ManageBillers = (currency) => {
                         {biller.serviceType}
                       </p>
                       <p className="text-sm font-semibold">
-                      ${biller.totalAmountPaid || 0}
+                        ${biller.totalAmountPaid || 0}
                       </p>
                     </div>
                   ))
@@ -323,7 +406,7 @@ const ManageBillers = (currency) => {
                 onClick={() => setShowFullList(true)}
                 className="flex gap-2 px-6 m-auto mt-4 justify-center hover:scale-105  border-2 items-center rounded-md shadow-md cursor-pointer w-sm bg-cyan-700 text-white py-3  font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
-                Set Active Billers <CalendarCheck2 size={24}  strokeWidth={3} />
+                Set Active Billers <CalendarCheck2 size={24} strokeWidth={3} />
               </button>
             </div>
           )}
@@ -338,7 +421,7 @@ const ManageBillers = (currency) => {
 
                 {selectedBiller ? (
                   //Viewing or Editing a Biller
-                 
+
                   <div className="flex flex-col items-center ">
                     <img
                       src={selectedBiller.profilePicture || image}
@@ -359,13 +442,8 @@ const ManageBillers = (currency) => {
                         <Input
                           // className=" border shadow-sm rounded"
                           placeholder="Biller Name"
-                          value={selectedBiller.name}
-                          onChange={(e) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              name: e.target.value,
-                            })
-                          }
+                          value={updatedData.nickname}
+                          onChange={handleChange}
                           readOnly
                         />
                       </div>
@@ -376,7 +454,9 @@ const ManageBillers = (currency) => {
                         <Input
                           // className=" border shadow-sm rounded"
                           placeholder="Biller nickname"
-                          value={selectedBiller.nickname}
+                          value={
+                            updatedData.nickname ?? selectedBiller.nickname
+                          }
                           onChange={(e) =>
                             setSelectedBiller({
                               ...selectedBiller,
@@ -391,7 +471,7 @@ const ManageBillers = (currency) => {
                         </label>
                         <Input
                           // className=" border shadow-sm rounded"
-                          placeholder="Biller Name"
+                          placeholder="Biller Email"
                           value={selectedBiller.email}
                           onChange={(e) =>
                             setSelectedBiller({
@@ -408,13 +488,8 @@ const ManageBillers = (currency) => {
                         <label className="w-1/3">Service Type</label>
                         <select
                           name="serviceType"
-                          value={selectedBiller.serviceType}
-                          onChange={(value) =>
-                            setSelectedBiller({
-                              ...selectedBiller,
-                              billerType: value,
-                            })
-                          }
+                          value={updatedData.serviceType}
+                          onChange={handleChange}
                           className="border-2 border-neutral-300 rounded p-2 w-full shadow-md"
                         >
                           <option value="" disabled className="">
@@ -426,6 +501,18 @@ const ManageBillers = (currency) => {
                             </option>
                           ))}
                         </select>
+                      </div>
+
+                      <div className="flex items-center">
+                        <label htmlFor="" className="w-1/3">
+                          Amount:
+                        </label>
+                        <Input
+                          // className=" border shadow-sm rounded"
+                          placeholder="Amount"
+                          value={updatedData.amount}
+                          onChange={handleChange}
+                        />
                       </div>
 
                       <div className="flex  items-center">
@@ -445,8 +532,6 @@ const ManageBillers = (currency) => {
                           readOnly
                         />
                       </div>
-
-                     
                     </div>
 
                     {/* Action Buttons */}
@@ -466,9 +551,8 @@ const ManageBillers = (currency) => {
                       </button>
                     </div>
                   </div>
-
-                  // <EditBillerModal />
                 ) : (
+                  // <EditBillerModal />
                   // Adding a New Biller
                   <CreateBillerModal currency={formatCurrency} />
                 )}
@@ -489,7 +573,7 @@ const ManageBillers = (currency) => {
 
         {/* Bar Chart Section */}
         <div className="lg:w-4xl m-auto p-4">
-          <BarChart  billers={billers} />
+          <BarChart billers={billers} />
         </div>
       </div>
     </>

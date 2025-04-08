@@ -222,7 +222,7 @@ const CreateBillerModal = (currency) => {
           <Input
             name="amount"
             placeholder="Enter Amount"
-            value={currency(biller.amount )}
+            value={biller.amount || "" }
             onChange={handleChange}
             
           />
