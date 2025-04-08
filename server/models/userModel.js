@@ -45,6 +45,10 @@ const userSchema = new mongoose.Schema(
     metamaskWallet: { type: String, unique: true, sparse: true },
     transactionPin: { type: String, required: false },
     billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Biller" }],
+    totalSpent: {
+      type: Number,
+      default: 0, // Initialize with 0 if user hasn't made any payments yet
+    },
     isVerified: { type: Boolean, default: false },
     verificationToken: String,
   },

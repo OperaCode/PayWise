@@ -7,7 +7,7 @@ cron.schedule('* * * * *', async () => {
   const now = new Date();
   now.setSeconds(0, 0); 
 
-  console.log('Running Cron Job at:', now.toISOString());
+  // console.log('Running Cron Job at:', now.toISOString());
 
   try {
     const duePayments = await Payment.find({

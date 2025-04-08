@@ -28,11 +28,7 @@ const billerSchema = new mongoose.Schema(
     },
     amount: { type: Number, default: 0 }, 
     totalAmountPaid: { type: Number, default: 0 },  
-    // accountNumber: {
-    //   type: String,
-    //   unique: true,  // This makes it a unique field
-    //   sparse: true,  // Allows multiple null values (FIX!)
-    // },
+    
     phone: {
       type: String,
       default: null,

@@ -189,7 +189,7 @@ const searchUserByEmail = async (req, res) => {
 const updateBiller = async (req, res) => {
   try {
     const { billerId } = req.params;
-    const { fullName, nickname, email, serviceType, amount } = req.body;
+    const { nickname, serviceType, amount } = req.body;
 
     if (!billerId) {
       return res.status(400).json({ message: "Biller ID is required!" });
@@ -197,13 +197,7 @@ const updateBiller = async (req, res) => {
 
     const updatedBiller = await Biller.findByIdAndUpdate(
       billerId,
-      {
-        name: fullName,
-        nickname,
-        email,
-        serviceType,
-        amount,
-      },
+      { nickname, serviceType, amount },
       { new: true, runValidators: true }
     );
 

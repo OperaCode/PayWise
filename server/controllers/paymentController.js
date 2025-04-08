@@ -385,6 +385,105 @@ const totalPayments = asyncHandler(async (req, rers) => {
   }
 });
 
+
+const paymentAggregates = asyncHandler(async (req, res) => {
+  try {
+    const currentDate = new Date();
+    const lastMonthDate = new Date(currentDate);
+    lastMonthDate.setMonth(currentDate.getMonth() - 1);
+  
+    console.log("Getting payments for userId:", req.userId);
+    console.log("Searching from:", lastMonthDate.toISOString(), "to:", currentDate.toISOString());
+  
+    // Fetch only successful payments paid within the last month
+    const payments = await Payment.find({
+      user: req.userId,
+      status: { $in: ['successful', 'Successful'] },
+      createdAt: { $gte: lastMonthDate, $lte: currentDate }
+    });
+  
+    console.log("Fetched Payments Count:", payments.length);
+  
+    if (payments.length === 0) {
+      return res.json({
+        paymentHistory: [],
+        insights: {
+          totalSpent: 0,
+          totalTransactions: 0,
+          mostUsedService: '',
+          largestPayment: 0,
+          paymentFrequency: 0
+        }
+      });
+    }
+  
+    // Total amount spent
+    const totalSpent = payments.reduce((acc, payment) => acc + payment.amount, 0);
+  
+    // Total transactions
+    const totalTransactions = payments.length;
+  
+    // Most used service (by recipientBiller or recipientUser)
+    const serviceUsage = {};
+    payments.forEach(payment => {
+      const serviceId = payment.recipientBiller || payment.recipientUser;
+      if (serviceId) {
+        serviceUsage[serviceId] = (serviceUsage[serviceId] || 0) + 1;
+      }
+    });
+  
+    const mostUsedServiceId = Object.keys(serviceUsage).reduce((a, b) =>
+      serviceUsage[a] > serviceUsage[b] ? a : b, '');
+    
+    let mostUsedServiceName = '';
+    
+    if (mostUsedServiceId) {
+      // Try finding the service in Biller or User collections
+      const biller = await Biller.findById(mostUsedServiceId);
+      if (biller) {
+        mostUsedServiceName = biller.name;
+      } else {
+        const user = await User.findById(mostUsedServiceId);
+        if (user) {
+          mostUsedServiceName = `${user.firstName} ${user.lastName}`;
+        }
+      }
+    }
+    
+  
+    // Largest single payment
+    const largestPayment = Math.max(...payments.map(p => p.amount));
+  
+    // Payment frequency: avg number of transactions per month in the past year
+    const monthMap = {};
+    payments.forEach(p => {
+      const key = `${p.createdAt.getFullYear()}-${p.createdAt.getMonth()}`;
+      monthMap[key] = (monthMap[key] || 0) + 1;
+    });
+  
+    const paymentFrequency = Object.values(monthMap).reduce((a, b) => a + b, 0) / Object.keys(monthMap).length;
+  
+    // Respond with insights and raw history
+    res.json({
+      paymentHistory: payments,
+      insights: {
+        totalSpent,
+        totalTransactions,
+        mostUsedService: mostUsedServiceName,
+        largestPayment,
+        paymentFrequency: parseFloat(paymentFrequency.toFixed(2))
+      }
+    });
+  
+  } catch (error) {
+    console.error("Error fetching payment analytics:", error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+  
+  
+});
+
+
 const pauseRecurringPayment = asyncHandler(async (req, res) => {
   try {
     await RecurringPayment.findByIdAndUpdate(req.params.id, {
@@ -400,6 +499,7 @@ module.exports = {
   fundWallet,
   p2PTransfer,
   getUserPaymentHistory,
+  paymentAggregates,
   totalPayments,
   scheduleTransfer,
   pauseRecurringPayment,
