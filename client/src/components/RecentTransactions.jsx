@@ -73,8 +73,8 @@ const Recent = () => {
                   <td className="p-2 border border-gray-300">
                     {/* {payment.recipientBiller?.name || payment.recipientUser?.firstName || "Unknown"} */}
                     {payment.recipientBiller?.name ||
-                      (payment.recipientUser
-                        ? `${payment.recipientUser.firstName} ${payment.recipientUser.lastName}`
+                      (payment.recipientUser 
+                        ? `${payment.recipientUser.firstName} ${payment.recipientUser.lastName}` || payment.user.firstName
                         : "Unknown")}
                   </td>
                   <td className="p-2 border border-gray-300">
