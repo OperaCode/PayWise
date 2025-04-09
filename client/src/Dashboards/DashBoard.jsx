@@ -6,6 +6,7 @@ import P2pModal from "../modals/P2pModal";
 import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import blkchain5 from "../assets/darkbg.jpg";
 import wallpaper from "../assets/wallpapers.webp"
+import billpaper from "../assets/billpaper.jpeg"
 import SchedulePaymentModal from "../modals/schedulePaymentModal";
 import AutoPayModal from "../modals/AutoPayModal";
 import {
@@ -479,7 +480,7 @@ const DashBoard = () => {
           <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
             <div
               className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-              style={{ backgroundImage: `url(${wallpaper})` }}
+              style={{ backgroundImage: `url(${billpaper})` }}
             ></div>
             <div className="stars"></div>
 
