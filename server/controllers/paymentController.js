@@ -63,7 +63,7 @@ const fundWallet = asyncHandler(async (req, res) => {
         .json({ success: false, message: "Transaction ID is missing." });
     }
 
-    // Corrected API call
+    // ✅ Step 1: Verify transaction with Flutterwave
     const flutterwaveResponse = await fetch(
       `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
       {
@@ -75,47 +75,60 @@ const fundWallet = asyncHandler(async (req, res) => {
       }
     );
 
-    let data;
-    try {
-      data = await flutterwaveResponse.json();
-    } catch (error) {
-      console.error("Failed to parse Flutterwave response:", error);
-      return res
-        .status(500)
-        .json({ success: false, message: "Invalid response from Flutterwave" });
-    }
+    // ✅ Parse the JSON from fetch
+    const data = await flutterwaveResponse.json();
+    console.log("Flutterwave Verification Data:", JSON.stringify(data, null, 2));
 
-    console.log("Flutterwave Full Response:", JSON.stringify(data, null, 2));
-
+    // ✅ Step 2: Check if payment was successful
     if (data.status === "success" && data.data.status === "successful") {
-      // ✅ Find the user by userId
-      let user = await User.findById(userId);
-
+      const user = await User.findById(userId);
       if (!user) {
         return res
           .status(404)
           .json({ success: false, message: "User not found" });
       }
 
-      // Update user's wallet balance
+      // ✅ Step 3: Update wallet balance
       user.wallet.balance += amount;
+
+      // ✅ Step 4: Add rewards (2% of funded amount)
+      const reward = parseFloat((amount * 0.02).toFixed(2));
+      user.rewardsBalance = (user.rewardsBalance || 0) + reward;
 
       await user.save();
 
-      // Send updated wallet balance to frontend
+      // ✅ Step 5: Log funding as a Payment
+      const newPayment = new Payment({
+        user: userId,
+        amount,
+        transactionRef: data.data.tx_ref || uuidv4(),
+        status: "Successful",
+        paymentType: "Funding",
+        paidAt: new Date(),
+        description: "Wallet funded via Flutterwave",
+      });
+
+      await newPayment.save();
+
+      // ✅ Step 6: Send response
       res.json({
         success: true,
-        message: "Payment verified and wallet funded.",
+        message: "Wallet funded successfully.",
         walletBalance: user.wallet.balance,
+        rewardEarned: reward,
       });
     } else {
-      res
-        .status(400)
-        .json({ success: false, message: "Payment verification failed." });
+      res.status(400).json({
+        success: false,
+        message: "Payment verification failed with Flutterwave.",
+      });
     }
   } catch (error) {
-    console.error("Error handling Flutterwave payment:", error);
-    res.status(500).json({ success: false, message: "Internal server error." });
+    console.error("Error funding wallet:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong while funding the wallet.",
+    });
   }
 });
 

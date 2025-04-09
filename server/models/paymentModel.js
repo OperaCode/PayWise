@@ -21,7 +21,7 @@ const PaymentSchema = new mongoose.Schema({
   nextExecution: { type: Date },
   paymentType: {
     type: String,
-    enum: ['Autopay', 'Scheduled','Transfer'],
+    enum: ['Autopay', 'Scheduled','Transfer', 'Funding'],
     default: 'Scheduled',
   },
   
