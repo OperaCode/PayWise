@@ -17,6 +17,7 @@ import DashBoard from './Dashboards/DashBoard.jsx';
 import ManageBillers from './Dashboards/ManageBillers.jsx';
 import TransactionHistory from './Dashboards/TransactionHistory.jsx';
 import Analytics from "./Dashboards/RewardsAndAnalytics.jsx"
+import Receipt from './modals/RecieptViewModal.jsx';
 import Messages from "./Dashboards/Messages.jsx"
 
 
@@ -48,6 +49,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/transactions" element={<TransactionHistory />} />
+        <Route path="/receipt/:id" element={<Receipt />} />
         <Route path="/dashboard" element={<DashLayout><DashBoard/></DashLayout>} />
         {/* <Route path="/payment" element={<DashLayout><Payment/></DashLayout>} /> */}
         <Route path="/billers" element={<DashLayout><ManageBillers currency={formatCurrency}/></DashLayout>} />

@@ -10,6 +10,7 @@ const Recent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("");
   const navigate = useNavigate();
+   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -101,7 +102,7 @@ const Recent = () => {
         </Select>
       </div>
 
-      <div className="p-4 m-auto text-center">
+      <div className="p-2 m-auto text-center">
         <table className="w-full text-sm md:text-lg border-collapse  border-gray-300 mt-4">
           <thead>
             <tr>

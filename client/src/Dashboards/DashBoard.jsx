@@ -5,8 +5,9 @@ import Loader from "../components/Loader"; // Import your Loader component
 import P2pModal from "../modals/P2pModal";
 import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import blkchain5 from "../assets/darkbg.jpg";
-import wallpaper from "../assets/wallpapers.webp"
-import billpaper from "../assets/billpaper.jpeg"
+import wallpaper from "../assets/wallpapers.webp";
+import { Link } from "react-router-dom";
+// import billpaper from "../assets/billpaper.jpeg";
 import SchedulePaymentModal from "../modals/schedulePaymentModal";
 import AutoPayModal from "../modals/AutoPayModal";
 import {
@@ -428,7 +429,9 @@ const DashBoard = () => {
                   onClick={() => setP2pModalOpen(true)}
                 >
                   <HandCoins className="font-extrabold" />
-                  <p className="font-bold text-sm hover:text-cyan-900">P2P</p>
+                  <p className="font-bold text-sm hover:text-cyan-900">
+                    TRANSFER
+                  </p>
                 </div>
                 <div
                   className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105 hover:text-cyan-900"
@@ -439,21 +442,25 @@ const DashBoard = () => {
                     SCHEDULE-PAY
                   </p>
                 </div>
-                <div
-                  className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105 hover:text-cyan-900"
-                  onClick={() => setAutoPayModalOpen(true)}
-                >
-                  <SmartphoneNfc className="hover:text-cyan-900 font-extrabold" />
-                  <p className="font-bold text-sm hover:text-cyan-900">
-                    AUTOPAY
-                  </p>
-                </div>
-                <div className="items-center flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
-                  <ChartNoAxesCombined classname="hover:text-cyan-900" />
-                  <p className="font-bold text-sm hover:text-cyan-900">
-                    ANALYTICS
-                  </p>
-                </div>
+                <a href="transactions">
+                  <div
+                    className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105 hover:text-cyan-900"
+                    onClick={() => setAutoPayModalOpen(true)}
+                  >
+                    <SmartphoneNfc className="hover:text-cyan-900 font-extrabold" />
+                    <p className="font-bold text-sm hover:text-cyan-900">
+                      AUTOPAY
+                    </p>
+                  </div>
+                </a>
+                <Link to="/analytics">
+                  <div className="items-center flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
+                    <ChartNoAxesCombined className="hover:text-cyan-900" />
+                    <p className="font-bold text-sm hover:text-cyan-900">
+                      ANALYTICS
+                    </p>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>
@@ -465,7 +472,7 @@ const DashBoard = () => {
         {/* Pie Chart */}
         <div className="md:flex justify-center">
           <div className="flex-1 w-90 h-90">
-            <DashPieChart payments={history} currency={formatCurrency}/>
+            <DashPieChart payments={history} currency={formatCurrency} />
           </div>
           <div className="flex-1 justify-center m-auto">
             <p className="font-semibold text-right">
@@ -480,7 +487,7 @@ const DashBoard = () => {
           <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
             <div
               className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-              style={{ backgroundImage: `url(${billpaper})` }}
+              style={{ backgroundImage: `url(${wallpaper})` }}
             ></div>
             <div className="stars"></div>
 
@@ -697,7 +704,6 @@ const DashBoard = () => {
               </div>
             </div>
           </div>
-        
         )}
         {/* Scehdule Payment Modal */}
         {schedulePayModalOpen && (
@@ -708,10 +714,9 @@ const DashBoard = () => {
         )}
         {/* AutoPay Modal */}
         {autoPayModalOpen && (
-          
           <AutoPayModal
-          onClose={() => setAutoPayModalOpen(false)}
-          billers={billers}
+            onClose={() => setAutoPayModalOpen(false)}
+            billers={billers}
           />
         )}
         {/* Transfer Modal */}

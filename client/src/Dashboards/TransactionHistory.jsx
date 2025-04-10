@@ -7,6 +7,7 @@ import { Moon, Sun } from "lucide-react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx"; // For Excel export
 import { jsPDF } from "jspdf"; // For PDF export
+import { Button, Modal, Input, Select } from "antd";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -20,6 +21,7 @@ const TransactionHistory = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [sortOption, setSortOption] = useState(""); // State for sorting
   const navigate = useNavigate();
 
   // Fetch user
@@ -78,27 +80,52 @@ const TransactionHistory = () => {
     setFilteredTransactions(filtered);
   };
 
+  // Handle sorting
+  const handleSort = (option) => {
+    setSortOption(option);
+    const sortedTransactions = [...filteredTransactions].sort((a, b) => {
+      switch (option) {
+        case "date-newest":
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        case "date-oldest":
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        case "amount-highest":
+          return b.amount - a.amount;
+        case "amount-lowest":
+          return a.amount - b.amount;
+        default:
+          return 0;
+      }
+    });
+    setFilteredTransactions(sortedTransactions);
+  };
+
   // Open receipt modal
   const openReceiptModal = (transaction) => {
     setSelectedTransaction(transaction);
     setIsModalOpen(true);
   };
 
-  // Close receipt modal
+  // Close receipt modal and navigate back
   const closeReceiptModal = () => {
     setIsModalOpen(false);
     setSelectedTransaction(null);
+    navigate("/transactions"); // Navigate back to the transaction page
   };
 
   // Export transaction history as Excel
   const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredTransactions.map(tx => ({
-      Date: new Date(tx.createdAt).toLocaleDateString(),
-      Recipient: tx.recipientBiller?.name || `${tx.recipientUser?.firstName} ${tx.recipientUser?.lastName}`,
-      Amount: `$${tx.amount.toFixed(2)}`,
-      Type: tx.paymentType,
-      Status: tx.status,
-    })));
+    const ws = XLSX.utils.json_to_sheet(
+      filteredTransactions.map((tx) => ({
+        Date: new Date(tx.createdAt).toLocaleDateString(),
+        Recipient:
+          tx.recipientBiller?.name ||
+          `${tx.recipientUser?.firstName} ${tx.recipientUser?.lastName}`,
+        Amount: `$${tx.amount.toFixed(2)}`,
+        Type: tx.paymentType,
+        Status: tx.status,
+      }))
+    );
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Transactions");
     XLSX.writeFile(wb, "transaction_history.xlsx");
@@ -108,9 +135,17 @@ const TransactionHistory = () => {
   const downloadReceiptPdf = () => {
     const doc = new jsPDF();
     doc.text(`Transaction ID: ${selectedTransaction._id}`, 10, 10);
-    doc.text(`Date: ${new Date(selectedTransaction.createdAt).toLocaleDateString()}`, 10, 20);
+    doc.text(
+      `Date: ${new Date(selectedTransaction.createdAt).toLocaleDateString()}`,
+      10,
+      20
+    );
     doc.text(`Amount: $${selectedTransaction.amount.toFixed(2)}`, 10, 30);
-    doc.text(`Recipient: ${selectedTransaction.recipientUser?.firstName || "Unknown"}`, 10, 40);
+    doc.text(
+      `Recipient: ${selectedTransaction.recipientUser?.firstName || "Unknown"}`,
+      10,
+      40
+    );
     doc.text(`Status: ${selectedTransaction.status}`, 10, 50);
     doc.save("receipt.pdf");
   };
@@ -129,7 +164,6 @@ const TransactionHistory = () => {
             <input
               type="file"
               accept="image/*"
-              // onChange={handleSelectFile}
               className="hidden"
               id="profileUpload"
               multiple={false}
@@ -162,13 +196,29 @@ const TransactionHistory = () => {
             </h1>
 
             <div className="flex flex-col md:flex-row justify-between items-center gap-3 px-4">
-              <input
+              <Input
                 type="text"
                 placeholder="Search by recipient or category"
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={handleSearch}
                 className="w-full md:w-1/2 p-2 border border-gray-300 rounded-md "
               />
+
+              <Select
+                value={sortOption}
+                onChange={handleSort}
+                className="w-full md:w-1/4 p-2 border border-gray-300 rounded-md"
+              >
+                <Select.Option value="">Sort By</Select.Option>
+                <Select.Option value="date-newest">Date: Newest</Select.Option>
+                <Select.Option value="date-oldest">Date: Oldest</Select.Option>
+                <Select.Option value="amount-highest">
+                  Amount: High to Low
+                </Select.Option>
+                <Select.Option value="amount-lowest">
+                  Amount: Low to High
+                </Select.Option>
+              </Select>
             </div>
 
             <div className="overflow-x-auto">
@@ -197,9 +247,7 @@ const TransactionHistory = () => {
                       </td>
                       <td className="p-2">
                         {tx.recipientBiller?.name ||
-                          `${tx.recipientUser?.firstName || "Unknown"} ${
-                            tx.recipientUser?.lastName || ""
-                          }`}
+                          `${tx.recipientUser?.firstName} ${tx.recipientUser?.lastName}`}
                       </td>
                       <td className="p-2">${tx.amount.toFixed(2)}</td>
                       <td className="p-2">{tx.paymentType}</td>

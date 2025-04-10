@@ -100,7 +100,7 @@ const SideBar = () => {
                   </li>
                 </div>
               </Link>
-              <Link to="/messages">
+              <Link to="/transactions">
                 <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
                   <MessageSquareMore size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold lg:text-md">
@@ -160,7 +160,7 @@ const SideBar = () => {
                   </li>
                 </div>
               </Link>
-              <Link to="/messages" onClick={toggleModal}>
+              <Link to="/transactions" onClick={toggleModal}>
                 <div className="gap-2 items-center hover:text-cyan-900  flex ">
                   <MessageSquareMore size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold lg:text-md">
