@@ -287,7 +287,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
 
     // 2. Validate scheduled date
     const scheduledDate = new Date(scheduleDate);
-    scheduledDate.setSeconds(0, 0); // Reset seconds and milliseconds
+    scheduledDate.setSeconds(0, 0); // Normalize to minute precision
     if (isNaN(scheduledDate.getTime()) || scheduledDate < new Date()) {
       return res.status(400).json({ message: "Invalid schedule date." });
     }
@@ -297,10 +297,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found." });
 
     // 4. Check transaction PIN
-    const isPinValid = await bcrypt.compare(
-      transactionPin,
-      user.transactionPin
-    );
+    const isPinValid = await bcrypt.compare(transactionPin, user.transactionPin);
     if (!isPinValid)
       return res.status(403).json({ message: "Invalid transaction PIN." });
 
@@ -309,22 +306,18 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     if (!recipient)
       return res.status(404).json({ message: "Biller not found." });
 
-    // 6. Save scheduled payment
+    // 6. Save scheduled payment (field: scheduleDate)
     const newPayment = new Payment({
       user: userId,
       recipientBiller: recipient._id,
       amount,
       transactionRef: `SCH-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-      scheduledDate: scheduledDate, // Use normalized scheduled date
+      scheduleDate: scheduledDate,
       paymentType: "Scheduled",
-      status: "Pending", // Keep it as 'pending' until processed
+      status: "Pending",
     });
 
     await newPayment.save();
-
-    // 7. Update recipient biller
-    recipient.totalAmountPaid += Number(amount);
-    await recipient.save();
 
     return res.status(201).json({
       message: "Payment scheduled successfully.",
@@ -338,6 +331,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     });
   }
 });
+
 
 const getUserPaymentHistory = async (req, res) => {
   try {

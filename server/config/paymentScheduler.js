@@ -1,23 +1,33 @@
 const cron = require('node-cron');
 const Payment = require('../models/paymentModel');
 const User = require('../models/userModel');
-const Biller = require('../models/billerModel'); // ✅ Make sure to import this
+const Biller = require('../models/billerModel');
 
 cron.schedule('* * * * *', async () => {
   const now = new Date();
-  now.setSeconds(0, 0); 
-
-  // console.log('Running Cron Job at:', now.toISOString());
+  now.setSeconds(0, 0); // Align to the start of the current minute
+  console.log("🔁 Cron is running at", new Date().toISOString());
 
   try {
     const duePayments = await Payment.find({
       status: 'Pending',
-      scheduleDate: { $lte: now }, 
+      scheduleDate: { $lte: now } 
     });
 
     if (duePayments.length === 0) {
       console.log("No due payments found.");
+      return;
     }
+
+
+    console.log("Found", duePayments.length, "due payments");
+    console.log(duePayments.map(p => ({
+      id: p._id,
+      scheduleDate: p.scheduleDate,
+      now,
+      isDue: p.scheduleDate <= now
+    })));
+    
 
     for (const payment of duePayments) {
       const user = await User.findById(payment.user);
@@ -56,4 +66,3 @@ cron.schedule('* * * * *', async () => {
     console.error('Cron job error:', error);
   }
 });
-
