@@ -13,8 +13,9 @@ import { ThemeContext } from './context/ThemeContext.jsx';
 import PaymentAnalytics from './Pages/PaymentAnalytics.jsx';
 import DashLayout from './Layouts/DashLayout.jsx';
 import DashBoard from './Dashboards/DashBoard.jsx';
-import Payment from "./Dashboards/MakePayment.jsx";
+// import Payment from "./Dashboards/MakePayment.jsx";
 import ManageBillers from './Dashboards/ManageBillers.jsx';
+import TransactionHistory from './Dashboards/TransactionHistory.jsx';
 import Analytics from "./Dashboards/RewardsAndAnalytics.jsx"
 import Messages from "./Dashboards/Messages.jsx"
 
@@ -46,11 +47,12 @@ const App = () => {
         <Route path="/privacy-policy" element={<LandingLayout><Privacy /></LandingLayout>} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/transactions" element={<TransactionHistory />} />
         <Route path="/dashboard" element={<DashLayout><DashBoard/></DashLayout>} />
-        <Route path="/payment" element={<DashLayout><Payment/></DashLayout>} />
+        {/* <Route path="/payment" element={<DashLayout><Payment/></DashLayout>} /> */}
         <Route path="/billers" element={<DashLayout><ManageBillers currency={formatCurrency}/></DashLayout>} />
         <Route path="/analytics" element={<DashLayout><Analytics/></DashLayout>} />
-        <Route path="/messages" element={<DashLayout><Messages/></DashLayout>} />
+        {/* <Route path="/messages" element={<DashLayout><Messages/></DashLayout>} /> */}
       </Routes>
     </div>
   );

@@ -30,7 +30,6 @@ const SideBar = () => {
 
   const toggleModal = () => {
     setIsModalOpen((prev) => !prev);
-    
   };
 
   //logOutUser
@@ -93,7 +92,6 @@ const SideBar = () => {
                 </div>
               </Link>
 
-
               <Link to="/analytics">
                 <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
                   <Milestone size={17} strokeWidth={3} />
@@ -106,7 +104,7 @@ const SideBar = () => {
                 <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
                   <MessageSquareMore size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold lg:text-md">
-                    Messages
+                    Transaction History
                   </li>
                 </div>
               </Link>
@@ -147,7 +145,7 @@ const SideBar = () => {
             {/* Modal Menu Items */}
             <ul className="leading-10 text-xl p-4">
               <Link to="/billers" onClick={toggleModal}>
-              <div className=" gap-2 items-center hover:text-cyan-900 flex ">
+                <div className=" gap-2 items-center hover:text-cyan-900 flex ">
                   <TabletSmartphone size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer  font-bold lg:text-md ">
                     Manage Billers
@@ -155,7 +153,7 @@ const SideBar = () => {
                 </div>
               </Link>
               <Link to="/analytics" onClick={toggleModal}>
-              <div className=" gap-2 items-center hover:text-cyan-900 flex ">
+                <div className=" gap-2 items-center hover:text-cyan-900 flex ">
                   <Milestone size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
                     Rewards and Analytics
@@ -163,10 +161,10 @@ const SideBar = () => {
                 </div>
               </Link>
               <Link to="/messages" onClick={toggleModal}>
-              <div className="gap-2 items-center hover:text-cyan-900  flex ">
+                <div className="gap-2 items-center hover:text-cyan-900  flex ">
                   <MessageSquareMore size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold lg:text-md">
-                    Messages
+                    Transaction History
                   </li>
                 </div>
               </Link>
@@ -175,7 +173,6 @@ const SideBar = () => {
               </Link>
                */}
             </ul>
-
           </div>
         </div>
       )}

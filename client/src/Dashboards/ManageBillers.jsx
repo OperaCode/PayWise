@@ -393,7 +393,7 @@ const ManageBillers = (currency) => {
                 </p>
                 <button
                   onClick={() => setShowFullList(true)}
-                  className="flex gap-2 px-6 m-auto mt-4 justify-center hover:scale-105  border-2 items-center rounded-md shadow-md cursor-pointer w-sm bg-cyan-700 text-white py-3  font-semibold hover:bg-green-900 transition hover:cursor-pointer"
+                  className="flex gap-2 px-6 m-auto mt-4 justify-center hover:scale-105  border-2 items-center rounded-md shadow-md cursor-pointer w-sm bg-cyan-700 text-white py-3  font-semibold hover:bg-green-900 transition "
                 >
                   Set Active Billers{" "}
                   <CalendarCheck2 size={24} strokeWidth={3} />

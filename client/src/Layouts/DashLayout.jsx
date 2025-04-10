@@ -223,14 +223,14 @@ const DashLayout = ({ children }) => {
           </div>
 
           {/* Search bar */}
-          <div className="px-10 flex items-center">
+          {/* <div className="px-10 flex items-center">
             <input
               type="text"
               className="p-1 text-cyan-950 rounded-lg w-full bg-gray-100 border-1 border-neutral-500 shadow-md"
               placeholder="Enter Search"
             />
             <Search className="-ml-8 size-5 text-black" />
-          </div>
+          </div> */}
         </div>
 
         {/* Balance and Chart Section */}

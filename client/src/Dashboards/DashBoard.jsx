@@ -697,7 +697,7 @@ const DashBoard = () => {
               </div>
             </div>
           </div>
-          // <P2pModal/>
+        
         )}
         {/* Scehdule Payment Modal */}
         {schedulePayModalOpen && (
@@ -708,32 +708,7 @@ const DashBoard = () => {
         )}
         {/* AutoPay Modal */}
         {autoPayModalOpen && (
-          // <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-          //   <div
-          //     className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-          //     style={{ backgroundImage: `url(${blkchain5})` }}
-          //   ></div>
-          //   <div className="stars"></div>
-
-          //   <div className="bg-zinc-200 p-6 rounded-lg shadow-lg w-2/3 lg:w-2xl relative">
-          //     <h2 className="text-xl font-bold mb-4">Manage Tokens</h2>
-          //     <p>Here you can manage your tokens.</p>
-          //     <div className="flex justify-between w-full">
-          //       <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-cyan-700 text-white rounded-md">
-          //         Connect Wallet
-          //       </button>
-          //       <button className=" hover:cursor-pointer mt-4 px-4 py-2 bg-green-700 text-white rounded-md">
-          //         Check your WiseCoin
-          //       </button>
-          //     </div>
-          //     <button
-          //       className=" hover:cursor-pointer mt-4 px-4 py-2 bg-red-500 text-white rounded-md"
-          //       onClick={() => setAutoPayModalOpen(false)}
-          //     >
-          //       Cancel
-          //     </button>
-          //   </div>
-          // </div>
+          
           <AutoPayModal
           onClose={() => setAutoPayModalOpen(false)}
           billers={billers}
