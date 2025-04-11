@@ -8,8 +8,7 @@ const billerSchema = new mongoose.Schema(
     email: { type: String, required: true },
     billerType: {
       type: String,
-      enum: ["Vendor", "Beneficiary"], // Only two allowed categories
-      //required: true,
+      enum: ["Vendor", "Beneficiary"], 
     },
     serviceType: {
       type: String,
@@ -18,7 +17,7 @@ const billerSchema = new mongoose.Schema(
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Link billers to users who add them
+      ref: "User",
       required: true,
     },
 
@@ -34,8 +33,12 @@ const billerSchema = new mongoose.Schema(
       default: null,
     },
     dueDate: {
-      type: Date, // Fixed incorrect "date" type
+      type: Date, 
       default: null,
+    },
+    autoPayEnabled: {
+      type: Boolean,
+      default: false, 
     },
     
   },

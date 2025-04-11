@@ -343,7 +343,7 @@ const getUserPaymentHistory = async (req, res) => {
 
     const payments = await Payment.find({ user: userId })
       .sort({ createdAt: -1 })
-      .limit(6)
+   
       .populate("user", "firstName serviceType")
       .populate("recipientUser", "firstName lastName serviceType")
       .populate("recipientBiller", "name serviceType");
