@@ -10,7 +10,7 @@ const Recent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("");
   const navigate = useNavigate();
-   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -27,7 +27,8 @@ const Recent = () => {
             withCredentials: true,
           }
         );
-        setHistory(response.data.data || []);
+        const limitedHistory = (response.data.data || []).slice(0, 6);
+        setHistory(limitedHistory);
       } catch (error) {
         console.error(
           "Error fetching payment history:",
@@ -97,8 +98,12 @@ const Recent = () => {
           <Select.Option value="">Sort By</Select.Option>
           <Select.Option value="date-newest">Date: Newest</Select.Option>
           <Select.Option value="date-oldest">Date: Oldest</Select.Option>
-          <Select.Option value="amount-highest">Amount: High to Low</Select.Option>
-          <Select.Option value="amount-lowest">Amount: Low to High</Select.Option>
+          <Select.Option value="amount-highest">
+            Amount: High to Low
+          </Select.Option>
+          <Select.Option value="amount-lowest">
+            Amount: Low to High
+          </Select.Option>
         </Select>
       </div>
 
@@ -128,13 +133,18 @@ const Recent = () => {
                   onClick={() => handleTransactionClick(payment._id)}
                   className=" cursor-pointer hover:bg-gray-100  hover:text-black  border-b  transition-colors"
                 >
-                  <td className="p-2">{new Date(payment.createdAt).toLocaleDateString()}</td>
                   <td className="p-2">
-                    {payment.recipientBiller?.name ||
-                      (payment.recipientUser
-                        ? `${payment.recipientUser.firstName} ${payment.recipientUser.lastName}`
-                        : "Unknown")}
+                    {new Date(payment.createdAt).toLocaleDateString()}
                   </td>
+                  <td className="p-2">
+                    {payment.paymentType === "Funding"
+                      ? `${payment.user?.firstName || "Self"} (Self)`
+                      : payment.recipientBiller?.name ||
+                        (payment.recipientUser
+                          ? `${payment.recipientUser.firstName} ${payment.recipientUser.lastName}`
+                          : "Unknown")}
+                  </td>
+
                   <td className="p-2">
                     {payment.recipientBiller?.serviceType || "Others"}
                   </td>

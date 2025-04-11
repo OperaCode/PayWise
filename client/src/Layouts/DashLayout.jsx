@@ -121,48 +121,6 @@ const DashLayout = ({ children }) => {
     }
   };
   
-
-  // const uploadPhoto = async (photo) => {
-  //   if (!photo) return toast.error("Please select an image");
-
-  //   const formData = new FormData();
-  //   formData.append("my_file", photo);
-
-  //   if (!user || !user.id) {
-  //     toast.error("User not found. Please log in again.");
-  //     return;
-  //   }
-  //   formData.append("userId", user.id);
-
-  //   try {
-  //     setLoading(true);
-  //     const res = await axios.post("http://localhost:3000/upload", formData, {
-  //       headers: { "Content-Type": "multipart/form-data" },
-  //     });
-
-  //     console.log("Cloudinary Response:", res.data);
-
-  //     if (res.data.secure_url) {
-  //       setProfilePicture(res.data.secure_url);
-
-  //       await axios.put(
-  //         `http://localhost:3000/user/${user.id}/update-profile-picture`,
-  //         { profilePicture: res.data.secure_url },
-  //         { withCredentials: true }
-  //       );
-
-  //       toast.success("Profile picture updated successfully!");
-  //     } else {
-  //       toast.error("Error uploading profile picture. Please try again.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Upload error:", error);
-  //     toast.error("Upload failed. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   return (
     <div className="lg:flex">
       <SideBar />

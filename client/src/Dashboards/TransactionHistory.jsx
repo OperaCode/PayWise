@@ -56,8 +56,10 @@ const TransactionHistory = () => {
             withCredentials: true,
           }
         );
-        setTransactions(data.data || []);
-        setFilteredTransactions(data.data || []);
+        // Limit to 10 transactions
+        const limitedTransactions = (data.data || []).slice(0, 10);
+        setTransactions(limitedTransactions);
+        setFilteredTransactions(limitedTransactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
       }
@@ -151,11 +153,11 @@ const TransactionHistory = () => {
   };
 
   return (
-    <div className="lg:flex">
+    <div className="lg:flex h-full ">
       <SideBar />
 
       {/* Main Content */}
-      <div className="flex-col w-full pt-8 lg:ml-78">
+      <div className="flex-col w-full pt-8 lg:ml-78 ">
         <div className="flex items-center justify-end px-10 py-4 gap-2">
           <h1 className="text-cyan- text-xl font-bold">
             Welcome, {username.charAt(0).toUpperCase() + username.slice(1)}!
@@ -189,7 +191,7 @@ const TransactionHistory = () => {
         </div>
 
         {/* Transaction Table */}
-        <div className="w-full">
+        <div className="w-full min-h-screen">
           <div className="p-4">
             <h1 className="text-2xl font-bold mb-4 text-center">
               All Transactions
@@ -246,9 +248,14 @@ const TransactionHistory = () => {
                         {new Date(tx.createdAt).toLocaleDateString()}
                       </td>
                       <td className="p-2">
-                        {tx.recipientBiller?.name ||
-                          `${tx.recipientUser?.firstName} ${tx.recipientUser?.lastName}`}
+                        {tx.paymentType === "Funding"
+                          ? `${tx.user?.firstName || "Self"} (Self)`
+                          : tx.recipientBiller?.name ||
+                            (tx.recipientUser
+                              ? `${tx.recipientUser.firstName} ${tx.recipientUser.lastName}`
+                              : "Unknown")}
                       </td>
+
                       <td className="p-2">${tx.amount.toFixed(2)}</td>
                       <td className="p-2">{tx.paymentType}</td>
                       <td className="p-2">{tx.status}</td>
@@ -271,6 +278,16 @@ const TransactionHistory = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Export buttons */}
+            <div className="flex justify-end gap-4 mt-8">
+              <button
+                onClick={exportToExcel}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Export Transactions as Excel
+              </button>
             </div>
           </div>
         </div>
@@ -317,16 +334,6 @@ const TransactionHistory = () => {
             </div>
           </div>
         )}
-
-        {/* Export buttons */}
-        <div className="flex justify-end gap-4 mt-4">
-          <button
-            onClick={exportToExcel}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Export Transactions as Excel
-          </button>
-        </div>
       </div>
     </div>
   );
