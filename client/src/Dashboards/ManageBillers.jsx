@@ -73,7 +73,7 @@ const ManageBillers = (currency) => {
     setTimeout(() => setLoading(false), 3000);
   }, []);
 
-  // for fetching billrs to frontend
+  // for fetching billers to frontend
   useEffect(() => {
     const fetchBillers = async () => {
       try {
@@ -172,27 +172,6 @@ const ManageBillers = (currency) => {
       [billerId]: !prevStates[billerId], // Toggle the auto-pay state
     }));
   };
-
-  // const handleSaveBiller = async()=>{
-  //   try {
-
-  //     const response = await fetch(`${BASE_URL}/billers/${billerId}`, {
-  //       method: "PUT",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(updatedData),
-  //     });
-
-  //     const result = await response.json();
-  //     if (result.success) {
-  //       alert("Biller updated successfully!");
-  //       // Refresh the biller list or close the modal here
-  //     } else {
-  //       alert(result.message);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error updating biller:", error);
-  //   }
-  // }
 
   useEffect(() => {
     if (selectedBiller) {
