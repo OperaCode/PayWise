@@ -5,9 +5,9 @@ import Loader from "../components/Loader"; // Import your Loader component
 import P2pModal from "../modals/P2pModal";
 import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import blkchain5 from "../assets/darkbg.jpg";
-import wallpaper from "../assets/wallpapers.webp";
+import wallpaper from "../assets/waves.jpg";
 import { Link } from "react-router-dom";
-// import billpaper from "../assets/billpaper.jpeg";
+
 import SchedulePaymentModal from "../modals/schedulePaymentModal";
 import AutoPayModal from "../modals/AutoPayModal";
 import {
@@ -350,6 +350,8 @@ const DashBoard = () => {
       // setP2pModalOpen(false);
     }
   };
+
+  
 
   return (
     <>

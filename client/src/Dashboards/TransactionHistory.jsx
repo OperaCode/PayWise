@@ -3,11 +3,13 @@ import SideBar from "../components/SideBar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
+import logo from "../assets/paywise-logo.png";
 import { Moon, Sun } from "lucide-react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx"; // For Excel export
 import { jsPDF } from "jspdf"; // For PDF export
-import { Button, Modal, Input, Select } from "antd";
+import { Input, Select } from "antd";
+import ReceiptModal from "../modals/ReceiptModal";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -59,6 +61,7 @@ const TransactionHistory = () => {
         // Limit to 10 transactions
         const limitedTransactions = (data.data || []).slice(0, 10);
         setTransactions(limitedTransactions);
+        console.log(limitedTransactions);
         setFilteredTransactions(limitedTransactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
@@ -121,8 +124,13 @@ const TransactionHistory = () => {
       filteredTransactions.map((tx) => ({
         Date: new Date(tx.createdAt).toLocaleDateString(),
         Recipient:
-          tx.recipientBiller?.name ||
-          `${tx.recipientUser?.firstName} ${tx.recipientUser?.lastName}`,
+          tx.paymentType === "Funding"
+            ? `${tx.user?.firstName || "Self"} (Self)`
+            : tx.recipientBiller?.name
+            ? tx.recipientBiller.name
+            : tx.recipientUser
+            ? `${tx.recipientUser.firstName} ${tx.recipientUser.lastName}`
+            : "Unknown",
         Amount: `$${tx.amount.toFixed(2)}`,
         Type: tx.paymentType,
         Status: tx.status,
@@ -132,23 +140,94 @@ const TransactionHistory = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Transactions");
     XLSX.writeFile(wb, "transaction_history.xlsx");
   };
-
+  
   // Download receipt as PDF
-  const downloadReceiptPdf = () => {
+  const convertToBase64 = async (url) => {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const downloadReceiptPdf = async () => {
     const doc = new jsPDF();
-    doc.text(`Transaction ID: ${selectedTransaction._id}`, 10, 10);
+    const logoBase64 = await convertToBase64(logo); // convert imported image
+
+    // Logo 
+    doc.addImage(logoBase64, "PNG", 85, 10, 40, 20); // X=85 centers it roughly
+    doc.setFontSize(18);
+    doc.setFont(undefined, "bold");
+    doc.text("Transaction Receipt", 105, 40, { align: "center" });
+
+    // Line spacing
+    doc.setFontSize(12);
+    doc.setFont(undefined, "normal");
+    let y = 60;
+    const lineHeight = 10;
+
+    const labelStyle = () => {
+      doc.setFont(undefined, "bold");
+    };
+    const valueStyle = () => {
+      doc.setFont(undefined, "normal");
+    };
+
+    // Transaction ID
+    labelStyle();
+    doc.text("Transaction ID:", 20, y);
+    valueStyle();
+    doc.text(`${selectedTransaction._id}`, 70, y);
+    y += lineHeight;
+
+    // Payment Reference
+    labelStyle();
+    doc.text("Payment Reference:", 20, y);
+    valueStyle();
+    doc.text(`${selectedTransaction.transactionRef}`, 70, y);
+    y += lineHeight;
+
+    // Date
+    labelStyle();
+    doc.text("Date:", 20, y);
+    valueStyle();
     doc.text(
-      `Date: ${new Date(selectedTransaction.createdAt).toLocaleDateString()}`,
-      10,
-      20
+      `${new Date(selectedTransaction.createdAt).toLocaleDateString()}`,
+      70,
+      y
     );
-    doc.text(`Amount: $${selectedTransaction.amount.toFixed(2)}`, 10, 30);
-    doc.text(
-      `Recipient: ${selectedTransaction.recipientUser?.firstName || "Unknown"}`,
-      10,
-      40
-    );
-    doc.text(`Status: ${selectedTransaction.status}`, 10, 50);
+    y += lineHeight;
+
+    // Amount
+    labelStyle();
+    doc.text("Amount:", 20, y);
+    valueStyle();
+    doc.text(`$${selectedTransaction.amount.toFixed(2)}`, 70, y);
+    y += lineHeight;
+
+    // Recipient
+    labelStyle();
+    doc.text("Recipient:", 20, y);
+    valueStyle();
+    const recipient =
+      selectedTransaction.paymentType === "Funding"
+        ? `${selectedTransaction.user?.firstName || "Self"} (Self)`
+        : selectedTransaction.recipientBiller?.name ||
+          (selectedTransaction.recipientUser
+            ? `${selectedTransaction.recipientUser.firstName} ${selectedTransaction.recipientUser.lastName}`
+            : "Unknown");
+    doc.text(recipient, 70, y);
+    y += lineHeight;
+
+    // Status
+    labelStyle();
+    doc.text("Status:", 20, y);
+    valueStyle();
+    doc.text(`${selectedTransaction.status}`, 70, y);
+    y += lineHeight;
+
     doc.save("receipt.pdf");
   };
 
@@ -262,9 +341,9 @@ const TransactionHistory = () => {
                       <td className="p-2">
                         <button
                           onClick={() => openReceiptModal(tx)}
-                          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                          className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
                         >
-                          Receipt
+                          View Receipt
                         </button>
                       </td>
                     </tr>
@@ -284,7 +363,7 @@ const TransactionHistory = () => {
             <div className="flex justify-end gap-4 mt-8">
               <button
                 onClick={exportToExcel}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
+                className="bg-blue-500 text-white px-6 py-2 rounded-lg cursor-pointer transition hover:scale-105 border-2"
               >
                 Export Transactions as Excel
               </button>
@@ -295,11 +374,19 @@ const TransactionHistory = () => {
         {/* Modal for Receipt */}
         {isModalOpen && selectedTransaction && (
           <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg w-1/3">
-              <h2 className="text-xl font-bold mb-4">Receipt</h2>
-              <div id="receipt-content">
+            <div className="bg-white p-6 rounded-lg w-2/5">
+              <div className="mb-4 text-center">
+                <img src={logo} alt="PayWise Logo" className="h-20 mx-auto" />
+                <h2 className="text-xl font-bold mt-2">Transaction Receipt</h2>
+              </div>
+
+              <div id="receipt-content" className="space-y-4 ">
                 <p>
                   <strong>Transaction ID:</strong> {selectedTransaction._id}
+                </p>
+                <p>
+                  <strong>Payment Reference:</strong>{" "}
+                  {selectedTransaction.transactionRef}
                 </p>
                 <p>
                   <strong>Date:</strong>{" "}
@@ -311,7 +398,12 @@ const TransactionHistory = () => {
                 </p>
                 <p>
                   <strong>Recipient:</strong>{" "}
-                  {selectedTransaction.recipientUser?.firstName || "Unknown"}
+                  {selectedTransaction.paymentType === "Funding"
+                    ? `${selectedTransaction.user?.firstName || "Self"} (Self)`
+                    : selectedTransaction.recipientBiller?.name ||
+                      (selectedTransaction.recipientUser
+                        ? `${selectedTransaction.recipientUser.firstName} ${selectedTransaction.recipientUser.lastName}`
+                        : "Unknown")}
                 </p>
                 <p>
                   <strong>Status:</strong> {selectedTransaction.status}
@@ -320,19 +412,20 @@ const TransactionHistory = () => {
               <div className="mt-4 flex justify-between">
                 <button
                   onClick={downloadReceiptPdf}
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                  className="bg-blue-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
                 >
                   Download PDF
                 </button>
                 <button
                   onClick={closeReceiptModal}
-                  className="bg-red-500 text-white px-4 py-2 rounded"
+                 className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
                 >
                   Close
                 </button>
               </div>
             </div>
           </div>
+          //   <ReceiptModal closeReceiptModal={closeReceiptModal}/>
         )}
       </div>
     </div>
