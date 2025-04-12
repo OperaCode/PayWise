@@ -313,7 +313,7 @@ const Recent = () => {
       {/* Modal for displaying receipt */}
       {isModalOpen && selectedTransaction && (
          <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg w-2/5">
+                    <div className="bg-white p-6 rounded-lg w-2/5 text-black">
                       <div className="mb-4 text-center">
                         <img src={logo} alt="PayWise Logo" className="h-20 mx-auto" />
                         <h2 className="text-xl font-bold mt-2">Transaction Receipt</h2>

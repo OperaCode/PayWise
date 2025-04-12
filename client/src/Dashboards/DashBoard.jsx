@@ -232,7 +232,7 @@ const DashBoard = () => {
       }
       closePaymentModal(); // Close the payment modal
       setWalletBalance((prevBalance) =>
-        Number((prevBalance + amount).toFixed(2))
+        Number((Number(prevBalance) + Number(amount)).toFixed(2))
       );
     },
     onclose: () => {

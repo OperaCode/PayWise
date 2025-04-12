@@ -30,6 +30,7 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
   const handleSchedulePayment = async () => {
     setIsProcessing(true);
     console.log("selectedBiller before API call:", selectedBiller);
+  
     // 🔹 Ensure `selectedBiller` is selected correctly
     if (!selectedBiller) {
       console.error("Error: biller is not selected");
@@ -37,31 +38,34 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
       setIsProcessing(false);
       return;
     }
-
-    // Proceed with payment scheduling logic
-    console.log("selectedBiller before API call:", selectedBiller);
-    if (!selectedBiller) {
-      console.error("Error: biller is not selected");
-      toast.error("Biller is not selected. Please choose a biller.");
-      setIsProcessing(false);
-      return;
-    }
-
+  
+    // Ensure token is present
     const token = localStorage.getItem("token");
-
     if (!token) {
       toast.error("You must be logged in to schedule a payment.");
       setIsProcessing(false);
       return;
     }
-
+  
+    // Ensure scheduleDate is in ISO format before sending it
+    const formattedScheduleDate = new Date(scheduleDate).toISOString(); // Convert to ISO 8601 string
+    console.log("Formatted Schedule Date:", formattedScheduleDate); // Log for debugging
+  
+    // Log the request body to verify everything is being sent correctly
+    console.log({
+      billerEmail: selectedBiller.email,
+      amount,
+      scheduleDate: formattedScheduleDate, // Check formatted date
+      transactionPin,
+    });
+  
     try {
       const response = await axios.post(
         `${BASE_URL}/payment/schedule-transfer`,
         {
           billerEmail: selectedBiller.email,
           amount,
-          scheduleDate,
+          scheduleDate: formattedScheduleDate, // Send formatted date
           transactionPin,
         },
         {
@@ -74,10 +78,10 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
       toast.success("Payment scheduled successfully.");
     } catch (error) {
       console.error("Error scheduling payment:", error);
-
+  
       // 🔹 Log full error details
       console.error("Full error response:", error.response);
-
+  
       const errorMessage =
         error.response?.data?.message || "Failed to schedule payment.";
       toast.error(errorMessage);
@@ -85,6 +89,7 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
       setIsProcessing(false);
     }
   };
+  
 
   // Confirm Pin and Schedule Payment
   const handleConfirm = () => {
