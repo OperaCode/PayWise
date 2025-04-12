@@ -13,7 +13,7 @@ const crypto = require("crypto");
 //     wallet: {
 //       walletId: { type: String, default: () => crypto.randomUUID() },
 //       balance: { type: Number,default: 0}, // Ensure new users get 100 tokens
-//       cowries: { type: Number,default: 0}, // Ensure new users get 100 tokens
+//       paycoin: { type: Number,default: 0}, // Ensure new users get 100 tokens
 //     },
 //     transactionPin: { type: String, required: false }, // Store hashed PIN
 //     billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Biller" }], // Reference Vendor model
@@ -39,8 +39,15 @@ const userSchema = new mongoose.Schema(
     profilePicture: { type: String, default: null },
     wallet: {
       walletId: { type: String, default: () => crypto.randomUUID() },
-      balance: { type: Number, default: 0 }, 
-      cowries: { type: Number, default: 0 },
+      balance: { type: Number, default: 0 },
+      payCoins: { type: Number, default: 0 }, // Tracks PayCoins balance
+      rewardHistory: [
+        {
+          amount: Number,
+          reason: String, // Reason for the reward (e.g., "Wallet top-up reward")
+          date: { type: Date, default: Date.now },
+        },
+      ],
     },
     metamaskWallet: { type: String, unique: true, sparse: true },
     transactionPin: { type: String, required: false },
@@ -55,16 +62,12 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-
 // Hash PIN before saving
 // userSchema.pre("save", async function (next) {
 //   if (!this.isModified("transactionPin")) return next();
 //   this.transactionPin = await bcrypt.hash(this.transactionPin, 10);
 //   next();
 // });
-
-
-
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {

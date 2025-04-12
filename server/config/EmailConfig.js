@@ -85,7 +85,6 @@ const sendWelcomeBackEmail = async (email, firstName) => {
   try {
     const dashboardLink = `http://localhost:5173/dashboard`;
 
-    // ✅ Enhanced HTML email with TailwindCSS styling
     const mailOptions = {
       from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -133,11 +132,11 @@ const sendWelcomeBackEmail = async (email, firstName) => {
       `,
     };
 
-    // ✅ Send email and log success message
+    // Send email and log success message
     const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Welcome back email sent to: ${email}, Message ID: ${info.messageId}`);
+    console.log(`Welcome back email sent to: ${email}, Message ID: ${info.messageId}`);
   } catch (error) {
-    console.error("❌ Email sending error:", error.message);
+    console.error("Email sending error:", error.message);
   }
 };
 

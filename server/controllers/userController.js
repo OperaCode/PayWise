@@ -67,7 +67,7 @@ const registerUser = asyncHandler(async (req, res) => {
       password,
       wallet: {
         balance: 0,
-        cowries: 0,
+        paycoin: 0,
         walletId: uuidv4(),
       },
       isVerified: false, // New users are NOT verified initially
@@ -105,7 +105,7 @@ const registerUser = asyncHandler(async (req, res) => {
         email: newUser.email,
         wallet: {
           balance: newUser.wallet.balance,
-          cowries: newUser.wallet.cowries,
+          paycoin: newUser.wallet.paycoin,
           walletId: newUser.wallet.walletId,
         },
         token,
@@ -206,6 +206,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     await sendWelcomeBackEmail(user.email, user.firstName);
+    console.log("welocm e email sent")
 
     // Generate token
     const token = generateToken(user._id);

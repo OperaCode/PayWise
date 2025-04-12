@@ -6,49 +6,6 @@ const Payment = require("../models/paymentModel");
 const bcrypt = require("bcrypt");
 const { updateBillerAmount } = require("../hooks/aggrAmount");
 
-// const fundWallet1 = asyncHandler(async (req, res) => {
-//   try {
-//     console.log("Received Flutterwave payment request:", req.body);
-
-//     const { userId, amount, transactionId } = req.body;
-
-//     if (!transactionId) {
-//       return res.status(400).json({ success: false, message: "Transaction ID is missing." });
-//     }
-
-//     // Corrected API call
-//     const flutterwaveResponse = await fetch(`https://api.flutterwave.com/v3/transactions/${transactionId}/verify`, {
-//       method: "GET",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
-//       },
-//     });
-
-//     let data;
-//     try {
-//       data = await flutterwaveResponse.json();
-//     } catch (error) {
-//       console.error("Failed to parse Flutterwave response:", error);
-//       return res.status(500).json({ success: false, message: "Invalid response from Flutterwave" });
-//     }
-
-//     console.log("Flutterwave Full Response:", JSON.stringify(data, null, 2));
-
-//     // Verify if the payment is successful
-//     if (data.status === "success" && data.data.status === "successful") {
-//       // Update wallet balance (Assuming you have a Wallet model)
-//       // Example: await Wallet.updateOne({ userId }, { $inc: { balance: amount } });
-
-//       res.json({ success: true, message: "Payment verified and wallet funded." });
-//     } else {
-//       res.status(400).json({ success: false, message: "Payment verification failed." });
-//     }
-//   } catch (error) {
-//     console.error("Error handling Flutterwave payment:", error);
-//     res.status(500).json({ success: false, message: "Internal server error." });
-//   }
-// });
 
 //to fund wallet
 const fundWallet = asyncHandler(async (req, res) => {
@@ -75,11 +32,10 @@ const fundWallet = asyncHandler(async (req, res) => {
       }
     );
 
-    // ✅ Parse the JSON from fetch
     const data = await flutterwaveResponse.json();
     console.log("Flutterwave Verification Data:", JSON.stringify(data, null, 2));
 
-    // ✅ Step 2: Check if payment was successful
+    // Step 2: Check if payment was successful
     if (data.status === "success" && data.data.status === "successful") {
       const user = await User.findById(userId);
       if (!user) {
@@ -88,12 +44,24 @@ const fundWallet = asyncHandler(async (req, res) => {
           .json({ success: false, message: "User not found" });
       }
 
-      // ✅ Step 3: Update wallet balance
+      // Step 3: Update wallet balance
       user.wallet.balance += amount;
 
-      // ✅ Step 4: Add rewards (2% of funded amount)
-      const reward = parseFloat((amount * 0.02).toFixed(2));
-      user.rewardsBalance = (user.rewardsBalance || 0) + reward;
+      // ✅ Step 4: Add rewards (10 PayCoins if >$100)
+      let reward = 0;
+
+      if (amount > 100) {
+        reward = 10; // Reward 10 PayCoins for top-ups above $100
+      } else {
+        reward = parseFloat((amount * 0.02).toFixed(2)); // Otherwise reward 2% of funded amount
+      }
+
+      // Add reward to payCoins balance and track it in rewardHistory
+      user.wallet.payCoins += reward;
+      user.wallet.rewardHistory.push({
+        amount: reward,
+        reason: `Wallet top-up of $${amount} (Reward)`,
+      });
 
       await user.save();
 
@@ -116,6 +84,7 @@ const fundWallet = asyncHandler(async (req, res) => {
         message: "Wallet funded successfully.",
         walletBalance: user.wallet.balance,
         rewardEarned: reward,
+        totalPayCoins: user.wallet.payCoins, // Include total PayCoins in the response
       });
     } else {
       res.status(400).json({
@@ -131,6 +100,7 @@ const fundWallet = asyncHandler(async (req, res) => {
     });
   }
 });
+
 
 const withdrawToBank = asyncHandler(async (req, res) => {
   try {

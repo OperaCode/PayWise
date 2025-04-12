@@ -69,7 +69,7 @@ const googleAuth = asyncHandler(async (req, res) => {
         lastName: name?.split(" ").slice(1).join(" ") || "",
         email,
         profilePicture: picture,
-        wallet: { balance: 100, cowries: 50, walletId: uid },
+        wallet: { balance: 100, paycoin: 50, walletId: uid },
       });
     
     } 
