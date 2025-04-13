@@ -3,6 +3,7 @@ import blkchain5 from "../assets/darkbg.jpg";
 import { X } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { parseISO } from 'date-fns';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -27,61 +28,140 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
   };
 
   // Handle Scheduled Payment
-  const handleSchedulePayment = async () => {
+//   const handleSchedulePayment = async () => {
+//     setIsProcessing(true);
+  
+//     try {
+//       // 🔹 Validate selected biller
+//       if (!selectedBiller) {
+//         console.error("Error: Biller not selected");
+//         toast.error("Biller is not selected. Please choose a biller.");
+//         return;
+//       }
+  
+//       // 🔹 Validate token
+//       const token = localStorage.getItem("token");
+//       if (!token) {
+//         toast.error("You must be logged in to schedule a payment.");
+//         return;
+//       }
+  
+//       // 🔹 Validate amount
+//       if (!amount || isNaN(amount) || Number(amount) <= 0) {
+//         toast.error("Please enter a valid amount.");
+//         return;
+//       }
+  
+//       // 🔹 Validate transaction pin
+//       if (!transactionPin || transactionPin.trim().length === 0) {
+//         toast.error("Transaction PIN is required.");
+//         return;
+//       }
+  
+//       // 🔹 Validate schedule date
+//       if (!scheduleDate) {
+//         toast.error("Please select a valid date and time.");
+//         return;
+//       }
+  
+//       const formattedScheduleDate = new Date(scheduleDate).toISOString();
+//       console.log("Formatted Schedule Date:", formattedScheduleDate);
+  
+//       const payload = {
+//         billerEmail: selectedBiller.email,
+//         amount,
+//         scheduleDate: formattedScheduleDate,
+//         transactionPin,
+//       };
+  
+//       console.log("Scheduling Payment with Payload:", payload);
+  
+//       const response = await axios.post(
+//         `${BASE_URL}/payment/schedule-transfer`,
+//         payload,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//           },
+//         }
+//       );
+  
+//       console.log("Scheduled Payment Response:", response.data);
+//       toast.success("Payment scheduled successfully.");
+//     } catch (error) {
+//       console.error("Error scheduling payment:", error);
+//       const errorMessage =
+//         error.response?.data?.message || "Failed to schedule payment.";
+//       toast.error(errorMessage);
+//     } finally {
+//       setIsProcessing(false);
+//     }
+//   };
+
+
+const handleSchedulePayment = async () => {
     setIsProcessing(true);
-    console.log("selectedBiller before API call:", selectedBiller);
-  
-    // 🔹 Ensure `selectedBiller` is selected correctly
-    if (!selectedBiller) {
-      console.error("Error: biller is not selected");
-      toast.error("Biller is not selected. Please choose a biller.");
-      setIsProcessing(false);
-      return;
-    }
-  
-    // Ensure token is present
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("You must be logged in to schedule a payment.");
-      setIsProcessing(false);
-      return;
-    }
-  
-    // Ensure scheduleDate is in ISO format before sending it
-    const formattedScheduleDate = new Date(scheduleDate).toISOString(); // Convert to ISO 8601 string
-    console.log("Formatted Schedule Date:", formattedScheduleDate); // Log for debugging
-  
-    // Log the request body to verify everything is being sent correctly
-    console.log({
-      billerEmail: selectedBiller.email,
-      amount,
-      scheduleDate: formattedScheduleDate, // Check formatted date
-      transactionPin,
-    });
   
     try {
+      // 🔹 Validate selected biller
+      if (!selectedBiller) {
+        toast.error("Biller is not selected. Please choose a biller.");
+        return;
+      }
+  
+      // 🔹 Validate token
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("You must be logged in to schedule a payment.");
+        return;
+      }
+  
+      // 🔹 Validate amount
+      if (!amount || isNaN(amount) || Number(amount) <= 0) {
+        toast.error("Please enter a valid amount.");
+        return;
+      }
+  
+      // 🔹 Validate transaction pin
+      if (!transactionPin || transactionPin.trim().length === 0) {
+        toast.error("Transaction PIN is required.");
+        return;
+      }
+  
+      // 🔹 Validate schedule date
+      if (!scheduleDate) {
+        toast.error("Please select a valid date and time.");
+        return;
+      }
+  
+
+      const localDate = new Date(scheduleDate); // Local time from the input
+      const utcDate = localDate.toISOString(); // Convert to UTC string
+      
+      const payload = {
+        billerEmail: selectedBiller.email,
+        amount: Number(amount),  // Convert to number
+        scheduleDate: utcDate,  // Use the UTC formatted date
+        transactionPin,
+      };
+
+     
+      console.log("Scheduling Payment with Payload:", payload);
+  
       const response = await axios.post(
         `${BASE_URL}/payment/schedule-transfer`,
-        {
-          billerEmail: selectedBiller.email,
-          amount,
-          scheduleDate: formattedScheduleDate, // Send formatted date
-          transactionPin,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log(response);
+  
+      console.log("Scheduled Payment Response:", response.data);
       toast.success("Payment scheduled successfully.");
     } catch (error) {
       console.error("Error scheduling payment:", error);
-  
-      // 🔹 Log full error details
-      console.error("Full error response:", error.response);
-  
       const errorMessage =
         error.response?.data?.message || "Failed to schedule payment.";
       toast.error(errorMessage);
@@ -89,6 +169,9 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
       setIsProcessing(false);
     }
   };
+  
+  
+  
   
 
   // Confirm Pin and Schedule Payment
@@ -221,11 +304,10 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
             Due Date
           </label>
           <input
-            id="date"
-            type="date"
-            className="w-full p-2 border rounded-md mb-3"
+            type="datetime-local"
             value={scheduleDate}
             onChange={(e) => setScheduleDate(e.target.value)}
+            required
           />
 
           {/* Submit Button */}

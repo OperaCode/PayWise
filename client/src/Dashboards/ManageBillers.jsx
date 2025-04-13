@@ -276,14 +276,14 @@ const ManageBillers = (currency) => {
                         <div className="flex items-center gap-3">
                           <Switch
                             //checked={autoPayStates[biller.id]}
-                            checked={autoPayStates[biller.id] || false}
-                            onChange={() => toggleAutoPay(biller.id)}
+                            checked={autoPayStates[biller._id] || false}
+                            onChange={() => toggleAutoPay(biller._id)}
                           />
                           <span className="text-sm text-gray-700">
                             {/* {autoPayStates[biller.id]
                               ? "Auto-Pay On"
                               : "Enable Auto-Pay"} */}
-                            {autoPayStates[biller.id]
+                            {autoPayStates[biller._id]
                               ? "Auto-Pay On"
                               : "Enable Auto-Pay"}
                           </span>
