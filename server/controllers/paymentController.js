@@ -6,7 +6,6 @@ const Payment = require("../models/paymentModel");
 const bcrypt = require("bcrypt");
 const { updateBillerAmount } = require("../hooks/aggrAmount");
 
-
 //to fund wallet
 const fundWallet = asyncHandler(async (req, res) => {
   try {
@@ -33,7 +32,10 @@ const fundWallet = asyncHandler(async (req, res) => {
     );
 
     const data = await flutterwaveResponse.json();
-    console.log("Flutterwave Verification Data:", JSON.stringify(data, null, 2));
+    console.log(
+      "Flutterwave Verification Data:",
+      JSON.stringify(data, null, 2)
+    );
 
     // Step 2: Check if payment was successful
     if (data.status === "success" && data.data.status === "successful") {
@@ -47,7 +49,7 @@ const fundWallet = asyncHandler(async (req, res) => {
       // Step 3: Update wallet balance
       user.wallet.balance += amount;
 
-      // ✅ Step 4: Add rewards (10 PayCoins if >$100)
+      // Step 4: Add rewards (10 PayCoins if >$100)
       let reward = 0;
 
       if (amount > 100) {
@@ -65,7 +67,7 @@ const fundWallet = asyncHandler(async (req, res) => {
 
       await user.save();
 
-      // ✅ Step 5: Log funding as a Payment
+      // Step 5: Log funding as a Payment
       const newPayment = new Payment({
         user: userId,
         amount,
@@ -78,7 +80,7 @@ const fundWallet = asyncHandler(async (req, res) => {
 
       await newPayment.save();
 
-      // ✅ Step 6: Send response
+      // Step 6: Send response
       res.json({
         success: true,
         message: "Wallet funded successfully.",
@@ -100,7 +102,6 @@ const fundWallet = asyncHandler(async (req, res) => {
     });
   }
 });
-
 
 const withdrawToBank = asyncHandler(async (req, res) => {
   try {
@@ -237,28 +238,24 @@ const p2PTransfer = asyncHandler(async (req, res) => {
 const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
     const { billerEmail, amount, scheduleDate, transactionPin } = req.body;
+    console.log("Incoming payload:", req.body);
+
     const userId = req.userId; // Extracted from token
 
     // 1. Validate fields
-    if (!userId)
-      return res.status(401).json({ message: "Unauthorized. Please log in." });
+    if (!userId) return res.status(401).json({ message: "Unauthorized. Please log in." });
 
-    if (
-      !billerEmail ||
-      isNaN(amount) ||
-      amount <= 0 ||
-      !scheduleDate ||
-      !transactionPin
-    ) {
-      return res
-        .status(400)
-        .json({ message: "Missing or invalid required fields." });
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0 || !billerEmail || !scheduleDate || !transactionPin) {
+      return res.status(400).json({ message: "Missing or invalid required fields." });
     }
 
-    // 2. Validate scheduled date
-    const scheduledDate = new Date(scheduleDate);
-    scheduledDate.setSeconds(0, 0); // Normalize to minute precision
-    if (isNaN(scheduledDate.getTime()) || scheduledDate < new Date()) {
+    // 2. Parse the schedule date from the frontend (already in UTC)
+    const scheduledDate = new Date(scheduleDate); // This will be parsed as UTC correctly
+    scheduledDate.setSeconds(0, 0); // Ensure no sub-seconds
+    
+    // Validate the schedule date
+    if (isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
       return res.status(400).json({ message: "Invalid schedule date." });
     }
 
@@ -268,19 +265,29 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
 
     // 4. Check transaction PIN
     const isPinValid = await bcrypt.compare(transactionPin, user.transactionPin);
-    if (!isPinValid)
-      return res.status(403).json({ message: "Invalid transaction PIN." });
+    if (!isPinValid) return res.status(403).json({ message: "Invalid transaction PIN." });
 
     // 5. Find biller
     const recipient = await Biller.findOne({ email: billerEmail });
-    if (!recipient)
-      return res.status(404).json({ message: "Biller not found." });
+    if (!recipient) return res.status(404).json({ message: "Biller not found." });
 
-    // 6. Save scheduled payment (field: scheduleDate)
+    // 6. Check if there is already a pending payment for this biller
+    // const existingPendingPayment = await Payment.findOne({
+    //   user: userId,
+    //   recipientBiller: recipient._id,
+    //   status: "Pending",
+    //   scheduleDate: { $gte: new Date() }, // Ensure it's a future due payment
+    // });
+
+    // if (existingPendingPayment) {
+    //   return res.status(400).json({ message: "You already have a pending payment scheduled." });
+    // }
+
+    // 7. Save scheduled payment
     const newPayment = new Payment({
       user: userId,
       recipientBiller: recipient._id,
-      amount,
+      amount: parsedAmount,  // Use parsed amount as a number
       transactionRef: `SCH-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       scheduleDate: scheduledDate,
       paymentType: "Scheduled",
@@ -303,6 +310,23 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
 });
 
 
+const scheduleRecurring = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { autoPayEnabled } = req.body;
+
+    const biller = await Biller.findByIdAndUpdate(
+      id,
+      { autoPayEnabled },
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Autopay status updated", biller });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update autopay status" });
+  }
+};
+
 const getUserPaymentHistory = async (req, res) => {
   try {
     const userId = req.userId;
@@ -313,7 +337,7 @@ const getUserPaymentHistory = async (req, res) => {
 
     const payments = await Payment.find({ user: userId })
       .sort({ createdAt: -1 })
-   
+
       .populate("user", "firstName serviceType")
       .populate("recipientUser", "firstName lastName serviceType")
       .populate("recipientBiller", "name serviceType");
@@ -362,58 +386,63 @@ const totalPayments = asyncHandler(async (req, rers) => {
   }
 });
 
-
 const paymentAggregates = asyncHandler(async (req, res) => {
   try {
     const currentDate = new Date();
     const lastMonthDate = new Date(currentDate);
     lastMonthDate.setMonth(currentDate.getMonth() - 1);
-  
-    console.log("Getting payments for userId:", req.userId);
-    console.log("Searching from:", lastMonthDate.toISOString(), "to:", currentDate.toISOString());
-  
-    // Fetch only successful payments paid within the last month
+
+    // console.log("Getting payments for userId:", req.userId);
+    // console.log("Searching from:", lastMonthDate.toISOString(), "to:", currentDate.toISOString());
+
+    // Fetch only successful payments paid within the last month, excluding funding payments
     const payments = await Payment.find({
       user: req.userId,
-      status: { $in: ['successful', 'Successful'] },
-      createdAt: { $gte: lastMonthDate, $lte: currentDate }
+      status: { $in: ["successful", "Successful"] },
+      createdAt: { $gte: lastMonthDate, $lte: currentDate },
+      paymentType: { $ne: "Funding" }, // Exclude 'Funding' payment type
     });
-  
-    console.log("Fetched Payments Count:", payments.length);
-  
+
+    //console.log("Fetched Payments Count:", payments.length);
+
     if (payments.length === 0) {
       return res.json({
         paymentHistory: [],
         insights: {
           totalSpent: 0,
           totalTransactions: 0,
-          mostUsedService: '',
+          mostUsedService: "",
           largestPayment: 0,
-          paymentFrequency: 0
-        }
+          paymentFrequency: 0,
+        },
       });
     }
-  
-    // Total amount spent
-    const totalSpent = payments.reduce((acc, payment) => acc + payment.amount, 0);
-  
+
+    // Total amount spent (excluding funding payments)
+    const totalSpent = payments.reduce(
+      (acc, payment) => acc + payment.amount,
+      0
+    );
+
     // Total transactions
     const totalTransactions = payments.length;
-  
+
     // Most used service (by recipientBiller or recipientUser)
     const serviceUsage = {};
-    payments.forEach(payment => {
+    payments.forEach((payment) => {
       const serviceId = payment.recipientBiller || payment.recipientUser;
       if (serviceId) {
         serviceUsage[serviceId] = (serviceUsage[serviceId] || 0) + 1;
       }
     });
-  
-    const mostUsedServiceId = Object.keys(serviceUsage).reduce((a, b) =>
-      serviceUsage[a] > serviceUsage[b] ? a : b, '');
-    
-    let mostUsedServiceName = '';
-    
+
+    const mostUsedServiceId = Object.keys(serviceUsage).reduce(
+      (a, b) => (serviceUsage[a] > serviceUsage[b] ? a : b),
+      ""
+    );
+
+    let mostUsedServiceName = "";
+
     if (mostUsedServiceId) {
       // Try finding the service in Biller or User collections
       const biller = await Biller.findById(mostUsedServiceId);
@@ -426,20 +455,21 @@ const paymentAggregates = asyncHandler(async (req, res) => {
         }
       }
     }
-    
-  
+
     // Largest single payment
-    const largestPayment = Math.max(...payments.map(p => p.amount));
-  
+    const largestPayment = Math.max(...payments.map((p) => p.amount));
+
     // Payment frequency: avg number of transactions per month in the past year
     const monthMap = {};
-    payments.forEach(p => {
+    payments.forEach((p) => {
       const key = `${p.createdAt.getFullYear()}-${p.createdAt.getMonth()}`;
       monthMap[key] = (monthMap[key] || 0) + 1;
     });
-  
-    const paymentFrequency = Object.values(monthMap).reduce((a, b) => a + b, 0) / Object.keys(monthMap).length;
-  
+
+    const paymentFrequency =
+      Object.values(monthMap).reduce((a, b) => a + b, 0) /
+      Object.keys(monthMap).length;
+
     // Respond with insights and raw history
     res.json({
       paymentHistory: payments,
@@ -448,18 +478,14 @@ const paymentAggregates = asyncHandler(async (req, res) => {
         totalTransactions,
         mostUsedService: mostUsedServiceName,
         largestPayment,
-        paymentFrequency: parseFloat(paymentFrequency.toFixed(2))
-      }
+        paymentFrequency: parseFloat(paymentFrequency.toFixed(2)),
+      },
     });
-  
   } catch (error) {
     console.error("Error fetching payment analytics:", error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
-  
-  
 });
-
 
 const pauseRecurringPayment = asyncHandler(async (req, res) => {
   try {
@@ -477,6 +503,7 @@ module.exports = {
   p2PTransfer,
   getUserPaymentHistory,
   paymentAggregates,
+  scheduleRecurring,
   totalPayments,
   scheduleTransfer,
   pauseRecurringPayment,

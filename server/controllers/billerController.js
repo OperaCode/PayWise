@@ -216,6 +216,8 @@ const updateBiller = async (req, res) => {
   }
 };
 
+
+
 const deleteBiller = asyncHandler(async (req, res) => {
   try {
     const { billerId } = req.params;
@@ -309,6 +311,7 @@ module.exports = {
   createBiller,
   getBillers,
   uploadBillerPicture,
+
   searchUserByEmail,
   getBillerById,
   updateBiller,

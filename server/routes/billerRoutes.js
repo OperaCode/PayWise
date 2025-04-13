@@ -8,7 +8,7 @@ const {
   getBillers,
   getBillerById,
   searchUserByEmail,
- 
+
   updateBiller,
   deleteBiller,
 } = require("../controllers/billerController");
@@ -28,6 +28,7 @@ router.get("/search/:email", searchUserByEmail);
 router.post("/createbiller", protectUser, createBiller);
 router.get("/", protectUser, getBillers);
 router.get("/:billerId", protectUser, getBillerById);
+
 
 router.put("/update/:billerId", protectUser, updateBiller);
 router.delete("/:billerId", protectUser, deleteBiller);
