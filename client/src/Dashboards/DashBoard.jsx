@@ -39,12 +39,11 @@ const DashBoard = () => {
   const [schedulePayModalOpen, setSchedulePayModalOpen] = useState(false);
   const [autoPayModalOpen, setAutoPayModalOpen] = useState(false);
   const [wiseCoinTransferOpen, setWiseCoinTransferOpen] = useState(false);
-  const [transactionPin, setTransactionPin] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [selectedBiller, setSelectedBiller] = useState("");
+
   const [recipientEmail, setRecipientEmail] = useState("");
   const [billers, setBillers] = useState([]);
   const [amount, setAmount] = useState("");
@@ -57,9 +56,9 @@ const DashBoard = () => {
   //to show hidden wallet balance
   const [showWallet, setShowWallet] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
-  const [isSettingPin, setIsSettingPin] = useState(false);
+
   const [pin, setPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
+
   const [history, setHistory] = useState([]);
 
   //Loading Timeout
@@ -351,8 +350,6 @@ const DashBoard = () => {
     }
   };
 
-  
-
   return (
     <>
       {/* {loading ? (
@@ -444,17 +441,17 @@ const DashBoard = () => {
                     SCHEDULE-PAY
                   </p>
                 </div>
-                <a href="transactions">
-                  <div
-                    className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105 hover:text-cyan-900"
-                    onClick={() => setAutoPayModalOpen(true)}
-                  >
-                    <SmartphoneNfc className="hover:text-cyan-900 font-extrabold" />
-                    <p className="font-bold text-sm hover:text-cyan-900">
-                      AUTOPAY
-                    </p>
-                  </div>
-                </a>
+
+                <div
+                  className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105 hover:text-cyan-900"
+                  onClick={() => setAutoPayModalOpen(true)}
+                >
+                  <SmartphoneNfc className="hover:text-cyan-900 font-extrabold" />
+                  <p className="font-bold text-sm hover:text-cyan-900">
+                    AUTOPAY
+                  </p>
+                </div>
+
                 <Link to="/analytics">
                   <div className="items-center flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
                     <ChartNoAxesCombined className="hover:text-cyan-900" />
