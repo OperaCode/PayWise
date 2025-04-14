@@ -56,7 +56,7 @@ const DashBoard = () => {
   //to show hidden wallet balance
   const [showWallet, setShowWallet] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
-
+  const [activeBillers, setActiveBillers] = useState({})
   const [pin, setPin] = useState("");
 
   const [history, setHistory] = useState([]);

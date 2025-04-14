@@ -18,9 +18,15 @@ const PieChart = ({ payments, currency}) => {
 
     // Filter payments from the last 30 days
     const filtered = payments.filter((p) => {
-      const paymentDate = new Date(p.createdAt || p.date) // Adjust this field if needed
-      return paymentDate >= oneMonthAgo && paymentDate <= now
+      const paymentDate = new Date(p.createdAt || p.date)
+      const isFunding = p.recipientBiller?.serviceType?.toLowerCase() === 'Funding'
+      return (
+        paymentDate >= oneMonthAgo &&
+        paymentDate <= now &&
+        !isFunding // exclude funding payments
+      )
     })
+  
 
     // Group and sum filtered payments
     filtered.forEach((p) => {

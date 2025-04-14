@@ -32,6 +32,7 @@ const ManageBillers = (currency) => {
   const [billers, setBillers] = useState([]);
   const [email, setEmail] = useState("");
   const [autoPayStates, setAutoPayStates] = useState({});
+  
   const [showFullList, setShowFullList] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBiller, setSelectedBiller] = useState(null);
@@ -78,27 +79,37 @@ const ManageBillers = (currency) => {
     const fetchBillers = async () => {
       try {
         const UserId = localStorage.getItem("userId");
-        console.log(UserId);
         const response = await axios.get(`${BASE_URL}/biller`, {
           withCredentials: true,
         });
-        console.log(response);
-        setBillers(response?.data || []);
+  
+        const fetchedBillers = response?.data || [];
+        setBillers(fetchedBillers);
+  
+        // Initialize AutoPay toggle state
+        const autoPayStatusMap = {};
+        fetchedBillers.forEach((biller) => {
+          autoPayStatusMap[biller._id] = biller.autopayEnabled || false;
+        });
+        setAutoPayStates(autoPayStatusMap);
+        // console.log(autoPayStates)
+  
       } catch (error) {
         console.error(error);
-        toast.error(error?.response?.data?.message);
+        toast.error(error?.response?.data?.message || "Failed to fetch billers");
       }
     };
-
+  
     fetchBillers();
   }, []);
+  
 
   //to handle input changes for the forms
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUpdatedData((prev) => ({
       ...prev,
-      [name]: name === "amount" ? parseFloat(value) : value,
+      [name]: name === "amount" ? Number(value) : value, // Convert amount to number
     }));
   };
 
@@ -166,11 +177,37 @@ const ManageBillers = (currency) => {
     }
   };
 
-  const toggleAutoPay = (billerId) => {
-    setAutoPayStates((prevStates) => ({
-      ...prevStates,
-      [billerId]: !prevStates[billerId], // Toggle the auto-pay state
-    }));
+  // Toggle logic
+  const toggleAutoPay = async (billerId) => {
+    const newAutoPayState = !autoPayStates[billerId];
+    const token = localStorage.getItem("token");
+  
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/biller/update/${billerId}`,
+        { autopayEnabled: newAutoPayState },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (response.data.success) {
+        // Update local state
+        setAutoPayStates((prevState) => ({
+          ...prevState,
+          [billerId]: newAutoPayState,
+        }));
+        toast.success(`AutoPay ${newAutoPayState ? "enabled" : "disabled"}!`);
+      } else {
+        toast.error("Failed to update AutoPay setting.");
+      }
+    } catch (err) {
+      console.error("Failed to update AutoPay:", err);
+      toast.error("Error updating AutoPay.");
+    }
   };
 
   useEffect(() => {
@@ -246,10 +283,13 @@ const ManageBillers = (currency) => {
 
   return (
     <>
-      {loading ? (
+      {/* {loading ? (
         <Loader />
       ) : (
-        <div className="p-6">
+       
+      )} */}
+
+<div className="p-6">
           {/* Biller Profile and List */}
           <div className="">
             {showFullList ? (
@@ -261,8 +301,8 @@ const ManageBillers = (currency) => {
                   {billers && billers.length > 0 ? (
                     billers.map((biller) => (
                       <li
-                        key={biller.id}
-                        className="p-2 border-2 rounded-lg shadow-sm  flex justify-between items-center"
+                        key={biller._id}
+                        className="p-2 border-2 rounded-lg shadow-sm flex justify-between items-center"
                       >
                         {/* Left: Biller Info */}
                         <div>
@@ -272,17 +312,13 @@ const ManageBillers = (currency) => {
                           </p>
                         </div>
 
-                        {/* Right: AutoPay Switch */}
+                        {/* Right: AutoPay Toggle */}
                         <div className="flex items-center gap-3">
                           <Switch
-                            //checked={autoPayStates[biller.id]}
                             checked={autoPayStates[biller._id] || false}
                             onChange={() => toggleAutoPay(biller._id)}
                           />
                           <span className="text-sm text-gray-700">
-                            {/* {autoPayStates[biller.id]
-                              ? "Auto-Pay On"
-                              : "Enable Auto-Pay"} */}
                             {autoPayStates[biller._id]
                               ? "Auto-Pay On"
                               : "Enable Auto-Pay"}
@@ -292,8 +328,7 @@ const ManageBillers = (currency) => {
                     ))
                   ) : (
                     <p className="text-xl font-semibold m-auto text-center p-4">
-                      {" "}
-                      No biller created, Go back{" "}
+                      No biller created. Go back{" "}
                       <span className="text-2xl">👈</span> to create a new
                       biller.
                     </p>
@@ -302,7 +337,7 @@ const ManageBillers = (currency) => {
 
                 <button
                   onClick={() => setShowFullList(false)}
-                  className="mt-4 px-4 py-2 text-sm rounded-lg flex gap-2 justify-center hover:scale-105  border-2 items-center  shadow-md cursor-pointer bg-cyan-700  font-semibold hover:bg-red-400 transition duration-200 ease-in hover:cursor-pointer"
+                  className="mt-4 px-4 py-2 text-sm rounded-lg flex gap-2 justify-center hover:scale-105 border-2 items-center shadow-md cursor-pointer bg-cyan-700 font-semibold hover:bg-red-400 transition duration-200 ease-in"
                 >
                   <ArrowLeft /> Back to Profiles
                 </button>
@@ -481,7 +516,7 @@ const ManageBillers = (currency) => {
                           <Input
                             // className=" border shadow-sm rounded"
                             placeholder="Amount"
-                            value={updatedData.amount}
+                            value={updatedData.amount ?? ""}
                             onChange={handleChange}
                           />
                         </div>
@@ -547,7 +582,8 @@ const ManageBillers = (currency) => {
             <BarChart billers={billers} />
           </div>
         </div>
-      )}
+
+
     </>
   );
 };

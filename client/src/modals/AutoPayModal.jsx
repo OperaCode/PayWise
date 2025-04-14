@@ -7,8 +7,6 @@ import { toast } from "react-toastify";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const AutoPayModal = ({ billers, onClose }) => {
-  const [selectedBiller, setSelectedBiller] = useState(null);
-  const [amount, setAmount] = useState("");
   const [startDate, setStartDate] = useState("");
   const [frequency, setFrequency] = useState("once");
   const [occurrences, setOccurrences] = useState(1);
@@ -18,8 +16,11 @@ const AutoPayModal = ({ billers, onClose }) => {
   const [confirmPin, setConfirmPin] = useState("");
   const [isSettingPin, setIsSettingPin] = useState(false);
 
+  const activeBillers = billers.filter((b) => b.isActive);
+  const totalAmount = activeBillers.reduce((sum, b) => sum + Number(b.amount || 0), 0);
+
   const openPinModal = () => setIsPinModalOpen(true);
-const closePinModal = () => setIsPinModalOpen(false);
+  const closePinModal = () => setIsPinModalOpen(false);
 
   const handleSetPin = async () => {
     const token = localStorage.getItem("token");
@@ -41,9 +42,13 @@ const closePinModal = () => setIsPinModalOpen(false);
 
     try {
       setIsSubmitting(true);
-      await axios.post(`${BASE_URL}/user/set-pin`, { pin: transactionPin }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(
+        `${BASE_URL}/user/set-pin`,
+        { pin: transactionPin },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       toast.success("PIN set successfully.");
     } catch (error) {
       toast.error(error.response?.data?.message || "Error setting PIN.");
@@ -53,23 +58,31 @@ const closePinModal = () => setIsPinModalOpen(false);
   };
 
   const handleSchedulePayment = async () => {
-    if (!selectedBiller || !amount || !startDate || !transactionPin) {
+    const token = localStorage.getItem("token");
+
+    if (!startDate || !transactionPin) {
       toast.error("Please complete all fields and enter PIN.");
       return;
     }
 
-    const token = localStorage.getItem("token");
     if (!token) {
       toast.error("You must be logged in.");
       return;
     }
 
+    if (activeBillers.length === 0) {
+      toast.error("No active billers to schedule payment for.");
+      return;
+    }
+
+    const billerEmails = activeBillers.map((b) => b.email);
+
     try {
       setIsSubmitting(true);
       const payload = {
-        billerEmail: selectedBiller.email,
-        amount,
-        startDate,
+        billerEmails,
+        amount: totalAmount,
+        startDate: new Date(startDate).toISOString().split("T")[0],
         frequency,
         occurrences: frequency === "once" ? 1 : occurrences,
         transactionPin,
@@ -113,35 +126,29 @@ const closePinModal = () => setIsPinModalOpen(false);
         />
         <h2 className="text-xl font-bold text-center">Schedule Recurring Payment</h2>
         <p className="text-center text-sm font-medium mb-4">
-          Automate payments to registered billers
+          Automate payments for all active billers
         </p>
 
         <div className="flex flex-col gap-2">
-          <label className="font-medium">Select Biller</label>
-          <select
-            className="p-2 border rounded"
-            value={selectedBiller?._id || ""}
-            onChange={(e) => {
-              const b = billers.find((b) => b._id === e.target.value);
-              setSelectedBiller(b);
-            }}
-          >
-            <option value="">-- Choose --</option>
-            {billers.map((biller) => (
-              <option key={biller._id} value={biller._id}>
-                {biller.name}
-              </option>
-            ))}
-          </select>
+          <div className="bg-gray-100 p-3 rounded">
+            <p className="font-medium mb-1">Active Billers:</p>
+            {activeBillers.length > 0 ? (
+              <ul className="list-disc pl-5 text-sm">
+                {activeBillers.map((b) => (
+                  <li key={b._id}>
+                    {b.name} - ${b.amount}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-red-500">No active billers available.</p>
+            )}
+          </div>
 
-          <label className="font-medium">Amount</label>
-          <input
-            type="number"
-            className="p-2 border rounded"
-            placeholder="Enter amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
+          <p className="mt-3 font-semibold text-lg">
+            Total Amount:{" "}
+            <span className="text-green-700">${totalAmount.toFixed(2)}</span>
+          </p>
 
           <label className="font-medium">Start Date</label>
           <input
