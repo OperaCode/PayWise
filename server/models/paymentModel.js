@@ -9,7 +9,7 @@ const PaymentSchema = new mongoose.Schema({
     required: true,
     min: [0.01, "Amount must be greater than 0"],
   },
- 
+  //frequency: { type: String, enum: ["daily", "weekly", "monthly"] },
   status: {
     type: String,
     enum: ["Pending", "Successful", "Failed"],
@@ -20,7 +20,7 @@ const PaymentSchema = new mongoose.Schema({
   // method:{type: Number, enum: ["wallet", "rewards"], require:true},
   nextExecution: { type: Date },
   isAutoPayment: { type: Boolean, default: false },
-  frequency: { type: String, enum: ["once", "daily", "weekly", "monthly"] },
+   frequency: { type: String, enum: ["once", "daily", "weekly", "monthly"] },
   paymentType: {
     type: String,
     enum: ['Autopay', 'Scheduled','Transfer', 'Funding'],

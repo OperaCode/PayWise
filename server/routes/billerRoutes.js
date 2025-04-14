@@ -6,6 +6,7 @@ const {billerUpload} = require("../config/cloudConfig.js"); // Multer middleware
 const {
   createBiller,
   getBillers,
+  updateAutoPayStatus,
   getBillerById,
   searchUserByEmail,
 
@@ -31,6 +32,7 @@ router.get("/:billerId", protectUser, getBillerById);
 
 
 router.put("/update/:billerId", protectUser, updateBiller);
+router.put("/autopay/:billerId", protectUser, updateAutoPayStatus);
 router.delete("/:billerId", protectUser, deleteBiller);
 
 module.exports = router;

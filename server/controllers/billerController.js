@@ -216,6 +216,21 @@ const updateBiller = async (req, res) => {
   }
 };
 
+const updateAutoPayStatus = async (req, res) => {
+ const { billerId } = req.params;
+  const { autoPayEnabled } = req.body;  // Expecting autoPayEnabled in the request body
+
+  try {
+    const updatedBiller = await Biller.findByIdAndUpdate(
+      billerId, 
+      { autoPayEnabled },
+      { new: true }  // This option returns the updated biller object
+    );
+    res.json(updatedBiller);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating autoPayEnabled' });
+  }
+};
 
 
 const deleteBiller = asyncHandler(async (req, res) => {
@@ -311,7 +326,7 @@ module.exports = {
   createBiller,
   getBillers,
   uploadBillerPicture,
-
+  updateAutoPayStatus,
   searchUserByEmail,
   getBillerById,
   updateBiller,
