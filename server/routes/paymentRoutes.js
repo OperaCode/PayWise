@@ -14,7 +14,7 @@ router.get('/payments', protectUser,totalPayments);
 router.get('/payment-summary', protectUser,paymentAggregates);
 router.post('/wallet-transfer',protectUser, p2PTransfer);
 router.post('/schedule-transfer',protectUser ,scheduleTransfer);
-router.post('/schedule-transfer',protectUser ,scheduleRecurring);
+router.post('/schedule-recurring',protectUser ,scheduleRecurring);
 router.post('/pause-recurring', pauseRecurringPayment);
 
 

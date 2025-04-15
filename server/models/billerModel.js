@@ -26,6 +26,7 @@ const billerSchema = new mongoose.Schema(
       default: null,
     },
     amount: { type: Number, default: 0 }, 
+    serviceAmount: { type: Number, default: 0 }, 
     totalAmountPaid: { type: Number, default: 0 },  
     
     phone: {
@@ -36,7 +37,7 @@ const billerSchema = new mongoose.Schema(
       type: Date, 
       default: null,
     },
-    autoPayEnabled: {
+    activeBiller: {
       type: Boolean,
       default: false, 
     },

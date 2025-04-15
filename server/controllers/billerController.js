@@ -186,18 +186,54 @@ const searchUserByEmail = async (req, res) => {
 //   res.status(200).json(biller);
 // });
 
+// const updateBiller = async (req, res) => {
+//   try {
+//     const { billerId } = req.params;
+//     const { nickname, serviceType, amount } = req.body;
+
+//     if (!billerId) {
+//       return res.status(400).json({ message: "Biller ID is required!" });
+//     }
+
+//     const updatedBiller = await Biller.findByIdAndUpdate(
+//       billerId,
+//       { nickname, serviceType, amount },
+//       { new: true, runValidators: true }
+//     );
+
+//     if (!updatedBiller) {
+//       return res.status(404).json({ message: "Biller not found!" });
+//     }
+
+//     res.json({
+//       success: true,
+//       message: "Biller updated successfully!",
+//       biller: updatedBiller,
+//     });
+//   } catch (error) {
+//     console.error("Error updating biller:", error);
+//     res.status(500).json({ success: false, message: "Error updating biller" });
+//   }
+// };
+
+
+
 const updateBiller = async (req, res) => {
   try {
     const { billerId } = req.params;
-    const { nickname, serviceType, amount } = req.body;
+    const { nickname, serviceType, serviceAmount, activeBiller } = req.body; 
+    console.log("Request Body:", req.body);
+
 
     if (!billerId) {
       return res.status(400).json({ message: "Biller ID is required!" });
     }
 
+    // const updatedAmount = amount !== undefined && amount !== null ? parseFloat(amount) : amount;
+
     const updatedBiller = await Biller.findByIdAndUpdate(
       billerId,
-      { nickname, serviceType, amount },
+      { nickname, serviceType, serviceAmount, activeBiller },
       { new: true, runValidators: true }
     );
 
@@ -216,19 +252,29 @@ const updateBiller = async (req, res) => {
   }
 };
 
-const updateAutoPayStatus = async (req, res) => {
- const { billerId } = req.params;
-  const { autoPayEnabled } = req.body;  // Expecting autoPayEnabled in the request body
+
+
+const updateActiveBillerStatus = async (req, res) => {
+  const { billerId } = req.params; // You should use this for the biller ID
+  const { activeBiller } = req.body; // Expecting `activeBiller` (as per your frontend code) in the request body
 
   try {
+    // Correct the use of the billerId parameter
     const updatedBiller = await Biller.findByIdAndUpdate(
-      billerId, 
-      { autoPayEnabled },
-      { new: true }  // This option returns the updated biller object
+      billerId, // Use the correct billerId here
+      { activeBiller: activeBiller }, // Update the correct field (`activeBiller`)
+      { new: true }
     );
-    res.json(updatedBiller);
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating autoPayEnabled' });
+
+    if (!updatedBiller) {
+      return res.status(404).json({ success: false, message: "Biller not found" });
+    }
+
+    // Return a success response with the updated biller
+    res.status(200).json({ success: true, updatedBiller });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Failed to update biller" });
   }
 };
 
@@ -326,7 +372,7 @@ module.exports = {
   createBiller,
   getBillers,
   uploadBillerPicture,
-  updateAutoPayStatus,
+  updateActiveBillerStatus,
   searchUserByEmail,
   getBillerById,
   updateBiller,
