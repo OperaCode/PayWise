@@ -175,14 +175,14 @@ const DashBoard = () => {
 
   //Fund Wallet
   const flutterwaveConfig = {
-    public_key: import.meta.env.VITE_FLW_PUBLIC_KEY, // Ensure this is correctly set in your .env file
+    public_key: import.meta.env.VITE_FLW_PUBLIC_KEY, 
     tx_ref: `paywise-${Date.now()}`,
-    amount: parseFloat(amount) || 0, // Convert to number
+    amount: parseFloat(amount) || 0, 
     currency: "USD",
     payment_options: "card, banktransfer, ussd",
     customer: {
       email: "user@example.com", // Replace with actual user email
-      phone_number: "08012345678", // Replace with actual user phone
+      //phone_number: "08012345678", // Replace with actual user phone
       name: "John Doe", // Replace with actual user name
     },
     customizations: {
@@ -194,7 +194,7 @@ const DashBoard = () => {
       console.log("Payment successful:", response);
 
       if (response.status === "successful") {
-        const userId = localStorage.getItem("userId"); // ✅ Retrieve userId here
+        const userId = localStorage.getItem("userId"); 
 
         if (!userId) {
           console.error("User ID is missing!");
@@ -202,15 +202,15 @@ const DashBoard = () => {
           return;
         }
 
-        setIsSending(true); // ✅ Show loading state before sending request
+        setIsSending(true); 
 
-        // Send the transaction details to your backend
+        
         try {
           const result = await fetch(`${BASE_URL}/payment/fund-wallet`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              userId, // ✅ Now userId is properly defined
+              userId, 
               amount: response.amount,
               transactionId: response.transaction_id,
             }),
@@ -226,10 +226,10 @@ const DashBoard = () => {
           console.error("Error updating wallet:", error);
           toast.error("An error occurred. Please try again.");
         } finally {
-          setIsSending(false); // ✅ Hide loading state after request
+          setIsSending(false); 
         }
       }
-      closePaymentModal(); // Close the payment modal
+      closePaymentModal(); 
       setWalletBalance((prevBalance) =>
         Number((Number(prevBalance) + Number(amount)).toFixed(2))
       );
@@ -244,11 +244,11 @@ const DashBoard = () => {
     e.preventDefault();
 
     try {
-      setIsSubmitting(true); // ✅ Start loading
-      const senderId = localStorage.getItem("userId"); // Fetch sender ID
+      setIsSubmitting(true); 
+      const senderId = localStorage.getItem("userId"); 
       const token = localStorage.getItem("token");
 
-      console.log("🔹 Sender ID from localStorage:", senderId); // Debugging
+      console.log("🔹 Sender ID from localStorage:", senderId); 
 
       if (!senderId) {
         toast.error("User ID is missing. Please log in again.");
@@ -299,7 +299,7 @@ const DashBoard = () => {
     }
 
     try {
-      setIsSubmitting(true); // ✅ Start loading
+      setIsSubmitting(true); 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
 
