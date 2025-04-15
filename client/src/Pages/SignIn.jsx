@@ -252,7 +252,7 @@ const Login = () => {
 
   
   return (
-    <div className="p-8 h-screen">
+    <div className="p-8 min-h-screen">
       {/* Theme Toggle Button */}
       <div className="flex justify-between px-4 items-center">
         <div className="w-50">

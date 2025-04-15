@@ -16,8 +16,8 @@ const AutoPayModal = ({ billers, onClose }) => {
   const [confirmPin, setConfirmPin] = useState("");
   const [isSettingPin, setIsSettingPin] = useState(false);
 
-  const activeBillers = billers.filter((b) => b.isActive);
-  const totalAmount = activeBillers.reduce((sum, b) => sum + Number(b.amount || 0), 0);
+  const activeBillers = billers.filter((b) => b.activeBiller === true);
+  const totalAmount = activeBillers.reduce((sum, b) => sum + Number(b.serviceAmount || 0), 0);
 
   const openPinModal = () => setIsPinModalOpen(true);
   const closePinModal = () => setIsPinModalOpen(false);
@@ -57,7 +57,7 @@ const AutoPayModal = ({ billers, onClose }) => {
     }
   };
 
-  const handleSchedulePayment = async () => {
+  const handleRecurringPayment = async () => {
     const token = localStorage.getItem("token");
 
     if (!startDate || !transactionPin) {
@@ -107,7 +107,7 @@ const AutoPayModal = ({ billers, onClose }) => {
       return;
     }
 
-    handleSchedulePayment();
+    handleRecurringPayment();
   };
 
   return (
@@ -117,7 +117,7 @@ const AutoPayModal = ({ billers, onClose }) => {
         style={{ backgroundImage: `url(${blkchain5})` }}
       ></div>
 
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative z-10">
+      <div className="bg-white text-black p-6 rounded-lg shadow-lg w-full max-w-md relative z-10">
         <X
           strokeWidth={7}
           color="#FF0000"
@@ -136,7 +136,7 @@ const AutoPayModal = ({ billers, onClose }) => {
               <ul className="list-disc pl-5 text-sm">
                 {activeBillers.map((b) => (
                   <li key={b._id}>
-                    {b.name} - ${b.amount}
+                    {b.name} - ${b.serviceAmount}
                   </li>
                 ))}
               </ul>

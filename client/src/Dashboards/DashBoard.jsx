@@ -352,13 +352,11 @@ const DashBoard = () => {
 
   return (
     <>
-      {/* {loading ? (
+      {loading ? (
         <Loader />
       ) : (
-  //Place Code here for loader
-      )} */}
 
-      <section className="p-8">
+        <section className="p-8">
         <div className="lg:flex gap-4">
           {/* Wallet Balance Section */}
           <div className="flex-1 h-full font-bodyFont w-full">
@@ -791,6 +789,10 @@ const DashBoard = () => {
           </div>
         )}
       </section>
+
+      )}
+
+      
     </>
   );
 };

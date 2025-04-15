@@ -246,7 +246,7 @@ const handleSchedulePayment = async () => {
       ></div>
 
       {/* Modal Content */}
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+      <div className="bg-white text-black p-6 rounded-lg shadow-lg w-full max-w-md relative">
         {/* Close Button */}
         <X
           strokeWidth={7}
