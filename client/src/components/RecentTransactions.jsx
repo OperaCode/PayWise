@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/paywise-logo.png"
 import { Input, Select } from "antd";
 import { jsPDF } from "jspdf"; // For PDF export
+import { ScrollText } from 'lucide-react';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -369,9 +370,10 @@ const Recent = () => {
       <div className="flex justify-center mt-4 mb-6">
         <a
           href="/transactions"
-          className="bg-blue-600 hover:bg-green-900 text-white px-6 py-2 rounded-lg transition hover:scale-105 border-2"
+          className="bg-cyan-700 hover:bg-green-900 text-white px-6 py-2 rounded-lg transition hover:scale-105 border-2bg-cyan-700 flex items-center gap-2 font-semibold "
         >
           See All Transactions
+        <ScrollText size={18}/>
         </a>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../components/Loader";
+import { X } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -120,14 +121,13 @@ const RewardsAndAnalytics = () => {
       {/* Reward History Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-xl p-6 rounded-xl shadow-lg relative">
+          <div className="bg-white text-black w-full max-w-xl p-6 rounded-xl shadow-lg relative">
             <h3 className="text-xl font-semibold mb-4 text-center">Reward History</h3>
-            <button
-              className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
-              onClick={() => setShowModal(false)}
-            >
-              ✕
-            </button>
+            
+              <X className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
+                onClick={() => setShowModal(false)}
+              />
+          
             <div className="overflow-auto max-h-80">
               {rewardHistory.length > 0 ? (
                 <table className="min-w-full text-left text-sm">

@@ -338,7 +338,7 @@ const ManageBillers = (currency) => {
 
               <button
                 onClick={() => setShowFullList(false)}
-                className="mt-4 px-4 py-2 text-sm rounded-lg flex gap-2 justify-center hover:scale-105 border-2 items-center shadow-md cursor-pointer bg-cyan-700 font-semibold hover:bg-red-400 transition duration-200 ease-in"
+                className="mt-4 px-4 py-2 text-sm rounded-lg flex gap-2 justify-center hover:scale-105 border-2 items-center shadow-md cursor-pointer bg-cyan-700 font-semibold text-white hover:bg-red-400 transition duration-200 ease-in"
               >
                 <ArrowLeft /> Back to Profiles
               </button>

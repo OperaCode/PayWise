@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 import logo from "../assets/paywise-logo.png";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx"; // For Excel export
 import { jsPDF } from "jspdf"; // For PDF export
@@ -17,6 +17,7 @@ const TransactionHistory = () => {
   const [username, setUserName] = useState(" ");
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const { user, setUser } = useState(" ");
   const [profilePicture, setProfilePicture] = useState(" ");
@@ -25,6 +26,15 @@ const TransactionHistory = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [sortOption, setSortOption] = useState(""); // State for sorting
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10); // You can change this to any number of items per page
+
+  const indexOfLast = currentPage * pageSize;
+  const indexOfFirst = indexOfLast - pageSize;
+  const paginatedTransactions = filteredTransactions.slice(
+    indexOfFirst,
+    indexOfLast
+  );
 
   // Fetch user
   useEffect(() => {
@@ -59,10 +69,10 @@ const TransactionHistory = () => {
           }
         );
         // Limit to 10 transactions
-        const limitedTransactions = (data.data || []).slice(0, 10);
-        setTransactions(limitedTransactions);
-        console.log(limitedTransactions);
-        setFilteredTransactions(limitedTransactions);
+        const allTransactions = data.data || [];
+        setTransactions(allTransactions);
+        console.log(allTransactions);
+        setFilteredTransactions(allTransactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
       }
@@ -83,6 +93,7 @@ const TransactionHistory = () => {
           .includes(query)
     );
     setFilteredTransactions(filtered);
+    setCurrentPage(1);
   };
 
   // Handle sorting
@@ -103,6 +114,7 @@ const TransactionHistory = () => {
       }
     });
     setFilteredTransactions(sortedTransactions);
+    setCurrentPage(1);
   };
 
   // Open receipt modal
@@ -140,7 +152,7 @@ const TransactionHistory = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Transactions");
     XLSX.writeFile(wb, "transaction_history.xlsx");
   };
-  
+
   // Download receipt as PDF
   const convertToBase64 = async (url) => {
     const res = await fetch(url);
@@ -156,7 +168,7 @@ const TransactionHistory = () => {
     const doc = new jsPDF();
     const logoBase64 = await convertToBase64(logo); // convert imported image
 
-    // Logo 
+    // Logo
     doc.addImage(logoBase64, "PNG", 85, 10, 40, 20); // X=85 centers it roughly
     doc.setFontSize(18);
     doc.setFont(undefined, "bold");
@@ -318,7 +330,7 @@ const TransactionHistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((tx) => (
+                  {paginatedTransactions.map((tx) => (
                     <tr
                       key={tx._id}
                       className="text-center hover:bg-gray-50 hover:text-black cursor-pointer"
@@ -357,6 +369,39 @@ const TransactionHistory = () => {
                   )}
                 </tbody>
               </table>
+              {/* Pagination */}
+              {/* Pagination Controls */}
+              <div className="flex justify-center mt-6 space-x-4">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-600 text-white flex items-center justify-center gap-2 rounded-md disabled:bg-gray-400  w-1/7  hover:scale-105 cursor-pointer"
+                >
+                  <ArrowLeft size={14}/> Previous 
+                </button>
+                <span className="text-lg font-medium">
+                  Page {currentPage} of{" "}
+                  {Math.ceil(filteredTransactions.length / pageSize)}
+                </span>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) =>
+                      prev < Math.ceil(filteredTransactions.length / pageSize)
+                        ? prev + 1
+                        : prev
+                    )
+                  }
+                  disabled={
+                    currentPage ===
+                    Math.ceil(filteredTransactions.length / pageSize)
+                  }
+                  className="px-4 py-2 bg-blue-600 text-white flex items-center gap-2 justify-center rounded-md disabled:bg-gray-400 w-1/7  hover:scale-105 cursor-pointer"
+                >
+                  Next <ArrowRight size={14}/>
+                </button>
+              </div>
             </div>
 
             {/* Export buttons */}
@@ -418,7 +463,7 @@ const TransactionHistory = () => {
                 </button>
                 <button
                   onClick={closeReceiptModal}
-                 className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
+                  className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
                 >
                   Close
                 </button>
