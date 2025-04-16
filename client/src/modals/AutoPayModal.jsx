@@ -87,6 +87,7 @@ const AutoPayModal = ({ billers, onClose }) => {
         occurrences: frequency === "once" ? 1 : occurrences,
         transactionPin,
       };
+      console.log("PAYLOAD TO BACKEND:", payload);
 
       await axios.post(`${BASE_URL}/payment/schedule-recurring`, payload, {
         headers: { Authorization: `Bearer ${token}` },

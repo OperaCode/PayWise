@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Loader from "../components/Loader";
 import { X } from "lucide-react";
+import { UserContext } from "../context/UserContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const RewardsAndAnalytics = () => {
+  const { user } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [rewardBalance, setRewardBalance] = useState(0);
   const [rewardHistory, setRewardHistory] = useState([]);
@@ -24,17 +26,36 @@ const RewardsAndAnalytics = () => {
     setTimeout(() => setLoading(false), 3000);
   }, []);
 
+  // render user from context
+  useEffect(() => {
+    if (user && user.wallet) {
+      setRewardBalance(user.wallet.payCoins || 0);
+
+      const updatedHistory = (user.wallet.rewardHistory || []).map((item) => ({
+        ...item,
+        usdEquivalent: item.amount, 
+      }));
+      console.log(updatedHistory)
+      setRewardHistory(updatedHistory);
+    }
+  }, [user]);
+
+
+  //fetch analytics data from backend
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/payment/payment-summary`, {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          `${BASE_URL}/payment/payment-summary`,
+          {
+            withCredentials: true,
+          }
+        );
         const data = response.data;
-        console.log(data)
+        console.log(data);
         setInsights(data.insights || []);
-        setRewardBalance(data.rewardBalance || 0);
-        setRewardHistory(data.rewardHistory || []);
+        // setRewardBalance(data.rewardBalance || 0);
+        // setRewardHistory(data.rewardHistory || []);
       } catch (error) {
         console.error("Error fetching payment summary:", error);
       } finally {
@@ -52,18 +73,18 @@ const RewardsAndAnalytics = () => {
   };
 
   return (
-
     // {loading ? (
     //   <Loader />
     // ) : (
 
-    
     // )}
 
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="bg-blue-600 text-white rounded-2xl p-6 shadow-md text-center mb-6">
         <h2 className="text-xl md:text-2xl font-bold">Your Reward Balance</h2>
-        <p className="text-4xl mt-2 font-semibold">{rewardBalance} PayCoins</p>
+        <p className="text-4xl mt-2 font-semibold">
+          {rewardBalance.toFixed(2)} PayCoins
+        </p>
         <div className="w-full justify-end flex">
           <button
             onClick={() => setShowModal(true)}
@@ -92,29 +113,49 @@ const RewardsAndAnalytics = () => {
             Redeem
           </button>
         </div>
-        <p className="text-sm mt-1">Redeem your PayCoins to fund wallet or get discounts.</p>
+        <p className="text-sm mt-1">
+          Redeem your PayCoins to fund wallet or get discounts.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 p-6">
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
           <h3 className="text-xl font-semibold text-gray-700">Total Spent</h3>
-          <p className="text-2xl font-bold text-green-500">${insights.totalSpent}</p>
+          <p className="text-2xl font-bold text-green-500">
+            ${insights.totalSpent}
+          </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-          <h3 className="text-xl font-semibold text-gray-700">Most Paid Biller</h3>
-          <p className="text-2xl font-bold text-blue-500">{insights.mostUsedService}</p>
+          <h3 className="text-xl font-semibold text-gray-700">
+            Most Paid Biller
+          </h3>
+          <p className="text-2xl font-bold text-blue-500">
+            {insights.mostUsedService}
+          </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-          <h3 className="text-xl font-semibold text-gray-700">Total Transactions</h3>
-          <p className="text-2xl font-bold text-purple-500">{insights.totalTransactions}</p>
+          <h3 className="text-xl font-semibold text-gray-700">
+            Total Transactions
+          </h3>
+          <p className="text-2xl font-bold text-purple-500">
+            {insights.totalTransactions}
+          </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-          <h3 className="text-xl font-semibold text-gray-700">Largest Payment</h3>
-          <p className="text-2xl font-bold text-orange-500">${insights.largestPayment}</p>
+          <h3 className="text-xl font-semibold text-gray-700">
+            Largest Payment
+          </h3>
+          <p className="text-2xl font-bold text-orange-500">
+            ${insights.largestPayment}
+          </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-          <h3 className="text-xl font-semibold text-gray-700">Payment Frequency</h3>
-          <p className="text-2xl font-bold text-teal-500">{insights.paymentFrequency} p/month</p>
+          <h3 className="text-xl font-semibold text-gray-700">
+            Payment Frequency
+          </h3>
+          <p className="text-2xl font-bold text-teal-500">
+            {insights.paymentFrequency} p/month
+          </p>
         </div>
       </div>
 
@@ -122,12 +163,15 @@ const RewardsAndAnalytics = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white text-black w-full max-w-xl p-6 rounded-xl shadow-lg relative">
-            <h3 className="text-xl font-semibold mb-4 text-center">Reward History</h3>
-            
-              <X className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
-                onClick={() => setShowModal(false)}
-              />
-          
+            <h3 className="text-xl font-semibold mb-4 text-center">
+              Reward History
+            </h3>
+
+            <X
+              className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
+              onClick={() => setShowModal(false)}
+            />
+
             <div className="overflow-auto max-h-80">
               {rewardHistory.length > 0 ? (
                 <table className="min-w-full text-left text-sm">
@@ -136,20 +180,30 @@ const RewardsAndAnalytics = () => {
                       <th className="px-4 py-2">Date</th>
                       <th className="px-4 py-2">Source</th>
                       <th className="px-4 py-2">PayCoins</th>
+                      <th className="px-4 py-2">USD Equivalent</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rewardHistory.map((reward, index) => (
                       <tr key={index} className="border-t">
-                        <td className="px-4 py-2">{new Date(reward.date).toLocaleDateString()}</td>
-                        <td className="px-4 py-2">{reward.source}</td>
+                        <td className="px-4 py-2">
+                          {new Date(reward.date).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-2">{reward.reason}</td>
                         <td className="px-4 py-2">{reward.amount}</td>
+                        <td className="px-4 py-2">
+                          {reward.usdEquivalent
+                            ? `$${reward.usdEquivalent.toFixed(2)}`
+                            : "N/A"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
-                <p className="text-center text-gray-500">No reward history found.</p>
+                <p className="text-center text-gray-500">
+                  No reward history found.
+                </p>
               )}
             </div>
           </div>
