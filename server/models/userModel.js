@@ -44,8 +44,9 @@ const userSchema = new mongoose.Schema(
       rewardHistory: [
         {
           amount: Number,
-          reason: String, // Reason for the reward (e.g., "Wallet top-up reward")
+          reason: String, 
           date: { type: Date, default: Date.now },
+          usdEquivalent: { type: Number, default: 0 }, 
         },
       ],
     },

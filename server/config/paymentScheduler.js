@@ -1,18 +1,36 @@
-const cron = require('node-cron');
-const Payment = require('../models/paymentModel');
-const User = require('../models/userModel');
-const Biller = require('../models/billerModel');
+const cron = require("node-cron");
+const { v4: uuidv4 } = require("uuid");
+const Payment = require("../models/paymentModel");
+const User = require("../models/userModel");
+const Biller = require("../models/billerModel");
 
-cron.schedule('* * * * *', async () => {
+const getNextExecutionDate = (currentDate, frequency) => {
+  const next = new Date(currentDate);
+  switch (frequency) {
+    case "daily":
+      next.setDate(next.getDate() + 1);
+      break;
+    case "weekly":
+      next.setDate(next.getDate() + 7);
+      break;
+    case "monthly":
+      next.setMonth(next.getMonth() + 1);
+      break;
+    default:
+      return null;
+  }
+  return next;
+};
+
+cron.schedule("* * * * *", async () => {
   const now = new Date();
   now.setSeconds(0, 0);
   console.log("Cron is running at", new Date().toISOString());
 
   try {
-    // Fetch all due payments that are "Pending" and scheduled for a date <= current date/time
     const duePayments = await Payment.find({
-      status: 'Pending',
-      scheduleDate: { $lte: now }
+      status: "Pending",
+      scheduleDate: { $lte: now },
     });
 
     if (duePayments.length === 0) {
@@ -21,12 +39,6 @@ cron.schedule('* * * * *', async () => {
     }
 
     console.log("Found", duePayments.length, "due payments");
-    console.log(duePayments.map(p => ({
-      id: p._id,
-      scheduleDate: p.scheduleDate,
-      now,
-      isDue: p.scheduleDate <= now
-    })));
 
     for (const payment of duePayments) {
       const user = await User.findById(payment.user);
@@ -35,14 +47,30 @@ cron.schedule('* * * * *', async () => {
         continue;
       }
 
-      // Check if the user has enough balance to cover the payment
       if (user.wallet.balance < payment.amount) {
         console.log(`Skipping Payment ${payment._id} — Insufficient funds`);
         continue;
       }
 
-      // Ensure that updates to the wallet balance are atomic to avoid race conditions
+      // Deduct amount
       user.wallet.balance -= payment.amount;
+
+      // 🎁 Rewards Logic
+      let reward = 0;
+      if (payment.amount > 100) {
+        reward = 10;
+      } else {
+        reward = parseFloat((payment.amount * 0.02).toFixed(2));
+      }
+
+      user.wallet.payCoins += reward;
+      const usdEquivalent = reward / 100;
+      user.wallet.rewardHistory.push({
+        amount: reward,
+        usdEquivalent: usdEquivalent,
+        reason: `Scheduled payment of $${payment.amount}`,
+      });
+
       try {
         await user.save();
       } catch (error) {
@@ -51,16 +79,43 @@ cron.schedule('* * * * *', async () => {
       }
 
       // Mark payment as successful
-      payment.status = 'Successful';
+      payment.status = "Successful";
       payment.paidAt = new Date();
-      try {
+
+      // Recurring?
+      if (payment.isRecurring && payment.recurrence?.occurrencesLeft > 1) {
+        payment.recurrence.occurrencesLeft -= 1;
+        payment.recurrence.lastPaidAt = new Date();
+
+        const nextDate = getNextExecutionDate(payment.scheduleDate, payment.frequency);
         await payment.save();
-      } catch (error) {
-        console.log(`Error updating Payment ${payment._id}: ${error.message}`);
-        continue;
+
+        await Payment.create({
+          user: payment.user,
+          recipientUser: payment.recipientUser,
+          recipientBiller: payment.recipientBiller,
+          amount: payment.amount,
+          transactionRef: "TX-" + uuidv4(),
+          isRecurring: true,
+          frequency: payment.frequency,
+          isAutoPayment: payment.isAutoPayment,
+          scheduleDate: nextDate,
+          nextExecution: nextDate,
+          paymentType: payment.paymentType,
+          recurrence: {
+            occurrencesLeft: payment.recurrence.occurrencesLeft,
+            lastPaidAt: payment.recurrence.lastPaidAt,
+          },
+          description: payment.description,
+          status: "Pending",
+        });
+
+        console.log(`Created next recurring payment for ${nextDate}`);
+      } else {
+        await payment.save();
       }
 
-      // Update the biller's totalAmountPaid
+      // 🧾 Update biller if applicable
       const biller = await Biller.findById(payment.recipientBiller);
       if (biller) {
         biller.totalAmountPaid += Number(payment.amount);
@@ -74,9 +129,9 @@ cron.schedule('* * * * *', async () => {
         console.log(`Biller not found for Payment ${payment._id}`);
       }
 
-      console.log(`AutoPaid $${payment.amount} for Payment ${payment._id}`);
+      console.log(`✅ AutoPaid $${payment.amount} | Reward: ${reward} PayCoins`);
     }
   } catch (error) {
-    console.error('Cron job error:', error);
+    console.error("Cron job error:", error);
   }
 });

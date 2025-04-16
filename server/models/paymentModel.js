@@ -13,24 +13,30 @@ const PaymentSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["Pending", "Successful", "Failed"],
-    default: "pending",
+    default: "Pending",
   },
   transactionRef: { type: String, unique: true, required: true }, // Unique reference for tracking
-  isRecurring: { type: Boolean, default: false },
+
+
+isRecurring: { type: Boolean, default: false },
   // method:{type: Number, enum: ["wallet", "rewards"], require:true},
-  nextExecution: { type: Date },
+
+  frequency: { type: String, enum: ["once", "daily", "weekly", "monthly"] },
   isAutoPayment: { type: Boolean, default: false },
-   frequency: { type: String, enum: ["once", "daily", "weekly", "monthly"] },
+
+  scheduleDate: { type: Date },
+  nextExecution: { type: Date },
+  paidAt: Date,
   paymentType: {
     type: String,
     enum: ['Autopay', 'Scheduled','Transfer', 'Funding'],
     default: 'Scheduled',
   },
-  
-  // startDate: { type: Date,  default: Date.now },
-
-  scheduleDate: { type: Date },
-  paidAt: Date,
+  recurrence: {
+    occurrencesLeft: { type: Number, default: null }, // optional
+    lastPaidAt: { type: Date }
+  },
+    
   description: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
