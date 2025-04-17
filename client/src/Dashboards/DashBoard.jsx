@@ -39,7 +39,7 @@ const DashBoard = () => {
   const [schedulePayModalOpen, setSchedulePayModalOpen] = useState(false);
   const [autoPayModalOpen, setAutoPayModalOpen] = useState(false);
   const [wiseCoinTransferOpen, setWiseCoinTransferOpen] = useState(false);
-
+  const [isConnecting,setIsConnecting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -291,34 +291,107 @@ const DashBoard = () => {
   };
 
   //Connect to MetaMask
+  // const connectToMetaMask = async () => {
+  //   if (!window.ethereum) {
+  //     toast.error("MetaMask not detected! Redirecting to download...");
+  //     window.location.href = "https://metamask.io/download.html";
+  //     return;
+  //   }
+  
+  //   try {
+  //     setIsSubmitting(true);
+  
+  //     const provider = new ethers.BrowserProvider(window.ethereum);
+  //     const accounts = await provider.send("eth_requestAccounts", []);
+  
+  //     if (accounts.length === 0) {
+  //       toast.error("No MetaMask account found.");
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+  
+  //     const walletAddress = accounts[0];
+  //     console.log("MetaMask Wallet Address:", walletAddress);
+  
+  //     const userId = localStorage.getItem("userId");
+  //     if (!userId) {
+  //       toast.error("User not authenticated. Please log in first.");
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+  
+  //     const response = await axios.post(
+  //       `${BASE_URL}/user/connect-metamask`,
+  //       { userId, walletAddress },
+  //       {
+  //         headers: { "Content-Type": "application/json" },
+  //         withCredentials: true,
+  //       }
+  //     );
+  
+  //     if (response.status === 200) {
+  //       const { firstTimeLinked, updatedWallets } = response.data;
+  
+  //       toast.success("Wallet Connected Successfully!");
+  
+  //       if (firstTimeLinked) {
+  //         toast.success("🎉 You've earned a reward for linking your MetaMask wallet!");
+  //         // Optionally, trigger reward UI or bonus display
+  //       }
+  
+  //       setUser((prevUser) => ({
+  //         ...prevUser,
+  //         metamaskWallets: updatedWallets, // Update wallet data
+  //       }));
+  
+  //       setMetaMaskAddress(walletAddress);
+  //       setWalletLinked(true);
+  //     } else {
+  //       toast.error("Failed to link MetaMask wallet. Please try again.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error connecting MetaMask:", error);
+  //     toast.error("Error connecting to MetaMask. Please try again.");
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
+
   const connectToMetaMask = async () => {
+    // Check if MetaMask is installed
     if (!window.ethereum) {
       toast.error("MetaMask not detected! Redirecting to download...");
       window.location.href = "https://metamask.io/download.html";
       return;
     }
-
+  
     try {
-      setIsSubmitting(true); 
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
-
+      // Request accounts and open the MetaMask extension for the user to connect
+      setIsSubmitting(true);
+  
+      // This triggers the MetaMask extension to open and request the user's approval to connect
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+  
+      // Ensure that the user has at least one account
       if (accounts.length === 0) {
         toast.error("No MetaMask account found.");
         return;
       }
-
+  
       const walletAddress = accounts[0];
       console.log("MetaMask Wallet Address:", walletAddress);
-
+  
+      // Store the wallet address (optional)
+      localStorage.setItem('walletAddress', walletAddress);
+  
+      // Optionally: Update user in backend if needed
       const userId = localStorage.getItem("userId");
-      console.log("User ID:", userId);
-
       if (!userId) {
         toast.error("User not authenticated. Please log in first.");
         return;
       }
-
+  
       const response = await axios.post(
         `${BASE_URL}/user/connect-metamask`,
         { userId, walletAddress },
@@ -327,28 +400,29 @@ const DashBoard = () => {
           withCredentials: true,
         }
       );
-
+  
       if (response.status === 200) {
         toast.success("Wallet Connected Successfully!");
-        setUser((prevUser) => ({
-          ...prevUser,
-          metamaskWallet: walletAddress,
-        }));
+        const { updatedWallets } = response.data;
+  console.log(response.data)
+        // Update user in state if needed
         setMetaMaskAddress(walletAddress);
         setWalletLinked(true);
+        setPayWiseAddress(updatedWallets.wallets); // assuming response contains the PayWise address
+  
+        // Store PayWise address (optional)
+        localStorage.setItem('payWiseAddress', updatedWallets.payWiseAddress);
       }
     } catch (error) {
       console.error("Error connecting MetaMask:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An unexpected error occurred";
-      toast.error(errorMessage);
+      toast.error("Error connecting MetaMask.");
     } finally {
       setIsSubmitting(false);
-      // setP2pModalOpen(false);
     }
   };
+  
+  
+  
 
   return (
     <>
@@ -543,7 +617,7 @@ const DashBoard = () => {
                     onClick={connectToMetaMask}
                     className="flex-1 hover:cursor-pointer p-2 bg-green-800 m-auto hover:bg-green-600 text-white rounded-md "
                   >
-                    {isSubmitting ? "Connecting..." : "Connect to MetaMask"}
+                    {isConnecting ? "Connecting..." : "Connect to MetaMask"}
                   </button>
                 </div>
               </div>

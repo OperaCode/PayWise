@@ -28,8 +28,8 @@ const RewardsAndAnalytics = () => {
     setTimeout(() => setLoading(false), 3000);
   }, []);
 
-   //Fetch User
-   useEffect(() => {
+  //Fetch User
+  useEffect(() => {
     const fetchUser = async () => {
       try {
         const UserId = localStorage.getItem("userId");
@@ -45,11 +45,8 @@ const RewardsAndAnalytics = () => {
         });
         console.log(response);
         setRewardBalance(response?.data?.user?.wallet?.payCoins || 0);
-        
-        setRewardHistory(
-          response?.data?.user?.wallet.rewardHistory
-         
-        );
+
+        setRewardHistory(response?.data?.user?.wallet.rewardHistory);
       } catch (error) {
         console.error(error);
         toast.error(error?.response?.data?.message);
@@ -57,8 +54,6 @@ const RewardsAndAnalytics = () => {
     };
     fetchUser();
   }, []);
-
-
 
   //fetch analytics data from backend
   useEffect(() => {
@@ -85,32 +80,44 @@ const RewardsAndAnalytics = () => {
     fetchAnalyticsData();
   }, []);
 
-  const handleRedeem = async() => {
+  const handleRedeem = async () => {
     const redeemAmount = parseFloat(amount);
 
     if (!user || user?.rewardBalance < 100) {
       toast.error("You need at least 100 PayCoins to redeem.");
+
+      return;
     }
 
     if (isNaN(redeemAmount) || redeemAmount < 100) {
       toast.error("Minimum redeem amount is 100 PayCoins.");
+
+      return;
     }
 
     if (redeemAmount > user.rewardBalance) {
-     toast.error("You don't have enough PayCoins.");
+      toast.error("You don't have enough PayCoins.");
+
+      return;
     }
 
     try {
-      await axios.post(`${BASE_URL}/payment/redeem-coin`, {
-        amount: redeemAmount,
-      }, { withCredentials: true });
+      await axios.post(
+        `${BASE_URL}/payment/redeem-coin`,
+        {
+          amount: redeemAmount,
+        },
+        { withCredentials: true }
+      );
 
       toast.success("Redeemed successfully!");
-      setAmount("");
+
       refreshUser();
     } catch (error) {
       toast.error("Error redeeming PayCoins.");
       console.error(error.message);
+    } finally {
+      setAmount("");
     }
   };
 
