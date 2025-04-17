@@ -168,167 +168,6 @@ const withdrawToBank = asyncHandler(async (req, res) => {
   }
 });
 
-// const p2PTransfer = asyncHandler(async (req, res) => {
-//   try {
-//     const { senderId, recipientEmail, amount } = req.body;
-
-//     if (!senderId || !recipientEmail || !amount || amount <= 0) {
-//       return res.status(400).json({ message: "Invalid transfer details" });
-//     }
-
-//     console.log("🔹 Searching for sender with ID:", senderId);
-
-//     // Get sender
-//     const sender = await User.findById(senderId);
-//     if (!sender) {
-//       return res.status(404).json({ message: "Sender not found" });
-//     }
-//     console.log("Sender found:", sender.email);
-
-//     // Check sender balance
-//     if (sender.wallet.balance < amount) {
-//       return res.status(400).json({ message: "Insufficient balance" });
-//     }
-
-//     console.log("Sender's wallet before:", sender.wallet.balance);
-
-//     // Deduct amount from sender's wallet
-//     sender.wallet.balance -= Number(amount);
-
-//     let recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
-//     // If recipient is a user, update their wallet balance
-//     if (recipient) {
-//       recipient.wallet.balance += Number(amount);
-//     }
-
-//     // Step 4: Add rewards (10 PayCoins if >$100)
-//     let reward = 0;
-
-//     if (amount > 100) {
-//       reward = 10; // Reward 10 PayCoins for top-ups above $100
-//     } else {
-//       reward = parseFloat((amount * 0.02).toFixed(2)); // Otherwise reward 2% of funded amount
-//     }
-
-//     // Add reward to payCoins balance and track it in rewardHistory
-//     sender.wallet.payCoins += reward;
-//     sender.wallet.rewardHistory.push({
-//       amount: reward,
-//       reason: `Wallet top-up of $${amount} (Reward)`,
-//     });
-
-//     await sender.save();
-
-//     // Create a new payment record
-//     const newPayment = new Payment({
-//       user: senderId,
-//       recipientUser: recipient ? recipient._id : null,
-//       amount: Number(amount),
-//       transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
-//       status: "Successful",
-//       paymentType: "Transfer",
-//       createdAt: new Date(),
-//       scheduleDate: new Date(),
-//     });
-
-//     await newPayment.save();
-//     await sender.save();
-//     if (recipient) await recipient.save();
-
-//     console.log("Sender's wallet after:", sender.wallet.balance);
-
-//     // Update totalAmountPaid for biller if the recipient is a biller
-//     const biller = await Biller.findOne({ email: recipient.email });
-//     if (biller) {
-//       console.log("Updating totalAmountPaid for biller:", recipient.email);
-//       biller.totalAmountPaid += Number(amount);
-//       await biller.save();
-//       console.log("Updated totalAmountPaid:", biller.totalAmountPaid);
-//     }
-
-//     return res.status(200).json({
-//       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
-//       updatedBalance: sender.wallet.balance,
-//     });
-//   } catch (error) {
-//     console.error("P2P Transfer Error:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
-
-
-
-// const p2PTransfer = asyncHandler(async (req, res) => {
-//   try {
-//     const { senderId, recipientEmail, amount } = req.body;
-
-//     if (!senderId || !recipientEmail || !amount || amount <= 0) {
-//       return res.status(400).json({ message: "Invalid transfer details" });
-//     }
-
-//     const transferAmount = Number(amount);
-
-//     const sender = await User.findById(senderId);
-//     if (!sender) return res.status(404).json({ message: "Sender not found" });
-
-//     if (sender.wallet.balance < transferAmount) {
-//       return res.status(400).json({ message: "Insufficient balance" });
-//     }
-
-//     sender.wallet.balance -= transferAmount;
-
-//     const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
-//     if (recipient) {
-//       recipient.wallet.balance += transferAmount;
-//     }
-
-//     const reward = transferAmount > 100
-//       ? 10
-//       : parseFloat((transferAmount * 0.02).toFixed(2));
-
-//     sender.wallet.payCoins += reward;
-//     const usdEquivalent = amount / 100;
-//     sender.wallet.rewardHistory.push({
-//       amount: reward,
-//       usdEquivalent: usdEquivalent,
-//       reason: `P2P transfer of $${amount} (Reward)`,
-//     });
-
-//     const newPayment = new Payment({
-//       user: senderId,
-//       recipientUser: recipient ? recipient._id : null,
-//       amount: transferAmount,
-//       transactionRef: `P2P-${uuidv4()}`,
-//       status: "Successful",
-//       paymentType: "Transfer",
-//       createdAt: new Date(),
-//       scheduleDate: new Date(),
-//     });
-
-//     await Promise.all([
-//       sender.save(),
-//       recipient?.save(),
-//       newPayment.save(),
-//     ]);
-
-//     // Update totalAmountPaid if recipient is a biller
-//     const biller = recipient && await Biller.findOne({ email: recipient.email });
-//     if (biller) {
-//       biller.totalAmountPaid += transferAmount;
-//       await biller.save();
-//     }
-
-//     return res.status(200).json({
-//       message: `Transfer successful! You sent $${amount} to ${recipientEmail}`,
-//       updatedBalance: sender.wallet.balance,
-//     });
-//   } catch (error) {
-//     console.error("P2P Transfer Error:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
     const { senderId, recipientEmail, amount } = req.body;
@@ -374,7 +213,7 @@ const p2PTransfer = asyncHandler(async (req, res) => {
       user: senderId,
       recipientUser: recipient._id,
       amount: transferAmount,
-      transactionRef: `P2P-${uuidv4()}`,
+      transactionRef: `P2P-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       status: "Successful",
       paymentType: "Transfer",
       createdAt: new Date(),
@@ -404,7 +243,6 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
@@ -471,7 +309,6 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
   }
 });
 
-
 const scheduleRecurring = async (req, res) => {
   try {
     const userId = req.userId;
@@ -514,7 +351,7 @@ const scheduleRecurring = async (req, res) => {
           recipientBiller: biller._id,
           amount: biller.serviceAmount,
           status: "Pending",  // Initial status is pending
-          transactionRef: uuidv4(),  // Generate a unique transaction reference
+          transactionRef: `ATP-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
           isRecurring: true,
           frequency: frequency,
           isAutoPayment: true,  // Assuming autopay for recurring payments
@@ -562,9 +399,6 @@ const calculateNextExecutionDate = (startDate, frequency) => {
   return date;
 };
 
-
-
-
 //payment history for recent transactions and transaction history
 const getUserPaymentHistory = async (req, res) => {
   try {
@@ -608,6 +442,32 @@ const getUserPaymentHistory = async (req, res) => {
   }
 };
 
+const redeemPayCoin = async(req,res)=>{
+ try {
+  const userId = req.userId;
+  const { amount } = req.body;
+
+  if (amount < 100) {
+    return res.status(400).json({ message: "Minimum redeemable amount is 100 PayCoins." });
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user || user.rewardBalance < amount) {
+    return res.status(400).json({ message: "Insufficient PayCoins." });
+  }
+
+  // Deduct from reward balance and credit wallet
+  user.wallet.payCoins -= amount;
+  user.wallet.balance += amount;
+
+  await user.save();
+
+  res.status(200).json({ message: "Redeemed successfully." });
+ } catch (error) {
+  res.status(500).json({message: "Internal Server Error"})
+ }
+}
 
 //total payment for charts
 const totalPayments = asyncHandler(async (req, rers) => {
@@ -643,7 +503,6 @@ const totalPayments = asyncHandler(async (req, rers) => {
     res.status(500).json({ message: error.message });
   }
 });
-
 
 //aggregagetes for analytics
 const paymentAggregates = asyncHandler(async (req, res) => {
@@ -747,8 +606,6 @@ const paymentAggregates = asyncHandler(async (req, res) => {
   }
 });
 
-
-
 const pauseRecurringPayment = asyncHandler(async (req, res) => {
   try {
     await RecurringPayment.findByIdAndUpdate(req.params.id, {
@@ -766,6 +623,7 @@ module.exports = {
   getUserPaymentHistory,
   paymentAggregates,
   scheduleRecurring,
+  redeemPayCoin,
   totalPayments,
   scheduleTransfer,
   pauseRecurringPayment,

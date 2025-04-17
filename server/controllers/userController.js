@@ -258,26 +258,45 @@ const connectWallet = asyncHandler(async (req, res) => {
         .json({ message: "This MetaMask wallet address is already in use." });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { metamaskWallet: walletAddress },
-      { new: true, upsert: false }
-    );
-
-    if (!updatedUser) {
+    // Find the current user
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    await sendMetaMaskEmail(updatedUser.email, updatedUser.firstName);
+    // Check if the user is linking their wallet for the first time
+    const firstTimeLinked = !user.metamaskWallet;
 
+    // If first time linking, apply reward logic
+    let rewardAmount = 0;
+    if (firstTimeLinked) {
+      // Reward logic: You can customize this reward calculation
+      rewardAmount = 5; // Example: $50 reward for linking the wallet
+      // Add the reward to the user's balance (assuming a `balance` field exists in the user schema)
+      user.wallet.payCoins += rewardAmount;
+      await user.save();
+    }
+
+    // Update the user's wallet address
+    user.metamaskWallet = walletAddress;
+    await user.save();
+
+
+    // Respond with success
     res.status(200).json({
       message: "MetaMask wallet connected successfully",
-      user: updatedUser,
+      user,
+      firstTimeLinked,
+      updatedWallets: user.metamaskWallet,
+      rewardAmount, 
     });
   } catch (error) {
     console.log("Error updating wallet:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
+
 
 const setTransactionPin = asyncHandler(async (req, res) => {
   try {
