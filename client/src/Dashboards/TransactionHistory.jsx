@@ -455,17 +455,18 @@ const TransactionHistory = () => {
                 </p>
               </div>
               <div className="mt-4 flex justify-between">
-                <button
-                  onClick={downloadReceiptPdf}
-                  className="bg-blue-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
-                >
-                  Download PDF
-                </button>
+
                 <button
                   onClick={closeReceiptModal}
                   className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
                 >
                   Close
+                </button>
+                <button
+                  onClick={downloadReceiptPdf}
+                  className="bg-blue-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"
+                >
+                  Download PDF
                 </button>
               </div>
             </div>

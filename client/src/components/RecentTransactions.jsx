@@ -611,8 +611,8 @@ const Recent = () => {
             </div>
 
             <div className="flex justify-between mt-6">
-              <Button onClick={closeModal}>Close</Button>
-              <Button type="primary" onClick={downloadReceiptPdf}>Download PDF</Button>
+              <button onClick={closeModal} className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer">Close</button>
+              <button className="bg-blue-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer" onClick={downloadReceiptPdf}>Download PDF</button>
             </div>
           </div>
         </div>

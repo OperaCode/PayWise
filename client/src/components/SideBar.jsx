@@ -65,7 +65,7 @@ const SideBar = () => {
               <img
                 src={logo}
                 alt="Logo"
-                className="hover:cursor-pointer w-50 bg-zinc-200 rounded-lg"
+                className="hover:cursor-pointer w-50 bg-zinc-100 rounded-lg"
               />
             </Link>
           </div>

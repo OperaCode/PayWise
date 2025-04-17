@@ -3,12 +3,14 @@ import axios from "axios";
 import Loader from "../components/Loader";
 import { X } from "lucide-react";
 import { UserContext } from "../context/UserContext";
+import { toast } from "react-toastify";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const RewardsAndAnalytics = () => {
-  const { user } = useContext(UserContext);
+  const { user, refreshUser } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
+  const [amount, setAmount] = useState("");
   const [rewardBalance, setRewardBalance] = useState(0);
   const [rewardHistory, setRewardHistory] = useState([]);
   const [redeemAmount, setRedeemAmount] = useState("");
@@ -26,19 +28,36 @@ const RewardsAndAnalytics = () => {
     setTimeout(() => setLoading(false), 3000);
   }, []);
 
-  // render user from context
-  useEffect(() => {
-    if (user && user.wallet) {
-      setRewardBalance(user.wallet.payCoins || 0);
+   //Fetch User
+   useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const UserId = localStorage.getItem("userId");
 
-      const updatedHistory = (user.wallet.rewardHistory || []).map((item) => ({
-        ...item,
-        usdEquivalent: item.amount, 
-      }));
-      console.log(updatedHistory)
-      setRewardHistory(updatedHistory);
-    }
-  }, [user]);
+        // (!UserId) {
+        //   console.error("User ID not found in localStorage.");
+        //   toast.error("User not authenticated.");
+        //   return;
+        // }
+        console.log(UserId);
+        const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
+          withCredentials: true,
+        });
+        console.log(response);
+        setRewardBalance(response?.data?.user?.wallet?.payCoins || 0);
+        
+        setRewardHistory(
+          response?.data?.user?.wallet.rewardHistory
+         
+        );
+      } catch (error) {
+        console.error(error);
+        toast.error(error?.response?.data?.message);
+      }
+    };
+    fetchUser();
+  }, []);
+
 
 
   //fetch analytics data from backend
@@ -66,10 +85,33 @@ const RewardsAndAnalytics = () => {
     fetchAnalyticsData();
   }, []);
 
-  const handleRedeem = () => {
-    if (!redeemAmount || redeemAmount > rewardBalance) return;
-    alert(`Redeemed ${redeemAmount} PayCoins`);
-    // Integrate redeem logic here
+  const handleRedeem = async() => {
+    const redeemAmount = parseFloat(amount);
+
+    if (!user || user?.rewardBalance < 100) {
+      toast.error("You need at least 100 PayCoins to redeem.");
+    }
+
+    if (isNaN(redeemAmount) || redeemAmount < 100) {
+      toast.error("Minimum redeem amount is 100 PayCoins.");
+    }
+
+    if (redeemAmount > user.rewardBalance) {
+     toast.error("You don't have enough PayCoins.");
+    }
+
+    try {
+      await axios.post(`${BASE_URL}/payment/redeem-coin`, {
+        amount: redeemAmount,
+      }, { withCredentials: true });
+
+      toast.success("Redeemed successfully!");
+      setAmount("");
+      refreshUser();
+    } catch (error) {
+      toast.error("Error redeeming PayCoins.");
+      console.error(error.message);
+    }
   };
 
   return (
@@ -108,7 +150,7 @@ const RewardsAndAnalytics = () => {
           />
           <button
             onClick={handleRedeem}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded cursor-pointer"
           >
             Redeem
           </button>
@@ -168,7 +210,7 @@ const RewardsAndAnalytics = () => {
             </h3>
 
             <X
-              className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
+              className="absolute top-3 right-3 text-gray-500 hover:text-red-500 cursor-pointer"
               onClick={() => setShowModal(false)}
             />
 
