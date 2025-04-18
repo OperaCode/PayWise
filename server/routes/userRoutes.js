@@ -32,7 +32,7 @@ router.post("/set-pin",protectUser ,setTransactionPin);
 //router.put("/:id/update-profile-picture", uploadProfilePicture);
 router.get("/:userId",protectUser , getUser);
 router.get("/", protectUser, getUsers);
-router.patch("/:userId", protectUser, updateUser);
+router.put("/update/:userId", protectUser, updateUser);
 router.delete("/:userId", protectUser, deleteUser);
 router.post("/logout", LogoutUser);
 // Upload Profile Picture

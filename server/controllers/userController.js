@@ -406,34 +406,67 @@ const getUsers = asyncHandler(async (req, res) => {
   }
 });
 
-// incomplete
+
 const updateUser = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+  const userId = req.userId; // coming from auth middleware
+  const {
+    currentPassword,
+    newPassword,
+    currentPin,
+    newPin,
+    ...rest
+  } = req.body;
 
   try {
     const user = await userModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Password update
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: "Current password required" });
+      }
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Incorrect current password" });
+      }
+      const hashed = await bcrypt.hash(newPassword, 10);
+      user.password = hashed;
     }
 
-    // Update user fields dynamically
-    Object.keys(req.body).forEach((key) => {
-      if (req.body[key] !== undefined) {
-        user[key] = req.body[key];
+    // Transaction PIN update
+    if (newPin) {
+      if (!currentPin) {
+        return res.status(400).json({ message: "Current PIN required" });
       }
-    });
+      const isMatch = await bcrypt.compare(currentPin, user.transactionPin || "");
+      if (!isMatch) {
+        return res.status(400).json({ message: "Incorrect current PIN" });
+      }
+      const hashedPin = await bcrypt.hash(newPin, 10);
+      user.transactionPin = hashedPin;
+    }
+
+    // 🛠 Update allowed fields only
+    for (let key of Object.keys(rest)) {
+      if (allowedFields.includes(key)) {
+        user[key] = rest[key];
+      }
+    }
 
     const updatedUser = await user.save();
 
     res.status(200).json({
-      message: "User updated successfully",
+      message: "Profile updated successfully",
       user: updatedUser,
     });
+
   } catch (err) {
-    console.error("Update User Error:", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Profile update error:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 const deleteUser = asyncHandler(async (req, res) => {
   try {
