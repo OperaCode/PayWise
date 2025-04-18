@@ -465,12 +465,12 @@ const DashBoard = () => {
                   >
                     Manage Wallet
                   </button>
-                  <button
+                  {/* <button
                     className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
                     onClick={() => setManageTokensModalOpen(true)}
                   >
                     Manage Assets
-                  </button>
+                  </button> */}
                 </div>
               </div>
 

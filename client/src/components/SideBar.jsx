@@ -8,21 +8,14 @@ import {
   Menu,
   SquareX,
   DollarSign,
-  Milestone,
+  CircleDollarSign,
   TabletSmartphone,
-  MessageSquareMore,
-  LogOut,
-} from "lucide-react";
+  UserRoundCog,
+  ArrowRightLeft,
 
-const dashboardLinks = [
-  { title: "Home", route: "/homedash" },
-  { title: "Make Payment", route: "/history" },
-  { title: "Manage Billers", route: "/room" },
-  { title: "Rewards and Analytics", route: "/room" },
-  { title: "Messages", route: "/room" },
-  { title: "Settings", route: "/room" },
-  { title: "Log Out", route: "/login" },
-];
+  LogOut,
+  BadgeDollarSign,
+} from "lucide-react";
 
 const SideBar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,7 +87,7 @@ const SideBar = () => {
 
               <Link to="/analytics">
                 <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
-                  <Milestone size={17} strokeWidth={3} />
+                  <CircleDollarSign size={20} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
                     Rewards and Analytics
                   </li>
@@ -102,9 +95,17 @@ const SideBar = () => {
               </Link>
               <Link to="/transactions">
                 <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
-                  <MessageSquareMore size={17} strokeWidth={3} />
+                  <ArrowRightLeft size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold lg:text-md">
                     Transaction History
+                  </li>
+                </div>
+              </Link>
+              <Link to="/settings">
+                <div className="gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
+                  <UserRoundCog size={17} strokeWidth={3} />
+                  <li className="hover:cursor-pointer font-bold lg:text-md">
+                    Profile Settings
                   </li>
                 </div>
               </Link>
@@ -154,7 +155,7 @@ const SideBar = () => {
               </Link>
               <Link to="/analytics" onClick={toggleModal}>
                 <div className=" gap-2 items-center hover:text-cyan-900 flex ">
-                  <Milestone size={17} strokeWidth={3} />
+                  <BadgeDollarSign size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold w-full lg:text-md a">
                     Rewards and Analytics
                   </li>
@@ -162,9 +163,17 @@ const SideBar = () => {
               </Link>
               <Link to="/transactions" onClick={toggleModal}>
                 <div className="gap-2 items-center hover:text-cyan-900  flex ">
-                  <MessageSquareMore size={17} strokeWidth={3} />
+                  <ArrowRightLeft size={17} strokeWidth={3} />
                   <li className="hover:cursor-pointer font-bold lg:text-md">
                     Transaction History
+                  </li>
+                </div>
+              </Link>
+              <Link to="/settings" onClick={toggleModal}>
+                <div className="gap-2 items-center hover:text-cyan-900  flex ">
+                  <UserRoundCog size={17} strokeWidth={3} />
+                  <li className="hover:cursor-pointer font-bold lg:text-md">
+                    Profile Settings
                   </li>
                 </div>
               </Link>

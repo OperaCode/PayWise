@@ -18,7 +18,7 @@ import ManageBillers from "./Dashboards/ManageBillers.jsx";
 import TransactionHistory from "./Dashboards/TransactionHistory.jsx";
 import Analytics from "./Dashboards/RewardsAndAnalytics.jsx";
 import Receipt from "./modals/RecieptViewModal.jsx";
-import Messages from "./Dashboards/Messages.jsx";
+import ProfileSettings from "./Dashboards/ProfileSettings.jsx";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -92,6 +92,8 @@ const App = () => {
             </DashLayout>
           }
         />
+
+        <Route path="/settings" element={<ProfileSettings />} />
       </Routes>
     </div>
   );
