@@ -417,6 +417,9 @@ const updateUser = asyncHandler(async (req, res) => {
     ...rest
   } = req.body;
 
+  
+  const allowedFields = ['firstName', 'lastName', 'email'];
+
   try {
     const user = await userModel.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -447,7 +450,7 @@ const updateUser = asyncHandler(async (req, res) => {
       user.transactionPin = hashedPin;
     }
 
-    // 🛠 Update allowed fields only
+    // Apply updates to allowed fields only
     for (let key of Object.keys(rest)) {
       if (allowedFields.includes(key)) {
         user[key] = rest[key];
