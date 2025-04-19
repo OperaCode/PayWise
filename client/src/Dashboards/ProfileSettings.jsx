@@ -4,27 +4,40 @@ import { Moon, Sun, ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { ThemeContext } from "../context/ThemeContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Loader from "../components/Loader";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const ProfileSettings = () => {
-  const [username, setUserName] = useState(" ");
-  const [userData, setUserData] = useState({});
+  //   const [username, setUserName] = useState(" ");
+  //   const [userData, setUserData] = useState({});
   const [transactionPin, setTransactionPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [firstname, setFirstName] = useState(" ");
   const [lastname, setLastName] = useState(" ");
+ 
   const [profilePicture, setProfilePicture] = useState(" ");
-  const { user, setUser } = useState(" ");
+  //   const { user, setUser } = useState(" ");
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [loading, setLoading] = useState(true);
 
+  //   const [message, setMessage] = useState("");
+  //   const [error, setError] = useState("");
+
+
+ 
+  const [confirmPassword, setConfirmPassword] = useState("");
   
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+  const [isSettingPin, setIsSettingPin] = useState(false);
   const [currentPin, setCurrentPin] = useState("");
   const [newPin, setNewPin] = useState("");
 
@@ -33,8 +46,8 @@ const ProfileSettings = () => {
   //   const [profilePicture, setProfilePicture] = useState("default_image.jpg");
   const [activeTab, setActiveTab] = useState("Profile");
   const [showPassword, setShowPassword] = useState(false);
-//   const [showNewPassword, setShowNewPassword] = useState(false);
-//   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  //   const [showNewPassword, setShowNewPassword] = useState(false);
+  //   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [showPin, setShowPin] = useState(false);
   const [showNewPin, setShowNewPin] = useState(false);
@@ -48,29 +61,26 @@ const ProfileSettings = () => {
 
   //fetch user
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchUser = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        const res = await axios.get(`${BASE_URL}/user/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+        const UserId = localStorage.getItem("userId");
+        const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
+          withCredentials: true,
         });
-        setProfile({
-          fullName: res.data.fullName || "",
-          phone: res.data.phone || "",
-        });
-        const user = response?.data?.user;
+        const data = response?.data;
+        const user = data?.user;
         setFirstName(user.firstName);
         setLastName(user.lastName);
         setEmail(user.email);
-        setPhone(user.phone || "");
+
         setProfilePicture(user.profilePicture || "default_image.jpg");
-      } catch (err) {
-        setError("Failed to fetch profile.");
+      } catch (error) {
+        console.error(error);
+        toast.error(error?.response?.data?.message);
       }
     };
-    fetchProfile();
+
+    fetchUser();
   }, []);
 
   //   const uploadPhoto = async (photo) => {
@@ -127,40 +137,79 @@ const ProfileSettings = () => {
   //     }
   //   };
 
-  const handleSetPin = async () => {
-    setIsSettingPin(true);
+  const handleUpdateInfo = async (e) => {
+    e.preventDefault();
+  
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+  
+    if (!token) {
+      toast.error("You must be logged in to update your profile.");
+      return;
+    }
+  
+    if (!firstname || !lastname ) {
+      toast.error("All fields are required.");
+      return;
+    }
+  
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/user/update/${userId}`,
+        {
+          firstName: firstname.trim(),
+          lastName: lastname.trim(),
+         
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+  
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error(error?.response?.data?.message || "Failed to update profile.");
+    }
+  };
+  
+
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    setIsSettingPassword(true);
 
     const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
 
     if (!token) {
-      toast.error("You must be logged in to set a PIN.");
-      setIsSettingPin(false);
+      toast.error("You must be logged in to update your password.");
+      setIsSettingPassword(false);
       return;
     }
 
-    if (!transactionPin || !confirmPin) {
-      toast.error("Please enter and confirm your PIN.");
-      setIsSettingPin(false);
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("Please fill in all fields.");
+      setIsSettingPassword(false);
       return;
     }
 
-    if (transactionPin !== confirmPin) {
-      toast.error("PINs do not match.");
-      setIsSettingPin(false);
-      return;
-    }
-
-    // Validate PIN format before making the request
-    if (typeof transactionPin !== "string" || transactionPin.length !== 4) {
-      toast.error("Transaction PIN must be a 4-digit string.");
-      setIsProcessing(false);
+    if (newPassword !== confirmPassword) {
+      toast.error("New password and confirm password do not match.");
+      setIsSettingPassword(false);
       return;
     }
 
     try {
-      await axios.post(
-        `${BASE_URL}/user/set-pin`,
-        { pin: transactionPin },
+      await axios.put(
+        `${BASE_URL}/user/update/${userId}`,
+        {
+          currentPassword,
+          newPassword,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -168,54 +217,78 @@ const ProfileSettings = () => {
         }
       );
 
-      toast.success("PIN set successfully.");
+      toast.success("Password updated successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (error) {
-      console.error("Error:", error.response?.data);
+      console.error("Error updating password:", error);
       toast.error(
-        error.response?.data?.message || "An error occurred while setting PIN."
+        error.response?.data?.message || "Failed to update password."
       );
+    } finally {
+      setIsSettingPassword(false);
+    }
+  };
+
+  const handleSetPin = async (e) => {
+    e.preventDefault();
+    setIsSettingPin(true);
+
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    if (!token) {
+      toast.error("You must be logged in to update PIN.");
+      setIsSettingPin(false);
+      return;
+    }
+
+    if (!currentPin || !newPin || !confirmPin) {
+      toast.error("Please fill in all fields.");
+      setIsSettingPin(false);
+      return;
+    }
+
+    if (newPin !== confirmPin) {
+      toast.error("New PIN and Confirm PIN do not match.");
+      setIsSettingPin(false);
+      return;
+    }
+
+    if (!/^\d{4}$/.test(newPin)) {
+      toast.error("PIN must be exactly 4 digits.");
+      setIsSettingPin(false);
+      return;
+    }
+
+    try {
+      await axios.put(
+        `${BASE_URL}/user/update/${userId}`,
+        {
+          currentPin,
+          newPin,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Transaction PIN updated.");
+      setCurrentPin("");
+      setNewPin("");
+      setConfirmPin("");
+    } catch (error) {
+      console.log("Something went wrong. Please try again.");
+      toast.error(error.response?.data?.message || "Error updating PIN.");
     } finally {
       setIsSettingPin(false);
     }
   };
 
-  const handleChangePin = async (e) => {
-    e.preventDefault();
-    setPinMessage("");
-
-    if (!currentPin || !newPin || !confirmPin) {
-      return toast.error("Please fill in all fields.");
-    }
-
-    if (newPin !== confirmPin) {
-      return setPinMessage("New PIN and Confirm PIN do not match.");
-    }
-
-    if (!/^\d{4}$/.test(newPin)) {
-      return setPinMessage("PIN must be exactly 4 digits.");
-    }
-
-    try {
-        await axios.post(
-          `${BASE_URL}/user/set-pin`,
-          { pin: newPin },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-  
-        toast.success("PIN set successfully.");
-    } catch (error) {
-      setPinMessage("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
- 
-
-  const renderTabContent = async () => {
+  const renderTabContent = () => {
     switch (activeTab) {
       case "Profile":
         return (
@@ -249,19 +322,12 @@ const ProfileSettings = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 rounded border"
                 placeholder="Enter your email"
+                readOnly
               />
             </div>
-            <div>
-              <label className="block mb-1 text-sm font-semibold">Phone</label>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-2 rounded border"
-                placeholder="Enter phone number"
-              />
-            </div>
-            <button className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-              Save Changes
+
+            <button onClick={handleUpdateInfo} className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 cursor-pointer">
+              Update Profile
             </button>
           </div>
         );
@@ -269,16 +335,16 @@ const ProfileSettings = () => {
       case "Security":
         return (
           <div className="mt-6 px-6 max-w-md space-y-5 h-screen">
-            <h2 className="text-lg font-bold">Change Password</h2>
+            <h2 className="text-lg font-bold mb-4">Change Password</h2>
 
             {/* Current Password */}
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">
                 Current Password
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showCurrentPassword ? "text" : "password"}
                   placeholder="Enter current password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -286,57 +352,10 @@ const ProfileSettings = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-2"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-2 top-2 cursor-pointer"
                 >
-                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {/* New Password */}
-            <div>
-              <label className="block text-sm font-semibold mb-1">
-                New Password
-              </label>
-              <div className="relative">
-                <input
-                  //   type={showNewPassword ? "text" : "password"}
-                  //   placeholder="Enter new password"
-                  //   className="w-full px-4 py-2 rounded border"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter current password"
-                  value={newPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-4 py-2 rounded border"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-2"
-                >
-                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Confirm New Password */}
-            <div>
-              <label className="block text-sm font-semibold mb-1">
-                Confirm New Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Confirm new password"
-                  className="w-full px-4 py-2 rounded border"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-2 top-2"
-                >
-                  {showPassword ? (
+                  {showCurrentPassword ? (
                     <Eye size={16} />
                   ) : (
                     <EyeOff size={16} />
@@ -345,90 +364,150 @@ const ProfileSettings = () => {
               </div>
             </div>
 
+            {/* New Password */}
+            <div className="mb-4">
+              <label className="block text-sm font-semibold mb-1">
+                New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-2 rounded border"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-2 top-2 cursor-pointer"
+                >
+                  {showNewPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm New Password */}
+            <div className="mb-4">
+              <label className="block text-sm font-semibold mb-1">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-2 rounded border"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-2 top-2 cursor-pointer"
+                >
+                  {showConfirmPassword ? (
+                    <Eye size={16} />
+                  ) : (
+                    <EyeOff size={16} />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Update Button */}
             <button
-              className="mt-2 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-              onClick={() => toast.success("Password updated successfully!")}
+              className="mt-2 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 cursor-pointer"
+              onClick={handleUpdatePassword}
             >
               Update Password
             </button>
 
-            {/* Transaction PIN Section */}
-            <h2 className="text-lg font-bold mt-10">Change Transaction PIN</h2>
+            <form onSubmit={handleSetPin}>
+              <h2 className="text-lg font-bold mt-10">
+                Change Transaction PIN
+              </h2>
 
-            {/* Current PIN */}
-            <div>
-              <label className="block text-sm font-semibold mb-1">
-                Current PIN
-              </label>
-              <div className="relative">
-                <input
-                  type={showPin ? "text" : "password"}
-                  maxLength={6}
-                  placeholder="Enter current PIN"
-                  className="w-full px-4 py-2 rounded border"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPin(!showPin)}
-                  className="absolute right-2 top-2"
-                >
-                  {showPin ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
+              {/* Current PIN */}
+              <div className="mt-4">
+                <label className="block text-sm font-semibold mb-1">
+                  Current PIN
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPin ? "text" : "password"}
+                    maxLength={6}
+                    placeholder="Enter current PIN"
+                    value={currentPin}
+                    onChange={(e) => setCurrentPin(e.target.value)}
+                    className="w-full px-4 py-2 rounded border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPin(!showPin)}
+                    className="absolute right-2 top-2 cursor-pointer"
+                  >
+                    {showPin ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* New PIN */}
-            <div>
-              <label className="block text-sm font-semibold mb-1">
-                New PIN
-              </label>
-              <div className="relative">
-                <input
-                  type={showNewPin ? "text" : "password"}
-                  //   maxLength={6}
-                  value={transactionPin}
-                  placeholder="Enter new PIN"
-                  className="w-full px-4 py-2 rounded border"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPin(!showNewPin)}
-                  className="absolute right-2 top-2"
-                >
-                  {showNewPin ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
+              {/* New PIN */}
+              <div className="mt-4">
+                <label className="block text-sm font-semibold mb-1">
+                  New PIN
+                </label>
+                <div className="relative">
+                  <input
+                    type={showNewPin ? "text" : "password"}
+                    maxLength={6}
+                    placeholder="Enter new PIN"
+                    value={newPin}
+                    onChange={(e) => setNewPin(e.target.value)}
+                    className="w-full px-4 py-2 rounded border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPin(!showNewPin)}
+                    className="absolute right-2 top-2 cursor-pointer"
+                  >
+                    {showNewPin ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Confirm New PIN */}
-            <div>
-              <label className="block text-sm font-semibold mb-1">
-                Confirm New PIN
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPin ? "text" : "password"}
-                  //maxLength={6}
-                  value={confirmPin}
-                  placeholder="Confirm new PIN"
-                  className="w-full px-4 py-2 rounded border"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPin(!showConfirmPin)}
-                  className="absolute right-2 top-2"
-                >
-                  {showConfirmPin ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
+              {/* Confirm New PIN */}
+              <div className="mt-4">
+                <label className="block text-sm font-semibold mb-1">
+                  Confirm New PIN
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPin ? "text" : "password"}
+                    maxLength={6}
+                    placeholder="Confirm new PIN"
+                    value={confirmPin}
+                    onChange={(e) => setConfirmPin(e.target.value)}
+                    className="w-full px-4 py-2 rounded border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPin(!showConfirmPin)}
+                    className="absolute right-2 top-2 cursor-pointer"
+                  >
+                    {showConfirmPin ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <button
-              className="mt-2 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-              onClick={handleSetPin}
-            >
-              Update PIN
-            </button>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 cursor-pointer"
+                disabled={isSettingPin}
+              >
+                {isSettingPin ? "Updating..." : "Update PIN"}
+              </button>
+            </form>
           </div>
         );
 
@@ -438,64 +517,70 @@ const ProfileSettings = () => {
   };
 
   return (
-    <div className="lg:flex h-full ">
-      <SideBar />
-
-      {/* Layout Content */}
-      <div className="flex-col w-full pt-8 lg:ml-78 ">
-        <div className="flex items-center justify-end px-10 py-4 gap-2">
-          <h1 className="text-cyan- text-xl font-bold">
-            Welcome, {firstname.charAt(0).toUpperCase() + firstname.slice(1)}!
-          </h1>
-          <div className="relative">
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              id="profileUpload"
-              multiple={false}
-            />
-            <label htmlFor="profileUpload">
-              <img
-                src={profilePicture}
-                alt="Profile"
-                className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
+    <>
+    { loading ? (
+        <Loader/>
+    ):(
+        <div className="lg:flex h-full ">
+        <SideBar />
+  
+        {/* Layout Content */}
+        <div className="flex-col w-full pt-8 lg:ml-78 ">
+          <div className="flex items-center justify-end px-10 py-4 gap-2">
+            <h1 className="text-cyan- text-xl font-bold">
+              Welcome, {firstname.charAt(0).toUpperCase() + firstname.slice(1)}!
+            </h1>
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                id="profileUpload"
+                multiple={false}
               />
-            </label>
-          </div>
-          <button
-            onClick={toggleTheme}
-            className="p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
-          >
-            {theme === "light" ? (
-              <Moon className="text-white" />
-            ) : (
-              <Sun className="text-yellow-400" />
-            )}
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex px-10 mt-6 gap-4 border-b pb-2 ">
-          {["Profile", "Security"].map((tab) => (
+              <label htmlFor="profileUpload">
+                <img
+                  src={profilePicture}
+                  alt="Profile"
+                  className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
+                />
+              </label>
+            </div>
             <button
-              key={tab}
-              className={`px-4 py-2 font-medium cursor-pointer ${
-                activeTab === tab
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-500 hover:text-blue-600"
-              }`}
-              onClick={() => setActiveTab(tab)}
+              onClick={toggleTheme}
+              className="p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
             >
-              {tab}
+              {theme === "light" ? (
+                <Moon className="text-white" />
+              ) : (
+                <Sun className="text-yellow-400" />
+              )}
             </button>
-          ))}
+          </div>
+  
+          {/* Tabs */}
+          <div className="flex px-10 mt-4 gap-4 border-b pb-2  ">
+            {["Profile", "Security"].map((tab) => (
+              <button
+                key={tab}
+                className={`px-4 py-2 font-medium cursor-pointer ${
+                  activeTab === tab
+                    ? "border-b-2 border-blue-600 text-blue-600 font-extrabold text-xl"
+                    : "text-gray-500 hover:text-blue-600 font-extrabold text-xl"
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+  
+          {/* Tab Content */}
+          <div className="px-10 ">{renderTabContent()}</div>
         </div>
-
-        {/* Tab Content */}
-        <div className="px-10 ">{renderTabContent()}</div>
       </div>
-    </div>
+    )};
+   </>
   );
 };
 

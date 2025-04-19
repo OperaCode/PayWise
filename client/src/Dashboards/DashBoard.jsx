@@ -290,74 +290,7 @@ const DashBoard = () => {
     }
   };
 
-  //Connect to MetaMask
-  // const connectToMetaMask = async () => {
-  //   if (!window.ethereum) {
-  //     toast.error("MetaMask not detected! Redirecting to download...");
-  //     window.location.href = "https://metamask.io/download.html";
-  //     return;
-  //   }
   
-  //   try {
-  //     setIsSubmitting(true);
-  
-  //     const provider = new ethers.BrowserProvider(window.ethereum);
-  //     const accounts = await provider.send("eth_requestAccounts", []);
-  
-  //     if (accounts.length === 0) {
-  //       toast.error("No MetaMask account found.");
-  //       setIsSubmitting(false);
-  //       return;
-  //     }
-  
-  //     const walletAddress = accounts[0];
-  //     console.log("MetaMask Wallet Address:", walletAddress);
-  
-  //     const userId = localStorage.getItem("userId");
-  //     if (!userId) {
-  //       toast.error("User not authenticated. Please log in first.");
-  //       setIsSubmitting(false);
-  //       return;
-  //     }
-  
-  //     const response = await axios.post(
-  //       `${BASE_URL}/user/connect-metamask`,
-  //       { userId, walletAddress },
-  //       {
-  //         headers: { "Content-Type": "application/json" },
-  //         withCredentials: true,
-  //       }
-  //     );
-  
-  //     if (response.status === 200) {
-  //       const { firstTimeLinked, updatedWallets } = response.data;
-  
-  //       toast.success("Wallet Connected Successfully!");
-  
-  //       if (firstTimeLinked) {
-  //         toast.success("🎉 You've earned a reward for linking your MetaMask wallet!");
-  //         // Optionally, trigger reward UI or bonus display
-  //       }
-  
-  //       setUser((prevUser) => ({
-  //         ...prevUser,
-  //         metamaskWallets: updatedWallets, // Update wallet data
-  //       }));
-  
-  //       setMetaMaskAddress(walletAddress);
-  //       setWalletLinked(true);
-  //     } else {
-  //       toast.error("Failed to link MetaMask wallet. Please try again.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error connecting MetaMask:", error);
-  //     toast.error("Error connecting to MetaMask. Please try again.");
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
-
   const connectToMetaMask = async () => {
     // Check if MetaMask is installed
     if (!window.ethereum) {
@@ -421,8 +354,7 @@ const DashBoard = () => {
     }
   };
   
-  
-  
+
 
   return (
     <>

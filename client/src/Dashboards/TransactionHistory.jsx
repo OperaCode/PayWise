@@ -244,6 +244,7 @@ const TransactionHistory = () => {
   };
 
   return (
+    
     <div className="lg:flex h-full ">
       <SideBar />
 
