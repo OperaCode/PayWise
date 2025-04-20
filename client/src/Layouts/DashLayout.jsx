@@ -8,6 +8,7 @@ import { Moon, Sun, Search } from "lucide-react";
 import ClipLoader from "react-spinners/ClipLoader";
 import { toast } from "react-toastify";
 import { getAuth } from "firebase/auth";
+import Loader from "../components/Loader";
 
 import axios from "axios";
 
@@ -122,6 +123,7 @@ const DashLayout = ({ children }) => {
   };
   
   return (
+    
     <div className="lg:flex">
       <SideBar />
 

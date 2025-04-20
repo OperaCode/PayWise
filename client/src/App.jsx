@@ -36,6 +36,7 @@ const App = () => {
   };
 
   return (
+   
     <div className={`app-container ${theme}`}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -67,6 +68,10 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/transactions" element={<TransactionHistory />} />
         <Route path="/receipt/:id" element={<Receipt />} />
+
+
+
+        
         <Route
           path="/dashboard"
           element={
@@ -84,6 +89,7 @@ const App = () => {
             </DashLayout>
           }
         />
+
         <Route
           path="/analytics"
           element={

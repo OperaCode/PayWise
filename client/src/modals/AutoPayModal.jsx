@@ -165,7 +165,7 @@ const AutoPayModal = ({ billers, onClose }) => {
             value={frequency}
             onChange={(e) => setFrequency(e.target.value)}
           >
-            <option value="once">Once</option>
+            {/* <option value="once">Once</option> */}
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
