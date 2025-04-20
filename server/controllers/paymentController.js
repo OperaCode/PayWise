@@ -385,19 +385,21 @@ const calculateNextExecutionDate = (startDate, frequency) => {
   switch (freq) {
     case 'daily':
       date.setDate(date.getDate() + 1);
-      break;
+      return date;
     case 'weekly':
       date.setDate(date.getDate() + 7);
-      break;
+      return date;
     case 'monthly':
       date.setMonth(date.getMonth() + 1);
-      break;
+      return date;
+    case 'once':
+      // One-time payments don't recur
+      return null;
     default:
       throw new Error('Invalid frequency');
   }
-
-  return date;
 };
+
 
 //payment history for recent transactions and transaction history
 const getUserPaymentHistory = async (req, res) => {
