@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { fundWallet,p2PTransfer, scheduleTransfer,redeemPayCoin,scheduleRecurring,paymentAggregates ,totalPayments,pauseRecurringPayment,getUserPaymentHistory } = require('../controllers/paymentController');
+const { fundWallet,p2PTransfer,withdrawToBank ,scheduleTransfer,redeemPayCoin,scheduleRecurring,paymentAggregates ,totalPayments,pauseRecurringPayment,getUserPaymentHistory } = require('../controllers/paymentController');
 
 
 const { protectUser } = require("../middleware/authMiddleWare");
@@ -9,6 +9,7 @@ const { protectUser } = require("../middleware/authMiddleWare");
 
 // Route to create a payment
 router.post('/fund-wallet', fundWallet);
+router.post('/withdraw-fund', withdrawToBank);
 router.get('/history/:userId',protectUser,getUserPaymentHistory)
 router.get('/payments', protectUser,totalPayments);
 router.get('/payment-summary', protectUser,paymentAggregates);

@@ -107,66 +107,60 @@ const fundWallet = asyncHandler(async (req, res) => {
 });
 
 const withdrawToBank = asyncHandler(async (req, res) => {
-  try {
-    const { userId, bankCode, accountNumber, amount } = req.body;
+  const { amount, account_bank, account_number, narration } = req.body;
+  const userId = req.userId;
 
-    // Ensure valid data
-    if (!userId || !bankCode || !accountNumber || amount <= 0) {
-      return res.status(400).json({ message: "Invalid withdrawal details" });
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  // 1. Check wallet balance
+  if (user.walletBalance < amount) {
+    return res.status(400).json({ message: "Insufficient wallet balance" });
+  }
+
+  // 2. Initiate Flutterwave transfer
+  const payload = {
+    account_bank, // e.g. "058"
+    account_number,
+    amount,
+    narration: narration || "PayWise Withdrawal",
+    currency: "NGN",
+    reference: `paywise-${Date.now()}`,
+    callback_url: "https://yourdomain.com/webhook/flutterwave",
+    debit_currency: "NGN"
+  };
+
+  const response = await axios.post(
+    "https://api.flutterwave.com/v3/transfers",
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+      },
     }
+  );
 
-    // Find user
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    // Check if wallet balance is sufficient
-    if (user.wallet.balance < amount) {
-      return res.status(400).json({ message: "Insufficient balance" });
-    }
-
-    // Deduct the amount before initiating the transfer
-    user.wallet.balance -= amount;
+  // 3. If successful, deduct wallet & log
+  if (response.data.status === "success") {
+    user.walletBalance -= amount;
     await user.save();
 
-    // Flutterwave API request
-    const response = await axios.post(
-      "https://api.flutterwave.com/v3/transfers",
-      {
-        account_bank: bankCode, // Bank code (e.g., 044 for Access Bank)
-        account_number: accountNumber,
-        amount: amount,
-        currency: "NGN", // Adjust based on the country
-        narration: "PayWise Wallet Withdrawal",
-        reference: `txn-${Date.now()}`, // Unique reference
-        callback_url: "https://yourapp.com/webhook",
-        debit_currency: "NGN",
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    // Optionally: Create a withdrawal record
+    await Transaction.create({
+      user: userId,
+      type: "withdrawal",
+      amount,
+      status: "pending", // updated via webhook later
+      reference: payload.reference,
+      bankAccount: account_number,
+    });
 
-    // If successful, return response
-    if (response.data.status === "success") {
-      return res.status(200).json({
-        message: "Withdrawal request successful! Processing...",
-        updatedBalance: user.wallet.balance,
-        transactionId: response.data.data.id,
-      });
-    } else {
-      // If transfer fails, refund the wallet
-      user.wallet.balance += amount;
-      await user.save();
-      return res.status(400).json({ message: "Transfer failed, refunded" });
-    }
-  } catch (error) {
-    console.error("Withdrawal Error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(200).json({ message: "Withdrawal initiated", transfer: response.data });
+  } else {
+    return res.status(500).json({ message: "Transfer failed", details: response.data });
   }
 });
+
 
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
@@ -624,6 +618,7 @@ module.exports = {
   p2PTransfer,
   getUserPaymentHistory,
   paymentAggregates,
+  withdrawToBank,
   scheduleRecurring,
   redeemPayCoin,
   totalPayments,
