@@ -34,6 +34,7 @@ const DashBoard = () => {
   //const { setLoading } = useContext(LoaderContext);
 
   const [fundModalOpen, setFundModalOpen] = useState(false);
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [manageTokensModalOpen, setManageTokensModalOpen] = useState(false);
   const [p2pModalOpen, setP2pModalOpen] = useState(false);
   const [schedulePayModalOpen, setSchedulePayModalOpen] = useState(false);
@@ -238,6 +239,39 @@ const DashBoard = () => {
       console.log("Payment modal closed");
     },
   };
+
+
+
+  const handleWithdraw = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token"); // Adjust based on auth setup
+      const response = await axios.post(
+        "/api/wallet/withdraw",
+        {
+          amount,
+          account_bank: bankCode,
+          account_number: accountNumber,
+          narration,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      alert("Withdrawal started: " + response.data.message);
+    } catch (err) {
+      alert("Error: " + err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+
 
   //P2P Transfer
   const handleTransfer = async (e) => {
@@ -546,7 +580,7 @@ const DashBoard = () => {
 
                 <div className="flex items-center justify-center w-full">
                   <button
-                    onClick={connectToMetaMask}
+                    onClick={() => setWithdrawModalOpen(true)}
                     className="flex-1 hover:cursor-pointer p-2 bg-green-800 m-auto hover:bg-green-600 text-white rounded-md "
                   >
                     {isConnecting ? "Connecting..." : "Connect to MetaMask"}
@@ -722,77 +756,44 @@ const DashBoard = () => {
             billers={billers}
           />
         )}
-        {/* Transfer Modal */}
-        {wiseCoinTransferOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h2 className="text-xl font-bold text-center">
-                Transfer WiseCoin
-              </h2>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium">
-                  Sender Email:
-                </label>
-                <input
-                  type="email"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter recipient's email"
-                  value={senderEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
-                />
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium">
-                  Recipient Email:
-                </label>
-                <input
-                  type="email"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter recipient's email"
-                  value={receiverEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
-                />
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium">Amount:</label>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium">Pin:</label>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter amount"
-                  value={pin}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </div>
-
-              <div className="mt-6 flex justify-between">
-                <button
-                  onClick={() => setTransferModalOpen(false)}
-                  className="px-4 py-2 bg-gray-400 text-white rounded-md"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleTransfer}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md"
-                  disabled={loading}
-                >
-                  {loading ? "Processing..." : "Send"}
-                </button>
-              </div>
-            </div>
-          </div>
+        {/* Withdraw Modal */}
+        {withdrawModalOpen && (
+          <form onSubmit={handleWithdraw} className="p-4 space-y-4 max-w-md mx-auto">
+          <input
+            type="number"
+            placeholder="Amount (₦)"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="input"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Bank Code (e.g., 058 for GTBank)"
+            value={bankCode}
+            onChange={(e) => setBankCode(e.target.value)}
+            className="input"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Account Number"
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+            className="input"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Narration"
+            value={narration}
+            onChange={(e) => setNarration(e.target.value)}
+            className="input"
+          />
+          <button type="submit" disabled={loading} className="btn btn-primary w-full">
+            {loading ? "Processing..." : "Withdraw"}
+          </button>
+        </form>
         )}
       </section>
 
