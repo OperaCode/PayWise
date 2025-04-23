@@ -35,6 +35,8 @@ const TransactionHistory = () => {
     indexOfFirst,
     indexOfLast
   );
+  const statusFilters = ["All", "Success", "Pending", "Failed"];
+  const [selectedStatus, setSelectedStatus] = useState("All");
 
   // Fetch user
   useEffect(() => {
@@ -92,7 +94,13 @@ const TransactionHistory = () => {
           .toLowerCase()
           .includes(query)
     );
-    setFilteredTransactions(filtered);
+
+    // Filter by status
+    if (selectedStatus !== "All") {
+      filters = filtered.filter((tx) => tx.status === selectedStatus);
+    }
+
+    setFilteredTransactions(filters);
     setCurrentPage(1);
   };
 
@@ -244,7 +252,6 @@ const TransactionHistory = () => {
   };
 
   return (
-    
     <div className="lg:flex h-full ">
       <SideBar />
 
@@ -315,6 +322,38 @@ const TransactionHistory = () => {
               </Select>
             </div>
 
+            {/* Status Filter Buttons - Desktop */}
+            <div className="hidden sm:flex flex-wrap gap-2 my-4">
+              {statusFilters.map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setSelectedStatus(status)}
+                  className={`px-4 py-2 rounded-full text-sm transition-all border cursor-pointer ${
+                    selectedStatus === status
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300"
+                  } hover:bg-blue-100 `}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+
+            {/* Status Filter Dropdown - Mobile */}
+            <div className="sm:hidden my-4">
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="  text-sm w-full md:w-1/2 p-2 border border-gray-300 rounded-md "
+              >
+                {statusFilters.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="overflow-x-auto">
               <table
                 id="transactions-table"
@@ -380,7 +419,7 @@ const TransactionHistory = () => {
                   disabled={currentPage === 1}
                   className="px-4 py-2 bg-blue-600 text-white flex items-center justify-center gap-2 rounded-md disabled:bg-gray-400  w-1/7  hover:scale-105 cursor-pointer"
                 >
-                  <ArrowLeft size={14}/> Previous 
+                  <ArrowLeft size={14} /> Previous
                 </button>
                 <span className="text-lg font-medium">
                   Page {currentPage} of{" "}
@@ -400,7 +439,7 @@ const TransactionHistory = () => {
                   }
                   className="px-4 py-2 bg-blue-600 text-white flex items-center gap-2 justify-center rounded-md disabled:bg-gray-400 w-1/7  hover:scale-105 cursor-pointer"
                 >
-                  Next <ArrowRight size={14}/>
+                  Next <ArrowRight size={14} />
                 </button>
               </div>
             </div>
@@ -456,7 +495,6 @@ const TransactionHistory = () => {
                 </p>
               </div>
               <div className="mt-4 flex justify-between">
-
                 <button
                   onClick={closeReceiptModal}
                   className="bg-red-500 text-white px-4 py-2 w-1/3 rounded hover:scale-105 cursor-pointer"

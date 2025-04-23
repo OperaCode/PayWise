@@ -40,7 +40,7 @@ const DashBoard = () => {
   const [schedulePayModalOpen, setSchedulePayModalOpen] = useState(false);
   const [autoPayModalOpen, setAutoPayModalOpen] = useState(false);
   const [wiseCoinTransferOpen, setWiseCoinTransferOpen] = useState(false);
-  const [isConnecting,setIsConnecting] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -57,8 +57,13 @@ const DashBoard = () => {
   //to show hidden wallet balance
   const [showWallet, setShowWallet] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
-  const [activeBillers, setActiveBillers] = useState({})
+  const [activeBillers, setActiveBillers] = useState({});
   const [pin, setPin] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [bankCode, setBankCode] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [narration, setNarration] = useState("");
+  // const [loading, setLoading] = useState(false);
 
   const [history, setHistory] = useState([]);
 
@@ -176,9 +181,9 @@ const DashBoard = () => {
 
   //Fund Wallet
   const flutterwaveConfig = {
-    public_key: import.meta.env.VITE_FLW_PUBLIC_KEY, 
+    public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
     tx_ref: `paywise-${Date.now()}`,
-    amount: parseFloat(amount) || 0, 
+    amount: parseFloat(amount) || 0,
     currency: "USD",
     payment_options: "card, banktransfer, ussd",
     customer: {
@@ -195,7 +200,7 @@ const DashBoard = () => {
       console.log("Payment successful:", response);
 
       if (response.status === "successful") {
-        const userId = localStorage.getItem("userId"); 
+        const userId = localStorage.getItem("userId");
 
         if (!userId) {
           console.error("User ID is missing!");
@@ -203,15 +208,14 @@ const DashBoard = () => {
           return;
         }
 
-        setIsSending(true); 
+        setIsSending(true);
 
-        
         try {
           const result = await fetch(`${BASE_URL}/payment/fund-wallet`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              userId, 
+              userId,
               amount: response.amount,
               transactionId: response.transaction_id,
             }),
@@ -227,10 +231,10 @@ const DashBoard = () => {
           console.error("Error updating wallet:", error);
           toast.error("An error occurred. Please try again.");
         } finally {
-          setIsSending(false); 
+          setIsSending(false);
         }
       }
-      closePaymentModal(); 
+      closePaymentModal();
       setWalletBalance((prevBalance) =>
         Number((Number(prevBalance) + Number(amount)).toFixed(2))
       );
@@ -239,8 +243,6 @@ const DashBoard = () => {
       console.log("Payment modal closed");
     },
   };
-
-
 
   const handleWithdraw = async (e) => {
     e.preventDefault();
@@ -269,20 +271,16 @@ const DashBoard = () => {
     }
   };
 
-
-
-
-
   //P2P Transfer
   const handleTransfer = async (e) => {
     e.preventDefault();
 
     try {
-      setIsSubmitting(true); 
-      const senderId = localStorage.getItem("userId"); 
+      setIsSubmitting(true);
+      const senderId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
 
-      console.log("🔹 Sender ID from localStorage:", senderId); 
+      console.log("🔹 Sender ID from localStorage:", senderId);
 
       if (!senderId) {
         toast.error("User ID is missing. Please log in again.");
@@ -324,7 +322,6 @@ const DashBoard = () => {
     }
   };
 
-  
   const connectToMetaMask = async () => {
     // Check if MetaMask is installed
     if (!window.ethereum) {
@@ -332,33 +329,35 @@ const DashBoard = () => {
       window.location.href = "https://metamask.io/download.html";
       return;
     }
-  
+
     try {
       // Request accounts and open the MetaMask extension for the user to connect
       setIsSubmitting(true);
-  
+
       // This triggers the MetaMask extension to open and request the user's approval to connect
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-  
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+
       // Ensure that the user has at least one account
       if (accounts.length === 0) {
         toast.error("No MetaMask account found.");
         return;
       }
-  
+
       const walletAddress = accounts[0];
       console.log("MetaMask Wallet Address:", walletAddress);
-  
+
       // Store the wallet address (optional)
-      localStorage.setItem('walletAddress', walletAddress);
-  
+      localStorage.setItem("walletAddress", walletAddress);
+
       // Optionally: Update user in backend if needed
       const userId = localStorage.getItem("userId");
       if (!userId) {
         toast.error("User not authenticated. Please log in first.");
         return;
       }
-  
+
       const response = await axios.post(
         `${BASE_URL}/user/connect-metamask`,
         { userId, walletAddress },
@@ -367,18 +366,18 @@ const DashBoard = () => {
           withCredentials: true,
         }
       );
-  
+
       if (response.status === 200) {
         toast.success("Wallet Connected Successfully!");
         const { updatedWallets } = response.data;
-  console.log(response.data)
+        console.log(response.data);
         // Update user in state if needed
         setMetaMaskAddress(walletAddress);
         setWalletLinked(true);
         setPayWiseAddress(updatedWallets.wallets); // assuming response contains the PayWise address
-  
+
         // Store PayWise address (optional)
-        localStorage.setItem('payWiseAddress', updatedWallets.payWiseAddress);
+        localStorage.setItem("payWiseAddress", updatedWallets.payWiseAddress);
       }
     } catch (error) {
       console.error("Error connecting MetaMask:", error);
@@ -387,175 +386,442 @@ const DashBoard = () => {
       setIsSubmitting(false);
     }
   };
-  
-
 
   return (
     <>
       {loading ? (
         <Loader />
       ) : (
-
         <section className="p-8">
-        <div className="lg:flex gap-4">
-          {/* Wallet Balance Section */}
-          <div className="flex-1 h-full font-bodyFont w-full">
-            <h1 className="font-bold mb-4 text-xl py-2">Current Balance:</h1>
-            <div className="p-4  w-full rounded-lg shadow-md items-center border-4 border-neutral-500">
-              <div className="flex w-full justify-between items-center">
-                <div className="p-2">
-                  <p className="text-sm md:text-lg font-bold">
-                    Wallet Balance:
-                  </p>
+          <div className="lg:flex gap-4">
+            {/* Wallet Balance Section */}
+            <div className="flex-1 h-full font-bodyFont w-full">
+              <h1 className="font-bold mb-4 text-xl py-2">Current Balance:</h1>
+              <div className="p-4  w-full rounded-lg shadow-md items-center border-4 border-neutral-500">
+                <div className="flex w-full justify-between items-center">
+                  <div className="p-2">
+                    <p className="text-sm md:text-lg font-bold">
+                      Wallet Balance:
+                    </p>
 
-                  <div className="flex items-center space-x-2">
-                    <h2 className="text-xl font-bold">
-                      <span className="font-bold">
-                        {showBalance
-                          ? formatCurrency(walletBalance) || " 0.00 "
-                          : "••••"}
-                      </span>
-                    </h2>
-                    <button
-                      onClick={() => setShowBalance(!showBalance)}
-                      className="focus:outline-none hover:cursor-pointer"
-                    >
-                      {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <h2 className="text-xl font-bold">
+                        <span className="font-bold">
+                          {showBalance
+                            ? formatCurrency(walletBalance) || " 0.00 "
+                            : "••••"}
+                        </span>
+                      </h2>
+                      <button
+                        onClick={() => setShowBalance(!showBalance)}
+                        className="focus:outline-none hover:cursor-pointer"
+                      >
+                        {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-2 text-center mt-4">
-                  <button
-                    className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
-                    onClick={() => setFundModalOpen(true)}
-                  >
-                    Manage Wallet
-                  </button>
-                  {/* <button
+                  <div className="flex gap-2 text-center mt-4">
+                    <button
+                      className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
+                      onClick={() => setFundModalOpen(true)}
+                    >
+                      Manage Wallet
+                    </button>
+                    {/* <button
                     className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
                     onClick={() => setManageTokensModalOpen(true)}
                   >
                     Manage Assets
                   </button> */}
+                  </div>
+                </div>
+
+                <div className="flex mt-4 items-center space-x-2">
+                  <p className="text-xs font-bold">
+                    MetaMask Wallet:{" "}
+                    <span className="font-normal">
+                      {showWallet
+                        ? metaMaskAddress || "No wallet Linked"
+                        : "•••••••••••••••••"}
+                    </span>
+                  </p>
+                  <button
+                    onClick={() => setShowWallet(!showWallet)}
+                    className="focus:outline-none hover:cursor-pointer"
+                  >
+                    {showWallet ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </button>
                 </div>
               </div>
-
-              <div className="flex mt-4 items-center space-x-2">
-                <p className="text-xs font-bold">
-                  MetaMask Wallet:{" "}
-                  <span className="font-normal">
-                    {showWallet
-                      ? metaMaskAddress || "No wallet Linked"
-                      : "•••••••••••••••••"}
-                  </span>
-                </p>
-                <button
-                  onClick={() => setShowWallet(!showWallet)}
-                  className="focus:outline-none hover:cursor-pointer"
-                >
-                  {showWallet ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
-              </div>
-            </div>
-            {/* Quick Links */}
-            <div>
-              <h1 className="font-semibold py-4 md:text-lg">Quick Links</h1>
-              <div className="flex items-center gap-6 justify-around px-6 ">
-                <div
-                  className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105 hover:text-cyan-900"
-                  onClick={() => setP2pModalOpen(true)}
-                >
-                  <HandCoins className="font-extrabold" />
-                  <p className="font-bold text-sm hover:text-cyan-900">
-                    TRANSFER
-                  </p>
-                </div>
-                <div
-                  className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105 hover:text-cyan-900"
-                  onClick={() => setSchedulePayModalOpen(true)}
-                >
-                  <CalendarSync className="hover:text-cyan-900 font-extrabold" />
-                  <p className="font-bold text-sm hover:text-cyan-900">
-                    SCHEDULE-PAY
-                  </p>
-                </div>
-
-                <div
-                  className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105 hover:text-cyan-900"
-                  onClick={() => setAutoPayModalOpen(true)}
-                >
-                  <SmartphoneNfc className="hover:text-cyan-900 font-extrabold" />
-                  <p className="font-bold text-sm hover:text-cyan-900">
-                    AUTOPAY
-                  </p>
-                </div>
-
-                <Link to="/analytics">
-                  <div className="items-center flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
-                    <ChartNoAxesCombined className="hover:text-cyan-900" />
+              {/* Quick Links */}
+              <div>
+                <h1 className="font-semibold py-4 md:text-lg">Quick Links</h1>
+                <div className="flex items-center gap-6 justify-around px-6 ">
+                  <div
+                    className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105 hover:text-cyan-900"
+                    onClick={() => setP2pModalOpen(true)}
+                  >
+                    <HandCoins className="font-extrabold" />
                     <p className="font-bold text-sm hover:text-cyan-900">
-                      ANALYTICS
+                      TRANSFER
                     </p>
                   </div>
-                </Link>
+                  <div
+                    className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105 hover:text-cyan-900"
+                    onClick={() => setSchedulePayModalOpen(true)}
+                  >
+                    <CalendarSync className="hover:text-cyan-900 font-extrabold" />
+                    <p className="font-bold text-sm hover:text-cyan-900">
+                      SCHEDULE-PAY
+                    </p>
+                  </div>
+
+                  <div
+                    className="items-center flex hover:cursor-pointer flex-col rounded-md space-y-2 hover:scale-105 hover:text-cyan-900"
+                    onClick={() => setAutoPayModalOpen(true)}
+                  >
+                    <SmartphoneNfc className="hover:text-cyan-900 font-extrabold" />
+                    <p className="font-bold text-sm hover:text-cyan-900">
+                      AUTOPAY
+                    </p>
+                  </div>
+
+                  <Link to="/analytics">
+                    <div className="items-center flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
+                      <ChartNoAxesCombined className="hover:text-cyan-900" />
+                      <p className="font-bold text-sm hover:text-cyan-900">
+                        ANALYTICS
+                      </p>
+                    </div>
+                  </Link>
+                </div>
               </div>
             </div>
+            {/* Line Graph */}
+            <div className="flex-1 w-full lg:w-50">
+              <Line payments={history} />
+            </div>
           </div>
-          {/* Line Graph */}
-          <div className="flex-1 w-full lg:w-50">
-            <Line payments={history} />
-          </div>
-        </div>
-        {/* Pie Chart */}
-        <div className="md:flex justify-center">
-          <div className="flex-1 w-90 h-90">
-            <DashPieChart payments={history} currency={formatCurrency} />
-          </div>
-          <div className="flex-1 justify-center m-auto">
-            <p className="font-semibold text-right">
-              All your transactions intelligently sorted into categories!
-            </p>
-            <img src={image} alt="" className="w-90 h-90 m-auto" />
-          </div>
-        </div>
-
-        {/* Fund Wallet Modal */}
-        {fundModalOpen && (
-          <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-            <div
-              className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-              style={{ backgroundImage: `url(${wallpaper})` }}
-            ></div>
-            <div className="stars"></div>
-
-            <div className="bg-white  shadow-lg lg:w-md relative m-auto p-6 rounded-lg w-lg text-black">
-              <X
-                strokeWidth={7}
-                color="#FF0000"
-                onClick={() => setFundModalOpen(false)}
-                className=" hover:cursor-pointer  hover:scale-110  hover:text-red-400 "
-              />
-              <h2 className="text-xl font-bold text-center">Fund Wallet</h2>
-              <p className="text-center text-sm font-medium">
-                Fund your paywise wallet or Connect to Metamask.
+          {/* Pie Chart */}
+          <div className="md:flex justify-center">
+            <div className="flex-1 w-90 h-90">
+              <DashPieChart payments={history} currency={formatCurrency} />
+            </div>
+            <div className="flex-1 justify-center m-auto">
+              <p className="font-semibold text-right">
+                All your transactions intelligently sorted into categories!
               </p>
+              <img src={image} alt="" className="w-90 h-90 m-auto" />
+            </div>
+          </div>
 
-              {/* Wallet Display Section */}
-              <div className="p-2">
-                {walletLinked ? (
-                  <div className="m-auto text-center">
-                    <p className="font-semibold">Your Wallets:</p>
-                    <p>PayWise Wallet: {payWalletAddress || "N/A"}</p>
-                    <p>Metamask Wallet: {metaMaskAddress || "N/A"}</p>
+          {/* Fund Wallet Modal */}
+          {fundModalOpen && (
+            <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
+              <div
+                className="absolute inset-0 animate-moving-bg bg-cover bg-center"
+                style={{ backgroundImage: `url(${wallpaper})` }}
+              ></div>
+              <div className="stars"></div>
+
+              <div className="bg-white shadow-lg lg:w-md relative m-auto p-6 rounded-lg w-lg text-black">
+                <X
+                  strokeWidth={7}
+                  color="#FF0000"
+                  onClick={() => setFundModalOpen(false)}
+                  className="hover:cursor-pointer hover:scale-110 hover:text-red-400"
+                />
+                <h2 className="text-xl font-bold text-center">
+                  Manage Your Wallet
+                </h2>
+                <p className="text-center text-sm font-medium">
+                  Choose to either fund your PayWise wallet or withdraw funds.
+                </p>
+                //{" "}
+                <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
+                  //{" "}
+                  <div
+                    className="absolute inset-0 animate-moving-bg bg-cover bg-center"
+                    style={{ backgroundImage: `url(${wallpaper})` }}
+                  ></div>
+                  <div className="stars"></div>
+                  <div className="bg-white  shadow-lg lg:w-md relative m-auto p-6 rounded-lg w-lg text-black">
+                    <X
+                      strokeWidth={7}
+                      color="#FF0000"
+                      onClick={() => setFundModalOpen(false)}
+                      className=" hover:cursor-pointer  hover:scale-110  hover:text-red-400 "
+                    />
+                    <h2 className="text-xl font-bold text-center">
+                      Fund Wallet
+                    </h2>
+                    <p className="text-center text-sm font-medium">
+                      Fund and Withdraw from your paywise wallet or Connect to
+                      Metamask.
+                    </p>
+
+                    <div className=" p-1">
+                      <div className="flex-1 items-center justify-center">
+                        <input
+                          type="number"
+                          placeholder="Enter amount"
+                          value={amount}
+                          onChange={handleAmountChange}
+                          className="p-2 border rounded-md w-full mb-2"
+                        />
+                        <FlutterWaveButton
+                          className={`flex-1 p-2 bg-cyan-700 cursor-pointer hover:bg-cyan-500 text-white rounded-md ${
+                            !amount || amount <= 0
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
+                          {...flutterwaveConfig}
+                          disabled={!amount || amount <= 0}
+                        >
+                          {isSending ? "Processing..." : "Fund Wallet"}
+                        </FlutterWaveButton>
+                      </div>
+
+                      <p className="p-4 m-auto text-center font-bold text-xl">
+                        OR
+                      </p>
+
+                      {/* Withdraw Section */}
+
+                      <div className="flex items-center justify-center w-full">
+                        <form
+                          onSubmit={handleWithdraw}
+                          className="p-4 space-y-4 max-w-md mx-auto"
+                        >
+                          <input
+                            type="number"
+                            placeholder="Amount (₦)"
+                            value={withdrawAmount}
+                            onChange={(e) => setWithdrawAmount(e.target.value)}
+                            className="input"
+                            required
+                          />
+                          <input
+                            type="text"
+                            placeholder="Bank Code (e.g., 058 for GTBank)"
+                            value={bankCode}
+                            onChange={(e) => setBankCode(e.target.value)}
+                            className="input"
+                            required
+                          />
+                          <input
+                            type="text"
+                            placeholder="Account Number"
+                            value={accountNumber}
+                            onChange={(e) => setAccountNumber(e.target.value)}
+                            className="input"
+                            required
+                          />
+                          <input
+                            type="text"
+                            placeholder="Narration"
+                            value={narration}
+                            onChange={(e) => setNarration(e.target.value)}
+                            className="input"
+                          />
+                          <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1 p-2 bg-cyan-700 cursor-pointer hover:bg-cyan-500 text-white rounded-md"
+                          >
+                            {/* {loading ? "Processing..." : "Withdraw"} */}
+                            Withdraw Funds
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="p-4 m-auto text-center font-bold text-xl">OR</p>
+                {/* Withdraw Funds Section */}
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-center mb-4">
+                    Withdraw Funds
+                  </h3>
+                  <form
+                    onSubmit={handleWithdraw}
+                    className="p-4 space-y-4 max-w-md mx-auto"
+                  >
+                    <input
+                      type="number"
+                      placeholder="Amount (₦)"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      className="input"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Bank Code (e.g., 058 for GTBank)"
+                      value={bankCode}
+                      onChange={(e) => setBankCode(e.target.value)}
+                      className="input"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Account Number"
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                      className="input"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Narration"
+                      value={narration}
+                      onChange={(e) => setNarration(e.target.value)}
+                      className="input"
+                    />
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="btn btn-primary w-full"
+                    >
+                      {loading ? "Processing..." : "Withdraw"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Manage Tokens Modal */}
+          {manageTokensModalOpen && (
+            <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
+              {/* Moving Gradient Background */}
+              {/* <div className="absolute inset-0 animate-gradient bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500"></div> */}
+
+              {/* Moving Image Background */}
+              {/* <div
+             className="absolute inset-0 galaxy-background bg-contain "
+              style={{ backgroundImage: `url(${blkchain2})` }}
+           ></div>
+           */}
+
+              {/* Animated Background  */}
+              {/* <div className="absolute inset-0 animate-waves bg-cover bg-center" style={{ backgroundImage: `url(${blkchain2})` }}></div> */}
+
+              <div
+                className="absolute inset-0 animate-moving-bg bg-cover bg-center"
+                style={{ backgroundImage: `url(${blkchain5})` }}
+              ></div>
+              <div className="stars"></div>
+
+              <div className=" bg-white  shadow-lg lg:w-md relative m-auto p-6 rounded-lg w-lg text-black">
+                <X
+                  strokeWidth={7}
+                  color="#FF0000"
+                  onClick={() => setManageTokensModalOpen(false)}
+                  className=" hover:cursor-pointer  hover:scale-110  hover:text-red-400 "
+                />
+                <h2 className="text-xl font-bold text-center">My Assets</h2>
+                <p className="text-center text-sm font-medium">
+                  Manage transactions with your digital wallets
+                </p>
+                {/* Tabs */}
+                <div className="flex border-b mb-4 ">
+                  <button
+                    className={`flex-1 p-2 text-center cursor-pointer ${
+                      activeTab === "crypto"
+                        ? "border-b-2 border-blue-500 text-blue-500"
+                        : "text-gray-500"
+                    }`}
+                    onClick={() => setActiveTab("crypto")}
+                  >
+                    Crypto
+                  </button>
+                  <button
+                    className={`flex-1 p-2 text-center cursor-pointer ${
+                      activeTab === "rewards"
+                        ? "border-b-2 border-blue-500 text-blue-500"
+                        : "text-gray-500"
+                    }`}
+                    onClick={() => setActiveTab("rewards")}
+                  >
+                    Rewards
+                  </button>
+                </div>
+                {/* Content */}
+                {activeTab === "crypto" ? (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-2 border rounded cursor-pointer">
+                      <span>🔗 Bitcoin</span>
+                      <span>0.05 BTC</span>
+                    </div>
+                    <div className="flex justify-between items-center p-2 border rounded cursor-pointer">
+                      <span>🌐 Ethereum</span>
+                      <span>1.2 ETH</span>
+                    </div>
                   </div>
                 ) : (
-                  <p className="font-semibold text-center">
-                    You have no external wallets linked.
-                  </p>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-2 border rounded cursor-pointer">
+                      <span>🏆 PayWise Tokens</span>
+                      <span>500 PWT</span>
+                    </div>
+                  </div>
                 )}
+
+                {/* Actions */}
+                <div className="mt-4 flex justify-between">
+                  <button className="bg-green-500 text-white px-4 py-2 rounded cursor-pointer">
+                    Send
+                  </button>
+                  <button className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer">
+                    Receive
+                  </button>
+                  <button className="bg-yellow-500 text-white px-4 py-2 rounded cursor-pointer">
+                    Convert
+                  </button>
+                </div>
               </div>
-              <div className=" p-1">
-                <div className="flex-1 items-center justify-center">
+            </div>
+          )}
+          {/* P2P Modal */}
+          {p2pModalOpen && (
+            <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
+              <div
+                className="absolute inset-0 animate-moving-bg bg-cover bg-center"
+                style={{ backgroundImage: `url(${blkchain5})` }}
+              ></div>
+
+              <div className="bg-white  shadow-lg lg:w-md relative m-auto p-6 rounded-lg w-lg text-black">
+                <X
+                  strokeWidth={7}
+                  color="#FF0000"
+                  onClick={() => setP2pModalOpen(false)}
+                  className=" hover:cursor-pointer  hover:scale-110  hover:text-red-400 "
+                />
+                <h2 className="text-xl font-bold text-center">
+                  Transfer from Wallet
+                </h2>
+                <p className="text-center text-sm font-medium">
+                  Make Instant transfer to other Paywise users
+                </p>
+
+                <div className=" p-1">
+                  <form
+                    action=""
+                    className="flex-1 items-center justify-center"
+                  ></form>
+                  <label htmlFor="email" className="text-sm">
+                    Receipient Email
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="Enter receipient email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    className="p-2 border rounded-md w-full mb-2"
+                  />
+                  <label htmlFor="amount" className="text-sm">
+                    Enter Amount
+                  </label>
                   <input
                     type="number"
                     placeholder="Enter amount"
@@ -563,243 +829,81 @@ const DashBoard = () => {
                     onChange={handleAmountChange}
                     className="p-2 border rounded-md w-full mb-2"
                   />
-                  <FlutterWaveButton
-                    className={`flex-1 p-2 bg-cyan-700 cursor-pointer hover:bg-cyan-500 text-white rounded-md ${
-                      !amount || amount <= 0
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }`}
-                    {...flutterwaveConfig}
-                    disabled={!amount || amount <= 0}
-                  >
-                    {isSending ? "Processing..." : "Fund Wallet"}
-                  </FlutterWaveButton>
-                </div>
-
-                <p className="p-4 m-auto text-center font-bold text-xl">OR</p>
-
-                <div className="flex items-center justify-center w-full">
-                  <button
-                    onClick={() => setWithdrawModalOpen(true)}
-                    className="flex-1 hover:cursor-pointer p-2 bg-green-800 m-auto hover:bg-green-600 text-white rounded-md "
-                  >
-                    {isConnecting ? "Connecting..." : "Connect to MetaMask"}
-                  </button>
+                  <div className="flex items-center justify-center w-full">
+                    <button
+                      onClick={handleTransfer}
+                      disabled={loading}
+                      className="flex-1 hover:cursor-pointer p-2 bg-green-800 m-auto hover:bg-green-600 text-white rounded-md"
+                    >
+                      {isSubmitting ? "Transferring Funds..." : "Transfer"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-        {/* Manage Tokens Modal */}
-        {manageTokensModalOpen && (
-          <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-            {/* Moving Gradient Background */}
-            {/* <div className="absolute inset-0 animate-gradient bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500"></div> */}
-
-            {/* Moving Image Background */}
-            {/* <div
-             className="absolute inset-0 galaxy-background bg-contain "
-              style={{ backgroundImage: `url(${blkchain2})` }}
-           ></div>
-           */}
-
-            {/* Animated Background  */}
-            {/* <div className="absolute inset-0 animate-waves bg-cover bg-center" style={{ backgroundImage: `url(${blkchain2})` }}></div> */}
-
-            <div
-              className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-              style={{ backgroundImage: `url(${blkchain5})` }}
-            ></div>
-            <div className="stars"></div>
-
-            <div className=" bg-white  shadow-lg lg:w-md relative m-auto p-6 rounded-lg w-lg text-black">
-              <X
-                strokeWidth={7}
-                color="#FF0000"
-                onClick={() => setManageTokensModalOpen(false)}
-                className=" hover:cursor-pointer  hover:scale-110  hover:text-red-400 "
+          )}
+          {/* Scehdule Payment Modal */}
+          {schedulePayModalOpen && (
+            <SchedulePaymentModal
+              onClose={() => setSchedulePayModalOpen(false)}
+              billers={billers}
+            />
+          )}
+          {/* AutoPay Modal */}
+          {autoPayModalOpen && (
+            <AutoPayModal
+              onClose={() => setAutoPayModalOpen(false)}
+              billers={billers}
+            />
+          )}
+          {/* Withdraw Modal */}
+          {withdrawModalOpen && (
+            <form
+              onSubmit={handleWithdraw}
+              className="p-4 space-y-4 max-w-md mx-auto"
+            >
+              <input
+                type="number"
+                placeholder="Amount (₦)"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                className="input"
+                required
               />
-              <h2 className="text-xl font-bold text-center">My Assets</h2>
-              <p className="text-center text-sm font-medium">
-                Manage transactions with your digital wallets
-              </p>
-              {/* Tabs */}
-              <div className="flex border-b mb-4 ">
-                <button
-                  className={`flex-1 p-2 text-center cursor-pointer ${
-                    activeTab === "crypto"
-                      ? "border-b-2 border-blue-500 text-blue-500"
-                      : "text-gray-500"
-                  }`}
-                  onClick={() => setActiveTab("crypto")}
-                >
-                  Crypto
-                </button>
-                <button
-                  className={`flex-1 p-2 text-center cursor-pointer ${
-                    activeTab === "rewards"
-                      ? "border-b-2 border-blue-500 text-blue-500"
-                      : "text-gray-500"
-                  }`}
-                  onClick={() => setActiveTab("rewards")}
-                >
-                  Rewards
-                </button>
-              </div>
-              {/* Content */}
-              {activeTab === "crypto" ? (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-2 border rounded cursor-pointer">
-                    <span>🔗 Bitcoin</span>
-                    <span>0.05 BTC</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 border rounded cursor-pointer">
-                    <span>🌐 Ethereum</span>
-                    <span>1.2 ETH</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-2 border rounded cursor-pointer">
-                    <span>🏆 PayWise Tokens</span>
-                    <span>500 PWT</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="mt-4 flex justify-between">
-                <button className="bg-green-500 text-white px-4 py-2 rounded cursor-pointer">
-                  Send
-                </button>
-                <button className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer">
-                  Receive
-                </button>
-                <button className="bg-yellow-500 text-white px-4 py-2 rounded cursor-pointer">
-                  Convert
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* P2P Modal */}
-        {p2pModalOpen && (
-          <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-            <div
-              className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-              style={{ backgroundImage: `url(${blkchain5})` }}
-            ></div>
-
-            <div className="bg-white  shadow-lg lg:w-md relative m-auto p-6 rounded-lg w-lg text-black">
-              <X
-                strokeWidth={7}
-                color="#FF0000"
-                onClick={() => setP2pModalOpen(false)}
-                className=" hover:cursor-pointer  hover:scale-110  hover:text-red-400 "
+              <input
+                type="text"
+                placeholder="Bank Code (e.g., 058 for GTBank)"
+                value={bankCode}
+                onChange={(e) => setBankCode(e.target.value)}
+                className="input"
+                required
               />
-              <h2 className="text-xl font-bold text-center">
-                Transfer from Wallet
-              </h2>
-              <p className="text-center text-sm font-medium">
-                Make Instant transfer to other Paywise users
-              </p>
-
-              <div className=" p-1">
-                <form
-                  action=""
-                  className="flex-1 items-center justify-center"
-                ></form>
-                <label htmlFor="email" className="text-sm">
-                  Receipient Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="Enter receipient email"
-                  value={recipientEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
-                  className="p-2 border rounded-md w-full mb-2"
-                />
-                <label htmlFor="amount" className="text-sm">
-                  Enter Amount
-                </label>
-                <input
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={handleAmountChange}
-                  className="p-2 border rounded-md w-full mb-2"
-                />
-                <div className="flex items-center justify-center w-full">
-                  <button
-                    onClick={handleTransfer}
-                    disabled={loading}
-                    className="flex-1 hover:cursor-pointer p-2 bg-green-800 m-auto hover:bg-green-600 text-white rounded-md"
-                  >
-                    {isSubmitting ? "Transferring Funds..." : "Transfer"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Scehdule Payment Modal */}
-        {schedulePayModalOpen && (
-          <SchedulePaymentModal
-            onClose={() => setSchedulePayModalOpen(false)}
-            billers={billers}
-          />
-        )}
-        {/* AutoPay Modal */}
-        {autoPayModalOpen && (
-          <AutoPayModal
-            onClose={() => setAutoPayModalOpen(false)}
-            billers={billers}
-          />
-        )}
-        {/* Withdraw Modal */}
-        {withdrawModalOpen && (
-          <form onSubmit={handleWithdraw} className="p-4 space-y-4 max-w-md mx-auto">
-          <input
-            type="number"
-            placeholder="Amount (₦)"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="input"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Bank Code (e.g., 058 for GTBank)"
-            value={bankCode}
-            onChange={(e) => setBankCode(e.target.value)}
-            className="input"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Account Number"
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value)}
-            className="input"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Narration"
-            value={narration}
-            onChange={(e) => setNarration(e.target.value)}
-            className="input"
-          />
-          <button type="submit" disabled={loading} className="btn btn-primary w-full">
-            {loading ? "Processing..." : "Withdraw"}
-          </button>
-        </form>
-        )}
-      </section>
-
+              <input
+                type="text"
+                placeholder="Account Number"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                className="input"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Narration"
+                value={narration}
+                onChange={(e) => setNarration(e.target.value)}
+                className="input"
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary w-full"
+              >
+                {/* {loading ? "Processing..." : "Withdraw"} */}
+              </button>
+            </form>
+          )}
+        </section>
       )}
-
-      
     </>
   );
 };
