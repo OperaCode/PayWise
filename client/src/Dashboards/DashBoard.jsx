@@ -537,9 +537,9 @@ const DashBoard = () => {
                 <p className="text-center text-sm font-medium">
                   Choose to either fund your PayWise wallet or withdraw funds.
                 </p>
-                //{" "}
+              
                 <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-                  //{" "}
+               
                   <div
                     className="absolute inset-0 animate-moving-bg bg-cover bg-center"
                     style={{ backgroundImage: `url(${wallpaper})` }}
@@ -598,7 +598,7 @@ const DashBoard = () => {
                             placeholder="Amount (₦)"
                             value={withdrawAmount}
                             onChange={(e) => setWithdrawAmount(e.target.value)}
-                            className="input"
+                             className="p-2 border rounded-md w-full mb-2"
                             required
                           />
                           <input
@@ -606,7 +606,7 @@ const DashBoard = () => {
                             placeholder="Bank Code (e.g., 058 for GTBank)"
                             value={bankCode}
                             onChange={(e) => setBankCode(e.target.value)}
-                            className="input"
+                             className="p-2 border rounded-md w-full mb-2"
                             required
                           />
                           <input
@@ -614,7 +614,7 @@ const DashBoard = () => {
                             placeholder="Account Number"
                             value={accountNumber}
                             onChange={(e) => setAccountNumber(e.target.value)}
-                            className="input"
+                             className="p-2 border rounded-md w-full mb-2"
                             required
                           />
                           <input
@@ -622,7 +622,7 @@ const DashBoard = () => {
                             placeholder="Narration"
                             value={narration}
                             onChange={(e) => setNarration(e.target.value)}
-                            className="input"
+                             className="p-2 border rounded-md w-full mb-2"
                           />
                           <button
                             type="submit"
