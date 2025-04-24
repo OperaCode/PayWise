@@ -40,7 +40,7 @@ const DashBoard = () => {
   const [schedulePayModalOpen, setSchedulePayModalOpen] = useState(false);
   const [autoPayModalOpen, setAutoPayModalOpen] = useState(false);
   const [wiseCoinTransferOpen, setWiseCoinTransferOpen] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [withdrawal, setWithdrawal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -53,7 +53,7 @@ const DashBoard = () => {
   const [metaMaskAddress, setMetaMaskAddress] = useState("");
   const [payWalletAddress, setPayWalletAddress] = useState("");
   const [scheduleDate, setScheduleDate] = useState("");
-  const [activeTab, setActiveTab] = useState("crypto");
+  // const [activeTab, setActiveTab] = useState("crypto");
   //to show hidden wallet balance
   const [showWallet, setShowWallet] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
@@ -63,6 +63,7 @@ const DashBoard = () => {
   const [bankCode, setBankCode] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [narration, setNarration] = useState("");
+  const [activeTab, setActiveTab] = useState("fund");
   // const [loading, setLoading] = useState(false);
 
   const [history, setHistory] = useState([]);
@@ -244,18 +245,24 @@ const DashBoard = () => {
     },
   };
 
+
+  // Wallet withdraw
   const handleWithdraw = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setWithdrawal(true);
     try {
-      const token = localStorage.getItem("token"); // Adjust based on auth setup
+      const token = localStorage.getItem("token"); 
+      const userId = localStorage.getItem("userId")
+      console.log(token)
+      // const userId = localStorage.getItem("userId")
       const response = await axios.post(
-        "/api/wallet/withdraw",
+        `${BASE_URL}/payment/withdraw-fund`,
         {
           amount,
           account_bank: bankCode,
           account_number: accountNumber,
           narration,
+          userId
         },
         {
           headers: {
@@ -263,11 +270,12 @@ const DashBoard = () => {
           },
         }
       );
-      alert("Withdrawal started: " + response.data.message);
+      toast.success("Withdrawal started: " + response.data.message);
+      console.log("Withdrawal started: " + response);
     } catch (err) {
-      alert("Error: " + err.response?.data?.message || err.message);
+      toast.error("Error: " + err.response?.data?.message || err.message);
     } finally {
-      setLoading(false);
+      setWithdrawal(false);
     }
   };
 
@@ -436,7 +444,7 @@ const DashBoard = () => {
                   </div>
                 </div>
 
-                <div className="flex mt-4 items-center space-x-2">
+                {/* <div className="flex mt-4 items-center space-x-2">
                   <p className="text-xs font-bold">
                     MetaMask Wallet:{" "}
                     <span className="font-normal">
@@ -451,7 +459,7 @@ const DashBoard = () => {
                   >
                     {showWallet ? <Eye size={16} /> : <EyeOff size={16} />}
                   </button>
-                </div>
+                </div> */}
               </div>
               {/* Quick Links */}
               <div>
@@ -517,142 +525,82 @@ const DashBoard = () => {
 
           {/* Fund Wallet Modal */}
           {fundModalOpen && (
-            <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
+            <div className="fixed inset-0 text-black flex items-center  justify-center bg-opacity-50 z-50">
               <div
                 className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-                style={{ backgroundImage: `url(${wallpaper})` }}
+                style={{ backgroundImage: `url(${blkchain5})` }}
               ></div>
               <div className="stars"></div>
 
-              <div className="bg-white shadow-lg lg:w-md relative m-auto p-6 rounded-lg w-lg text-black">
+              <div className="bg-zinc-100 shadow-lg w-2/4 h-2/3 relative m-auto p-6 rounded-lg text-black z-50">
                 <X
                   strokeWidth={7}
                   color="#FF0000"
                   onClick={() => setFundModalOpen(false)}
-                  className="hover:cursor-pointer hover:scale-110 hover:text-red-400"
+                  className="hover:cursor-pointer hover:scale-110 hover:text-red-400 absolute top-4 right-4"
                 />
-                <h2 className="text-xl font-bold text-center">
+
+                <h2 className="text-xl font-bold text-center mb-2">
                   Manage Your Wallet
                 </h2>
-                <p className="text-center text-sm font-medium">
+                <p className="text-center text-sm font-medium mb-4">
                   Choose to either fund your PayWise wallet or withdraw funds.
                 </p>
-              
-                <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
-               
-                  <div
-                    className="absolute inset-0 animate-moving-bg bg-cover bg-center"
-                    style={{ backgroundImage: `url(${wallpaper})` }}
-                  ></div>
-                  <div className="stars"></div>
-                  <div className="bg-white  shadow-lg lg:w-md relative m-auto p-6 rounded-lg w-lg text-black">
-                    <X
-                      strokeWidth={7}
-                      color="#FF0000"
-                      onClick={() => setFundModalOpen(false)}
-                      className=" hover:cursor-pointer  hover:scale-110  hover:text-red-400 "
-                    />
-                    <h2 className="text-xl font-bold text-center">
-                      Fund Wallet
-                    </h2>
-                    <p className="text-center text-sm font-medium">
-                      Fund and Withdraw from your paywise wallet or Connect to
-                      Metamask.
-                    </p>
 
-                    <div className=" p-1">
-                      <div className="flex-1 items-center justify-center">
-                        <input
-                          type="number"
-                          placeholder="Enter amount"
-                          value={amount}
-                          onChange={handleAmountChange}
-                          className="p-2 border rounded-md w-full mb-2"
-                        />
-                        <FlutterWaveButton
-                          className={`flex-1 p-2 bg-cyan-700 cursor-pointer hover:bg-cyan-500 text-white rounded-md ${
-                            !amount || amount <= 0
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          }`}
-                          {...flutterwaveConfig}
-                          disabled={!amount || amount <= 0}
-                        >
-                          {isSending ? "Processing..." : "Fund Wallet"}
-                        </FlutterWaveButton>
-                      </div>
-
-                      <p className="p-4 m-auto text-center font-bold text-xl">
-                        OR
-                      </p>
-
-                      {/* Withdraw Section */}
-
-                      <div className="flex items-center justify-center w-full">
-                        <form
-                          onSubmit={handleWithdraw}
-                          className="p-4 space-y-4 max-w-md mx-auto"
-                        >
-                          <input
-                            type="number"
-                            placeholder="Amount (₦)"
-                            value={withdrawAmount}
-                            onChange={(e) => setWithdrawAmount(e.target.value)}
-                             className="p-2 border rounded-md w-full mb-2"
-                            required
-                          />
-                          <input
-                            type="text"
-                            placeholder="Bank Code (e.g., 058 for GTBank)"
-                            value={bankCode}
-                            onChange={(e) => setBankCode(e.target.value)}
-                             className="p-2 border rounded-md w-full mb-2"
-                            required
-                          />
-                          <input
-                            type="text"
-                            placeholder="Account Number"
-                            value={accountNumber}
-                            onChange={(e) => setAccountNumber(e.target.value)}
-                             className="p-2 border rounded-md w-full mb-2"
-                            required
-                          />
-                          <input
-                            type="text"
-                            placeholder="Narration"
-                            value={narration}
-                            onChange={(e) => setNarration(e.target.value)}
-                             className="p-2 border rounded-md w-full mb-2"
-                          />
-                          <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1 p-2 bg-cyan-700 cursor-pointer hover:bg-cyan-500 text-white rounded-md"
-                          >
-                            {/* {loading ? "Processing..." : "Withdraw"} */}
-                            Withdraw Funds
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <p className="p-4 m-auto text-center font-bold text-xl">OR</p>
-                {/* Withdraw Funds Section */}
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-center mb-4">
-                    Withdraw Funds
-                  </h3>
-                  <form
-                    onSubmit={handleWithdraw}
-                    className="p-4 space-y-4 max-w-md mx-auto"
+                {/* Toggle Header */}
+                <div className="flex justify-center gap-4 mb-6 ">
+                  <button
+                    onClick={() => setActiveTab("fund")}
+                    className={`transition-all duration-300 ease-in-out px-4 py-2 cursor-pointer rounded-md font-semibold ${
+                      activeTab === "fund"
+                        ? "border-b-3 border-cyan-500 "
+                        : "bg-zinc-100"
+                    }`}
                   >
+                    Fund Wallet
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("withdraw")}
+                    className={`transition-all duration-300 ease-in-out px-4 py-2 cursor-pointer rounded-md font-semibold ${
+                      activeTab === "withdraw"
+                        ? "border-b-3 border-cyan-500"
+                        : "bg-zinc-100"
+                    }`}
+                  >
+                    Withdraw Funds
+                  </button>
+                </div>
+
+                {/* Toggle Content */}
+                {activeTab === "fund" ? (
+                  <div className="space-y-4">
                     <input
                       type="number"
-                      placeholder="Amount (₦)"
+                      placeholder="Enter amount"
+                      value={amount}
+                      onChange={handleAmountChange}
+                      className="p-2 border rounded-md w-full"
+                    />
+                    <FlutterWaveButton
+                      className={`p-2 w-1/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500 ${
+                        !amount || amount <= 0
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      }`}
+                      {...flutterwaveConfig}
+                      disabled={!amount || amount <= 0}
+                    >
+                      {isSending ? "Processing..." : "Fund Wallet"}
+                    </FlutterWaveButton>
+                  </div>
+                ) : (
+                  <form onSubmit={handleWithdraw} className="space-y-4">
+                    <input
+                      type="number"
+                      placeholder="Amount ($)"
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
-                      className="input"
+                      className="p-2 border rounded-md w-full"
                       required
                     />
                     <input
@@ -660,7 +608,7 @@ const DashBoard = () => {
                       placeholder="Bank Code (e.g., 058 for GTBank)"
                       value={bankCode}
                       onChange={(e) => setBankCode(e.target.value)}
-                      className="input"
+                      className="p-2 border rounded-md w-full"
                       required
                     />
                     <input
@@ -668,7 +616,7 @@ const DashBoard = () => {
                       placeholder="Account Number"
                       value={accountNumber}
                       onChange={(e) => setAccountNumber(e.target.value)}
-                      className="input"
+                      className="p-2 border rounded-md w-full"
                       required
                     />
                     <input
@@ -676,17 +624,17 @@ const DashBoard = () => {
                       placeholder="Narration"
                       value={narration}
                       onChange={(e) => setNarration(e.target.value)}
-                      className="input"
+                      className="p-2 border rounded-md w-full"
                     />
                     <button
                       type="submit"
                       disabled={loading}
-                      className="btn btn-primary w-full"
+                      className="p-2 w-1/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500"
                     >
-                      {loading ? "Processing..." : "Withdraw"}
+                      {withdrawal ? "Processing..." : "Withdraw Funds"}
                     </button>
                   </form>
-                </div>
+                )}
               </div>
             </div>
           )}
