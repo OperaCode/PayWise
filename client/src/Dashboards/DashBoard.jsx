@@ -250,19 +250,25 @@ const DashBoard = () => {
   const handleWithdraw = async (e) => {
     e.preventDefault();
     setWithdrawal(true);
+  
     try {
       const token = localStorage.getItem("token"); 
-      const userId = localStorage.getItem("userId")
-      console.log(token)
-      // const userId = localStorage.getItem("userId")
+      const userId = localStorage.getItem("userId");
+  
+      if (!token || !userId) {
+        toast.error("Authentication error. Please log in again.");
+        setWithdrawal(false);
+        return;
+      }
+  
       const response = await axios.post(
         `${BASE_URL}/payment/withdraw-fund`,
         {
-          amount,
+          userId,
+          amount: withdrawAmount,
           account_bank: bankCode,
           account_number: accountNumber,
           narration,
-          userId
         },
         {
           headers: {
@@ -270,15 +276,18 @@ const DashBoard = () => {
           },
         }
       );
-      toast.success("Withdrawal started: " + response.data.message);
-      console.log("Withdrawal started: " + response);
+  
+      toast.success(`Withdrawal started: ${response.data.message}`);
+      console.log("Withdrawal response:", response.data);
+  
     } catch (err) {
-      toast.error("Error: " + err.response?.data?.message || err.message);
+      toast.error("Error: " + (err.response?.data?.message || err.message));
+      console.error("Withdrawal error:", err);
     } finally {
       setWithdrawal(false);
     }
   };
-
+  
   //P2P Transfer
   const handleTransfer = async (e) => {
     e.preventDefault();
