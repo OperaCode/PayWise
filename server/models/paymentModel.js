@@ -29,7 +29,7 @@ isRecurring: { type: Boolean, default: false },
   paidAt: Date,
   paymentType: {
     type: String,
-    enum: ['Autopay', 'Scheduled','Transfer', 'Funding'],
+    enum: ['Autopay', 'Scheduled','Transfer', 'Funding','withdrawal'],
     default: 'Scheduled',
   },
   recurrence: {

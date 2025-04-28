@@ -107,13 +107,13 @@ const fundWallet = asyncHandler(async (req, res) => {
 });
 
 const withdrawToBank = asyncHandler(async (req, res) => {
-  const {userId ,amount, account_bank, account_number, narration } = req.body;
-  // const UserId = req.userId;
+  const { userId, amount, account_bank, account_number, narration } = req.body;
+  console.log(req.body)
 
   const user = await User.findById(userId);
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  if (user.walletBalance < amount) {
+  if (user.wallet.balance < amount) {
     return res.status(400).json({ message: "Insufficient wallet balance" });
   }
 
@@ -126,13 +126,15 @@ const withdrawToBank = asyncHandler(async (req, res) => {
     currency: "USD",
     reference,
     callback_url: "https://yourdomain.com/webhook/flutterwave",
-    debit_currency: "USD"
+    debit_currency: "USD",
   };
 
   let flutterwaveResponse;
 
-  // 👉 Mock if in development (or use a separate flag)
-  if (process.env.NODE_ENV === 'development' || process.env.MOCK_FLW === 'true') {
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.MOCK_FLW === "true"
+  ) {
     flutterwaveResponse = {
       status: "success",
       message: "Mock withdrawal initiated",
@@ -142,8 +144,8 @@ const withdrawToBank = asyncHandler(async (req, res) => {
         amount,
         account_number,
         account_bank,
-        currency: "USD"
-      }
+        currency: "USD",
+      },
     };
   } else {
     const response = await axios.post(
@@ -155,36 +157,41 @@ const withdrawToBank = asyncHandler(async (req, res) => {
         },
       }
     );
-
     flutterwaveResponse = response.data;
   }
 
   if (flutterwaveResponse.status === "success") {
-    user.walletBalance -= amount;
+    user.wallet.balance -= amount;
     await user.save();
 
-    await Transaction.create({
+    console.log("Withdraw Amount:", amount);
+    console.log("Flutterwave Response:", flutterwaveResponse);
+
+    const newPayment = new Payment({
       user: userId,
       type: "withdrawal",
       amount,
-      status: "pending",
+      transactionRef: flutterwaveResponse.data?.reference || uuidv4(),
+      status: "Successful",
+      paymentType: "withdrawal",
+      paidAt: new Date(),
+      description: "Wallet withdrawal via Flutterwave",
       reference,
       bankAccount: account_number,
     });
 
-    // return res.status(200).json({ message: "Withdrawal initiated", transfer: flutterwaveResponse });
+    await newPayment.save();
 
-
-    return res.status(200).json({ 
-      message: "Withdrawal initiated successfully", 
-      details: flutterwaveResponse.message 
+    return res.status(200).json({
+      message: "Withdrawal initiated successfully",
+      details: flutterwaveResponse.message,
     });
   } else {
-    return res.status(500).json({ message: "Transfer failed", details: flutterwaveResponse });
+    return res
+      .status(500)
+      .json({ message: "Transfer failed", details: flutterwaveResponse });
   }
 });
-
-
 
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
@@ -206,7 +213,9 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     sender.wallet.balance -= transferAmount;
 
     // Find recipient and validate
-    const recipient = await User.findOne({ email: recipientEmail.toLowerCase() });
+    const recipient = await User.findOne({
+      email: recipientEmail.toLowerCase(),
+    });
     if (!recipient) {
       return res.status(404).json({ message: "Recipient not found" });
     }
@@ -214,9 +223,10 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     recipient.wallet.balance += transferAmount;
 
     // Reward Calculation for sender
-    const reward = transferAmount > 100
-      ? 10
-      : parseFloat((transferAmount * 0.02).toFixed(2));
+    const reward =
+      transferAmount > 100
+        ? 10
+        : parseFloat((transferAmount * 0.02).toFixed(2));
 
     sender.wallet.payCoins += reward;
     const usdEquivalent = reward / 100;
@@ -239,14 +249,11 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     });
 
     // Save sender, recipient, and payment atomically (consider using a transaction for consistency)
-    await Promise.all([
-      sender.save(),
-      recipient.save(),
-      newPayment.save(),
-    ]);
+    await Promise.all([sender.save(), recipient.save(), newPayment.save()]);
 
     // If the recipient is a biller, update their totalAmountPaid
-    const biller = recipient && await Biller.findOne({ email: recipient.email });
+    const biller =
+      recipient && (await Biller.findOne({ email: recipient.email }));
     if (biller) {
       biller.totalAmountPaid += transferAmount;
       await biller.save();
@@ -270,17 +277,26 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     const userId = req.userId; // Extracted from token
 
     // 1. Validate fields
-    if (!userId) return res.status(401).json({ message: "Unauthorized. Please log in." });
+    if (!userId)
+      return res.status(401).json({ message: "Unauthorized. Please log in." });
 
     const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0 || !billerEmail || !scheduleDate || !transactionPin) {
-      return res.status(400).json({ message: "Missing or invalid required fields." });
+    if (
+      isNaN(parsedAmount) ||
+      parsedAmount <= 0 ||
+      !billerEmail ||
+      !scheduleDate ||
+      !transactionPin
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Missing or invalid required fields." });
     }
 
     // 2. Parse the schedule date from the frontend (already in UTC)
     const scheduledDate = new Date(scheduleDate); // This will be parsed as UTC correctly
     scheduledDate.setSeconds(0, 0); // Ensure no sub-seconds
-    
+
     // Validate the schedule date
     if (isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
       return res.status(400).json({ message: "Invalid schedule date." });
@@ -291,21 +307,25 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found." });
 
     // 4. Check transaction PIN
-    const isPinValid = await bcrypt.compare(transactionPin, user.transactionPin);
-    if (!isPinValid) return res.status(403).json({ message: "Invalid transaction PIN." });
+    const isPinValid = await bcrypt.compare(
+      transactionPin,
+      user.transactionPin
+    );
+    if (!isPinValid)
+      return res.status(403).json({ message: "Invalid transaction PIN." });
 
     // 5. Find biller
     const recipient = await Biller.findOne({ email: billerEmail });
-    if (!recipient) return res.status(404).json({ message: "Biller not found." });
+    if (!recipient)
+      return res.status(404).json({ message: "Biller not found." });
 
     // 6. Check if there is already a pending payment for this biller
-    
 
     // 7. Save scheduled payment
     const newPayment = new Payment({
       user: userId,
       recipientBiller: recipient._id,
-      amount: parsedAmount,  // Use parsed amount as a number
+      amount: parsedAmount, // Use parsed amount as a number
       transactionRef: `SCH-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       scheduleDate: scheduledDate,
       paymentType: "Scheduled",
@@ -341,8 +361,12 @@ const scheduleRecurring = async (req, res) => {
 
     // Validate PIN
     const user = await User.findById(userId);
-    const isPinValid = await bcrypt.compare(transactionPin, user.transactionPin);
-    if (!isPinValid) return res.status(403).json({ message: "Invalid transaction PIN." });
+    const isPinValid = await bcrypt.compare(
+      transactionPin,
+      user.transactionPin
+    );
+    if (!isPinValid)
+      return res.status(403).json({ message: "Invalid transaction PIN." });
 
     // Ensure sufficient balance
     if (user.wallet.balance < amount) {
@@ -356,25 +380,32 @@ const scheduleRecurring = async (req, res) => {
     }
 
     // Generate a transaction reference for each scheduled payment
-    const { v4: uuidv4 } = require('uuid');
+    const { v4: uuidv4 } = require("uuid");
 
     // Create a scheduled Payment entry for each biller
     const scheduledPayments = await Promise.all(
       billers.map((biller) => {
-        console.log(`Calculating next execution date for frequency: ${frequency}`);  // Log the frequency value
-        const nextExecutionDate = calculateNextExecutionDate(startDate, frequency);
+        console.log(
+          `Calculating next execution date for frequency: ${frequency}`
+        ); // Log the frequency value
+        const nextExecutionDate = calculateNextExecutionDate(
+          startDate,
+          frequency
+        );
 
         return Payment.create({
           user: userId,
           recipientBiller: biller._id,
           amount: biller.serviceAmount,
-          status: "Pending",  // Initial status is pending
-          transactionRef: `ATP-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+          status: "Pending", // Initial status is pending
+          transactionRef: `ATP-${Date.now()}-${Math.floor(
+            Math.random() * 10000
+          )}`,
           isRecurring: true,
           frequency: frequency,
-          isAutoPayment: true,  // Assuming autopay for recurring payments
-          scheduleDate: new Date(startDate),  // Use the provided start date
-          nextExecution: nextExecutionDate,  // Calculate next execution based on frequency
+          isAutoPayment: true, // Assuming autopay for recurring payments
+          scheduleDate: new Date(startDate), // Use the provided start date
+          nextExecution: nextExecutionDate, // Calculate next execution based on frequency
           recurrence: {
             occurrencesLeft: occurrences,
             lastPaidAt: new Date(startDate),
@@ -401,23 +432,22 @@ const calculateNextExecutionDate = (startDate, frequency) => {
   const freq = frequency.toLowerCase();
 
   switch (freq) {
-    case 'daily':
+    case "daily":
       date.setDate(date.getDate() + 1);
       return date;
-    case 'weekly':
+    case "weekly":
       date.setDate(date.getDate() + 7);
       return date;
-    case 'monthly':
+    case "monthly":
       date.setMonth(date.getMonth() + 1);
       return date;
-    case 'once':
+    case "once":
       // One-time payments don't recur
       return null;
     default:
-      throw new Error('Invalid frequency');
+      throw new Error("Invalid frequency");
   }
 };
-
 
 //payment history for recent transactions and transaction history
 const getUserPaymentHistory = async (req, res) => {
@@ -428,31 +458,31 @@ const getUserPaymentHistory = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized: No user found" });
     }
 
-   // Pagination params from query
-   const page = parseInt(req.query.page) || 1;
-   const limit = parseInt(req.query.limit) ;
-   const skip = (page - 1) * limit;
+    // Pagination params from query
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit);
+    const skip = (page - 1) * limit;
 
-   // Count total payments for pagination metadata
-   const total = await Payment.countDocuments({ user: userId });
+    // Count total payments for pagination metadata
+    const total = await Payment.countDocuments({ user: userId });
 
-   const payments = await Payment.find({ user: userId })
-     .sort({ createdAt: -1 })
-     .skip(skip)
-     .limit(limit)
-     .populate("user", "firstName serviceType")
-     .populate("recipientUser", "firstName lastName serviceType")
-     .populate("recipientBiller", "name serviceType");
+    const payments = await Payment.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("user", "firstName serviceType")
+      .populate("recipientUser", "firstName lastName serviceType")
+      .populate("recipientBiller", "name serviceType");
 
-   res.status(200).json({
-     data: payments,
-     pagination: {
-       total,
-       currentPage: page,
-       totalPages: Math.ceil(total / limit),
-       limit,
-     },
-   });
+    res.status(200).json({
+      data: payments,
+      pagination: {
+        total,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        limit,
+      },
+    });
   } catch (error) {
     console.error("Error fetching payment history:", error);
     res.status(500).json({
@@ -462,32 +492,34 @@ const getUserPaymentHistory = async (req, res) => {
   }
 };
 
-const redeemPayCoin = async(req,res)=>{
- try {
-  const userId = req.userId;
-  const { amount } = req.body;
+const redeemPayCoin = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { amount } = req.body;
 
-  if (amount < 100) {
-    return res.status(400).json({ message: "Minimum redeemable amount is 100 PayCoins." });
+    if (amount < 100) {
+      return res
+        .status(400)
+        .json({ message: "Minimum redeemable amount is 100 PayCoins." });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user || user.rewardBalance < amount) {
+      return res.status(400).json({ message: "Insufficient PayCoins." });
+    }
+
+    // Deduct from reward balance and credit wallet
+    user.wallet.payCoins -= amount;
+    user.wallet.balance += amount;
+
+    await user.save();
+
+    res.status(200).json({ message: "Redeemed successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
   }
-
-  const user = await User.findById(userId);
-
-  if (!user || user.rewardBalance < amount) {
-    return res.status(400).json({ message: "Insufficient PayCoins." });
-  }
-
-  // Deduct from reward balance and credit wallet
-  user.wallet.payCoins -= amount;
-  user.wallet.balance += amount;
-
-  await user.save();
-
-  res.status(200).json({ message: "Redeemed successfully." });
- } catch (error) {
-  res.status(500).json({message: "Internal Server Error"})
- }
-}
+};
 
 //total payment for charts
 const totalPayments = asyncHandler(async (req, rers) => {
