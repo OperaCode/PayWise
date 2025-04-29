@@ -10,6 +10,7 @@ import * as XLSX from "xlsx"; // For Excel export
 import { jsPDF } from "jspdf"; // For PDF export
 import { Input, Select } from "antd";
 import ReceiptModal from "../modals/ReceiptModal";
+import image from "../assets/profileP.jpg";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -48,8 +49,9 @@ const TransactionHistory = () => {
         });
         const data = response?.data;
         const user = data?.user;
+        console.log(user)
         setUserName(user.firstName);
-        setProfilePicture(user.profilePicture || "default_image.jpg");
+        setProfilePicture(user.profilePicture || image);
       } catch (error) {
         console.error(error);
         toast.error(error?.response?.data?.message);

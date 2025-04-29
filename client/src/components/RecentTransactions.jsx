@@ -465,7 +465,7 @@ const Recent = () => {
     labelStyle(); doc.text("Recipient:", 20, y);
     valueStyle();
     const recipient =
-      tx.paymentType === "Funding"
+      tx.paymentType === "Funding" || "withdrawal"
         ? `${tx.user?.firstName || "Self"} (Self)`
         : tx.recipientBiller?.name ||
           (tx.recipientUser
@@ -575,7 +575,7 @@ const Recent = () => {
                 >
                   <td className="p-2">{new Date(payment.createdAt).toLocaleDateString()}</td>
                   <td className="p-2">
-                    {payment.paymentType === "Funding"
+                    {payment.paymentType === "Funding" || "withdrawal"
                       ? `${payment.user?.firstName || "Self"} (Self)`
                       : payment.recipientBiller?.name ||
                         (payment.recipientUser

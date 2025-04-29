@@ -4,6 +4,7 @@ import Loader from "../components/Loader";
 import { X } from "lucide-react";
 import { UserContext } from "../context/UserContext";
 import { toast } from "react-toastify";
+import image from "../assets/profileP.jpg";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -15,6 +16,7 @@ const RewardsAndAnalytics = () => {
   const [rewardHistory, setRewardHistory] = useState([]);
   const [redeemAmount, setRedeemAmount] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(" "); 
 
   const [insights, setInsights] = useState({
     totalSpent: 0,
@@ -44,6 +46,7 @@ const RewardsAndAnalytics = () => {
           withCredentials: true,
         });
         console.log(response);
+        setProfilePicture(response?.data?.user.profilePicture || image)
         setRewardBalance(response?.data?.user?.wallet?.payCoins || 0);
         
         setRewardHistory(

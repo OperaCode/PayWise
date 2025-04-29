@@ -233,6 +233,7 @@ const DashBoard = () => {
           toast.error("An error occurred. Please try again.");
         } finally {
           setIsSending(false);
+          setFundModalOpen(false)
         }
       }
       closePaymentModal();
@@ -245,22 +246,21 @@ const DashBoard = () => {
     },
   };
 
-
   // Wallet withdraw
   const handleWithdraw = async (e) => {
     e.preventDefault();
     setWithdrawal(true);
-  
+
     try {
-      const token = localStorage.getItem("token"); 
+      const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
-  
+
       if (!token || !userId) {
         toast.error("Authentication error. Please log in again.");
         setWithdrawal(false);
         return;
       }
-  
+
       const response = await axios.post(
         `${BASE_URL}/payment/withdraw-fund`,
         {
@@ -276,18 +276,18 @@ const DashBoard = () => {
           },
         }
       );
-  
+
       toast.success(`Withdrawal started: ${response.data.message}`);
       console.log("Withdrawal response:", response.data);
-  
     } catch (err) {
       toast.error("Error: " + (err.response?.data?.message || err.message));
       console.error("Withdrawal error:", err);
     } finally {
-      setWithdrawal(false);
+      setWithdrawModalOpen(false);
+     
     }
   };
-  
+
   //P2P Transfer
   const handleTransfer = async (e) => {
     e.preventDefault();
@@ -541,7 +541,7 @@ const DashBoard = () => {
               ></div>
               <div className="stars"></div>
 
-              <div className="bg-zinc-100 shadow-lg w-2/4 h-2/3 relative m-auto p-6 rounded-lg text-black z-50">
+              <div className="bg-zinc-100 shadow-lg w-1/3 h-2/3 relative m-auto p-3 rounded-lg text-black z-50">
                 <X
                   strokeWidth={7}
                   color="#FF0000"
@@ -549,12 +549,14 @@ const DashBoard = () => {
                   className="hover:cursor-pointer hover:scale-110 hover:text-red-400 absolute top-4 right-4"
                 />
 
-                <h2 className="text-xl font-bold text-center mb-2">
-                  Manage Your Wallet
-                </h2>
-                <p className="text-center text-sm font-medium mb-4">
-                  Choose to either fund your PayWise wallet or withdraw funds.
-                </p>
+                <div className="">
+                  <h2 className="text-xl font-bold text-center mt-3 mb-2">
+                    Manage Your Wallet
+                  </h2>
+                  <p className="text-center text-sm font-medium mb-4">
+                    Fund or Withdraw from your PayWise wallet.
+                  </p>
+                </div>
 
                 {/* Toggle Header */}
                 <div className="flex justify-center gap-4 mb-6 ">
@@ -582,7 +584,7 @@ const DashBoard = () => {
 
                 {/* Toggle Content */}
                 {activeTab === "fund" ? (
-                  <div className="space-y-4">
+                  <div className="space-y-4 w-2/3 m-auto">
                     <input
                       type="number"
                       placeholder="Enter amount"
@@ -603,7 +605,10 @@ const DashBoard = () => {
                     </FlutterWaveButton>
                   </div>
                 ) : (
-                  <form onSubmit={handleWithdraw} className="space-y-4">
+                  <form
+                    onSubmit={handleWithdraw}
+                    className="space-y-4 w-2/3 m-auto"
+                  >
                     <input
                       type="number"
                       placeholder="Amount ($)"
@@ -638,7 +643,7 @@ const DashBoard = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="p-2 w-1/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500"
+                      className="p-2 w-2/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500"
                     >
                       {withdrawal ? "Processing..." : "Withdraw Funds"}
                     </button>

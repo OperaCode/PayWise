@@ -28,7 +28,7 @@ const DashLayout = ({ children }) => {
   const [res, setRes] = useState({});
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
-  const [profilePicture, setProfilePicture] = useState(" "); // Default avatar
+  const [profilePicture, setProfilePicture] = useState(" "); 
   const [isUploading, setIsUploading] = useState(false);
 
   // Handle file selection
@@ -81,35 +81,35 @@ const DashLayout = ({ children }) => {
     }
   
     const formData = new FormData();
-    formData.append("profilePicture", photo); // ✅ Match backend field name
+    formData.append("profilePicture", photo); // Match backend field name
     formData.append("userId", userId);
   
     try {
       setLoading(true);
   
-      // ✅ Send request to backend
+      // Send request to backend
       const res = await axios.put(
-        "http://localhost:3000/user/upload-profile-picture", // ✅ Ensure correct endpoint
+        "http://localhost:3000/user/upload-profile-picture", // Ensure correct endpoint
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-          withCredentials: true, // ✅ Ensure cookies are sent if using authentication
+          withCredentials: true, // Ensure cookies are sent if using authentication
         }
       );
   
       console.log("Upload Response:", res.data);
   
-      // ✅ Check if the response contains the Cloudinary URL
+      // Check if the response contains the Cloudinary URL
       if (res.data.user && res.data.user.profilePicture) {
         const imageUrl = res.data.user.profilePicture;
 
-        console.log("New Profile Picture URL:", imageUrl); // ✅ Add this log
+        console.log("New Profile Picture URL:", imageUrl); // Add this log
   
-        setProfilePicture(imageUrl); // ✅ Update the profile picture state
+        setProfilePicture(imageUrl); // Update the profile picture state
   
-        // ✅ Display success message
+        // Display success message
         toast.success("Profile picture updated!");
       } else {
         toast.error("Error uploading profile picture. Please try again.");

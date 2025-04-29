@@ -342,7 +342,9 @@ const Login = () => {
               Sign Up
             </Link>
           </p>
-          <p className="md:p-6 p-2 text-center">
+
+          {/* google signup button */}
+          {/* <p className="md:p-6 p-2 text-center">
             Make it simple, Sign in with{" "}
             <span
               className="font-bold hover:cursor-pointer"
@@ -350,7 +352,7 @@ const Login = () => {
             >
               Gmail
             </span>
-          </p>
+          </p> */}
         </div>
       </div>
     </div>

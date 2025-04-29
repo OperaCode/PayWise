@@ -5,6 +5,7 @@ import { ThemeContext } from "../context/ThemeContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
+import image from "../assets/profileP.jpg";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -42,12 +43,10 @@ const ProfileSettings = () => {
   const [newPin, setNewPin] = useState("");
 
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  //   const [profilePicture, setProfilePicture] = useState("default_image.jpg");
+ 
   const [activeTab, setActiveTab] = useState("Profile");
   const [showPassword, setShowPassword] = useState(false);
-  //   const [showNewPassword, setShowNewPassword] = useState(false);
-  //   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
 
   const [showPin, setShowPin] = useState(false);
   const [showNewPin, setShowNewPin] = useState(false);
@@ -73,7 +72,7 @@ const ProfileSettings = () => {
         setLastName(user.lastName);
         setEmail(user.email);
 
-        setProfilePicture(user.profilePicture || "default_image.jpg");
+        setProfilePicture(user.profilePicture || image);
       } catch (error) {
         console.error(error);
         toast.error(error?.response?.data?.message);
@@ -326,7 +325,7 @@ const ProfileSettings = () => {
               />
             </div>
 
-            <button onClick={handleUpdateInfo} className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 cursor-pointer">
+            <button onClick={handleUpdateInfo} className="mt-6 bg-cyan-600 text-white px-6 py-2 rounded hover:bg-green-700 cursor-pointer">
               Update Profile
             </button>
           </div>
@@ -416,7 +415,7 @@ const ProfileSettings = () => {
 
             {/* Update Button */}
             <button
-              className="mt-2 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 cursor-pointer"
+              className="mt-2 bg-cyan-600 text-white px-6 py-2 rounded hover:bg-green-700 cursor-pointer"
               onClick={handleUpdatePassword}
             >
               Update Password
@@ -502,7 +501,7 @@ const ProfileSettings = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 cursor-pointer"
+                className="mt-4 bg-cyan-600 text-white px-6 py-2 rounded hover:bg-green-700 cursor-pointer"
                 disabled={isSettingPin}
               >
                 {isSettingPin ? "Updating..." : "Update PIN"}
@@ -565,8 +564,8 @@ const ProfileSettings = () => {
                 key={tab}
                 className={`px-4 py-2 font-medium cursor-pointer ${
                   activeTab === tab
-                    ? "border-b-2 border-blue-600 text-blue-600 font-extrabold text-xl"
-                    : "text-gray-500 hover:text-blue-600 font-extrabold text-xl"
+                    ? "border-b-2 border-cyan-600 text-cyan-600 font-extrabold text-xl"
+                    : "text-gray-500 hover:text-green-600 font-extrabold text-xl"
                 }`}
                 onClick={() => setActiveTab(tab)}
               >

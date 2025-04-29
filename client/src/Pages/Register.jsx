@@ -110,6 +110,8 @@ const Register = () => {
     }
   };
 
+
+  // google signUp, working
   const googleReg = async () => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
@@ -263,7 +265,9 @@ const Register = () => {
             </Link>
           </p>
 
-          <p className="md:p-6 p-2 text-center">
+
+          {/* google signup button */}
+          {/* <p className="md:p-6 p-2 text-center">
             Make it simple, Sign up with{" "}
             <span
               className="font-bold hover:cursor-pointer"
@@ -271,7 +275,7 @@ const Register = () => {
             >
               Gmail
             </span>
-          </p>
+          </p> */}
         </div>
 
         {/* Right - Illustration */}
