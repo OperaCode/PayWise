@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 
 
 
- // ✅ Secure email transport setup
+ // Secure email transport setup
  const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587, // TLS (recommended)
@@ -14,13 +14,13 @@ import nodemailer from "nodemailer";
   });
 
 
-const sendVerificationEmail = async (email, firstName, verificationToken) => {
+const sendVerificationEmail = async (email, firstName) => {
   try {
    
-   //const activationLink = `http://localhost:5173/dashboard`;
-    const activationLink = `${process.env.FRONTEND_URL}/verify/${verificationToken}`;
+   const activationLink = `http://localhost:5173/dashboard`;
+    // const activationLink = `${process.env.FRONTEND_URL}/verify/${verificationToken}`;
 
-    // ✅ Enhanced HTML email with TailwindCSS styling
+    // Enhanced HTML email with TailwindCSS styling
     const mailOptions = {
       from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -73,11 +73,11 @@ const sendVerificationEmail = async (email, firstName, verificationToken) => {
       `,
     };
 
-    // ✅ Send email and log success message
+    // Send email and log success message
     const info = await transporter.sendMail(mailOptions);
-    //console.log(`✅ Verification email sent to: ${email}, Message ID: ${info.messageId}`);
+    //console.log(`Verification email sent to: ${email}, Message ID: ${info.messageId}`);
   } catch (error) {
-    console.error("❌ Email sending error:", error.message);
+    console.error("Email sending error:", error.message);
   }
 };
 
@@ -141,74 +141,76 @@ const sendWelcomeBackEmail = async (email, firstName) => {
 };
 
 
-const sendMetaMaskEmail = async (email, firstName) => {
-  try {
+// const sendMetaMaskEmail = async (email, firstName) => {
+//   try {
    
-    const activationLink = `http://localhost:5173/dashboard`;
+//     const activationLink = `http://localhost:5173/dashboard`;
 
-    // ✅ Enhanced HTML email with TailwindCSS styling
-    const mailOptions = {
-      from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "🚀 Welcome to PayWise - Activate Your Account",
-      html: `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>Verify Your PayWise Account</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-      </head>
-      <body class="bg-gray-100">
-  <div class="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold text-gray-800">
-      Your <span class="text-green-600">MetaMask Wallet</span> is now linked! 🎉
-    </h2>
+//     // ✅ Enhanced HTML email with TailwindCSS styling
+//     const mailOptions = {
+//       from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
+//       to: email,
+//       subject: "🚀 Welcome to PayWise - Activate Your Account",
+//       html: `
+//       <!DOCTYPE html>
+//       <html>
+//       <head>
+//         <meta charset="UTF-8">
+//         <title>Verify Your PayWise Account</title>
+//         <script src="https://cdn.tailwindcss.com"></script>
+//       </head>
+//       <body class="bg-gray-100">
+//   <div class="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-md">
+//     <h2 class="text-2xl font-bold text-gray-800">
+//       Your <span class="text-green-600">MetaMask Wallet</span> is now linked! 🎉
+//     </h2>
     
-    <p class="text-gray-700 mt-4">
-      Hi ${firstName}, your MetaMask wallet has been successfully connected to PayWise.
-    </p>
+//     <p class="text-gray-700 mt-4">
+//       Hi ${firstName}, your MetaMask wallet has been successfully connected to PayWise.
+//     </p>
 
-    <div class="bg-gray-200 p-4 rounded-lg mt-4">
-      <p class="text-gray-800 font-semibold">Linked Wallet Address:</p>
-      <p class="text-blue-500 break-words">${walletAddress}</p>
-    </div>
+//     <div class="bg-gray-200 p-4 rounded-lg mt-4">
+//       <p class="text-gray-800 font-semibold">Linked Wallet Address:</p>
+//       <p class="text-blue-500 break-words">${walletAddress}</p>
+//     </div>
 
-    <p class="text-gray-600 mt-4">
-      You can now manage your transactions and make payments directly from your MetaMask wallet.
-    </p>
+//     <p class="text-gray-600 mt-4">
+//       You can now manage your transactions and make payments directly from your MetaMask wallet.
+//     </p>
 
-    <p class="text-gray-600 mt-4">
-      Click the link below to view your account activity:
-    </p>
+//     <p class="text-gray-600 mt-4">
+//       Click the link below to view your account activity:
+//     </p>
 
-    <p class="text-blue-500 break-words mt-2">
-      <a href="${activationLink}">${activationLink}</a>
-    </p>
+//     <p class="text-blue-500 break-words mt-2">
+//       <a href="${activationLink}">${activationLink}</a>
+//     </p>
 
-    <p class="text-gray-600 mt-4">
-      If you did not authorize this action, please contact our support team immediately.
-    </p>
+//     <p class="text-gray-600 mt-4">
+//       If you did not authorize this action, please contact our support team immediately.
+//     </p>
 
-    <div class="border-t mt-6 pt-4 text-center">
-      <p class="text-gray-500 text-sm">
-        Need help? Contact our support team at 
-        <a href="mailto:support@paywise.com" class="text-blue-600">support@paywise.com</a>
-      </p>
-      <p class="text-gray-400 text-xs mt-2">© 2025 PayWise Inc. All rights reserved.</p>
-    </div>
-  </div>
-</body>
-      </html>
-      `,
-    };
+//     <div class="border-t mt-6 pt-4 text-center">
+//       <p class="text-gray-500 text-sm">
+//         Need help? Contact our support team at 
+//         <a href="mailto:support@paywise.com" class="text-blue-600">support@paywise.com</a>
+//       </p>
+//       <p class="text-gray-400 text-xs mt-2">© 2025 PayWise Inc. All rights reserved.</p>
+//     </div>
+//   </div>
+// </body>
+//       </html>
+//       `,
+//     };
 
-    // ✅ Send email and log success message
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Verification email sent to: ${email}, Message ID: ${info.messageId}`);
-  } catch (error) {
-    console.error("❌ Email sending error:", error.message);
-  }
+//     // ✅ Send email and log success message
+//     const info = await transporter.sendMail(mailOptions);
+//     console.log(`✅ Verification email sent to: ${email}, Message ID: ${info.messageId}`);
+//   } catch (error) {
+//     console.error("❌ Email sending error:", error.message);
+//   }
+// };
+
+export { sendVerificationEmail, sendWelcomeBackEmail,
+  // sendMetaMaskEmail 
 };
-
-export { sendVerificationEmail, sendWelcomeBackEmail,sendMetaMaskEmail };

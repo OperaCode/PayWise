@@ -70,17 +70,17 @@ const registerUser = asyncHandler(async (req, res) => {
         paycoin: 0,
         walletId: uuidv4(),
       },
-      isVerified: false, // New users are NOT verified initially
-      verificationToken: jwt.sign({ email }, process.env.JWT_SECRET, {
-        expiresIn: "1d",
-      }),
+      // isVerified: false, // New users are NOT verified initially
+      // verificationToken: jwt.sign({ email }, process.env.JWT_SECRET, {
+      //   expiresIn: "1d",
+      // }),
     });
 
     // Generate verification link
-    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
-    console.log("Sending verification email to:", newUser.email);
+    // const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
+    // console.log("Sending verification email to:", newUser.email);
     // Send verification email
-    await sendVerificationEmail(newUser.email, firstName, verificationLink);
+    await sendVerificationEmail(newUser.email, firstName);
 
     await newUser.save(); // Save user before sending response
 
@@ -117,7 +117,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// EMAIL LOGIN TRAILS WITH FIREBASE
+// EMAIL LOGIN  WITH FIREBASE
 // const loginUser2 = asyncHandler(async (req, res) => {
 //   try {
 //     const { idToken } = req.body; // ✅ Expect an ID Token from Firebase
@@ -164,25 +164,25 @@ const registerUser = asyncHandler(async (req, res) => {
 //   }
 // });
 
-const verifyEmail = asyncHandler(async (req, res) => {
-  try {
-    const { token } = req.query;
+// const verifyEmail = asyncHandler(async (req, res) => {
+//   try {
+//     const { token } = req.query;
 
-    if (!token) return res.status(400).json({ message: "Invalid token" });
+//     if (!token) return res.status(400).json({ message: "Invalid token" });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findById(decoded.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+//     const user = await User.findById(decoded.id);
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.isVerified = true;
-    await user.save();
+//     user.isVerified = true;
+//     await user.save();
 
-    res.json({ message: "Email verified successfully!" });
-  } catch (error) {
-    res.status(400).json({ message: "Invalid or expired token" });
-  }
-});
+//     res.json({ message: "Email verified successfully!" });
+//   } catch (error) {
+//     res.status(400).json({ message: "Invalid or expired token" });
+//   }
+// });
 
 const loginUser = asyncHandler(async (req, res) => {
   try {
@@ -509,7 +509,7 @@ const LogoutUser = asyncHandler(async (req, res) => {
 
 module.exports = {
   registerUser,
-  verifyEmail,
+  // verifyEmail,
   loginUser,
   uploadProfilePicture,
   connectWallet,
