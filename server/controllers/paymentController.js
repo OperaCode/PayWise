@@ -294,8 +294,8 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     }
 
     // 2. Parse the schedule date from the frontend (already in UTC)
-    const scheduledDate = new Date(scheduleDate); // This will be parsed as UTC correctly
-    scheduledDate.setSeconds(0, 0); // Ensure no sub-seconds
+    const scheduledDate = new Date(scheduleDate); 
+    scheduledDate.setSeconds(0, 0); 
 
     // Validate the schedule date
     if (isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
@@ -325,7 +325,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     const newPayment = new Payment({
       user: userId,
       recipientBiller: recipient._id,
-      amount: parsedAmount, // Use parsed amount as a number
+      amount: parsedAmount, 
       transactionRef: `SCH-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       scheduleDate: scheduledDate,
       paymentType: "Scheduled",

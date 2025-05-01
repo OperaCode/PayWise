@@ -49,6 +49,10 @@ const userSchema = new mongoose.Schema(
           usdEquivalent: { type: Number, default: 0 }, 
         },
       ],
+      lockedAmount: {
+        type: Number,
+        default: 0,
+      },
     },
     metamaskWallet: { type: String, unique: true, sparse: true },
     transactionPin: { type: String, required: false },
