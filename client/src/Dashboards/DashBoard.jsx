@@ -277,7 +277,7 @@ const DashBoard = () => {
         }
       );
 
-      toast.success(`Withdrawal started: ${response.data.message}`);
+      toast.success(`Withdrawal processed ${response.data.message}`);
       console.log("Withdrawal response:", response.data);
     } catch (err) {
       toast.error("Error: " + (err.response?.data?.message || err.message));
