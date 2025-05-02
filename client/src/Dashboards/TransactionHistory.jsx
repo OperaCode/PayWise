@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 import logo from "../assets/paywise-logo.png";
-import { Moon, Sun, ArrowLeft, ArrowRight } from "lucide-react";
+import { Moon, Sun, ArrowLeft, ArrowRight,ListTodo } from "lucide-react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx"; // For Excel export
 import { jsPDF } from "jspdf"; // For PDF export
@@ -36,7 +36,7 @@ const TransactionHistory = () => {
     indexOfFirst,
     indexOfLast
   );
-  const statusFilters = ["All", "Success", "Pending", "Failed"];
+  const statusFilters = ["All", "Successful", "Pending", "Failed"];
   const [selectedStatus, setSelectedStatus] = useState("All");
 
   // Fetch user
@@ -98,14 +98,41 @@ const TransactionHistory = () => {
     );
 
     // Filter by status
-    if (selectedStatus !== "All") {
-      filters = filtered.filter((tx) => tx.status === selectedStatus);
-    }
+    let filters = filtered;
+if (selectedStatus !== "All") {
+  filters = filtered.filter((tx) => tx.status === selectedStatus);
+}
+
 
     setFilteredTransactions(filters);
     setCurrentPage(1);
   };
 
+
+
+  //handle status filter
+  const handleStatusFilter = (status) => {
+    setSelectedStatus(status);
+    let filtered = transactions;
+  
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (tx) =>
+          tx.recipientBiller?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          `${tx.recipientUser?.firstName} ${tx.recipientUser?.lastName}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+      );
+    }
+  
+    if (status !== "All") {
+      filtered = filtered.filter((tx) => tx.status === status);
+    }
+  
+    setFilteredTransactions(filtered);
+    setCurrentPage(1);
+  };
+  
   // Handle sorting
   const handleSort = (option) => {
     setSortOption(option);
@@ -325,16 +352,16 @@ const TransactionHistory = () => {
             </div>
 
             {/* Status Filter Buttons - Desktop */}
-            <div className="hidden sm:flex flex-wrap gap-2 my-4">
+            <div className="hidden sm:flex flex-wrap gap-2 my-4 w-1/2 px-4">
               {statusFilters.map((status) => (
                 <button
                   key={status}
-                  onClick={() => setSelectedStatus(status)}
-                  className={`px-4 py-2 rounded-full text-sm transition-all border cursor-pointer ${
+                  onClick={() => handleStatusFilter(status)}
+                  className={`px-2 py-2 rounded-full text-sm w-1/6 transition-all border cursor-pointer ${
                     selectedStatus === status
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 border-gray-300"
-                  } hover:bg-blue-100 `}
+                      ? "bg-cyan-800  border-gray-600 text-white"
+                      : "  border-gray-300"
+                  } hover:bg-cyan-500  hover:text-white`}
                 >
                   {status}
                 </button>
@@ -345,7 +372,7 @@ const TransactionHistory = () => {
             <div className="sm:hidden my-4">
               <select
                 value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
+                onChange={(e) => handleStatusFilter(e.target.value)}
                 className="  text-sm w-full md:w-1/2 p-2 border border-gray-300 rounded-md "
               >
                 {statusFilters.map((status) => (
