@@ -8,7 +8,7 @@ const createBiller = asyncHandler(async (req, res) => {
   try {
     console.log("Request body:", req.body); // Debugging line
 
-    const { fullName, nickname, email, serviceType, walletId, profilePicture } =
+    const { fullName, nickname, email, serviceType, walletId, profilePicture,serviceAmount } =
       req.body;
     const userId = req.user?.id || req.body.user; // Get user ID from req.user or req.body
 
@@ -18,11 +18,12 @@ const createBiller = asyncHandler(async (req, res) => {
       !email ||
       !serviceType ||
       !walletId ||
-      !userId
+      !userId ||
+      !serviceAmount
     ) {
       return res
         .status(400)
-        .json({ message: "All fields are required, including user ID!" });
+        .json({ message: "All fields are required" });
     }
 
     // to find user and check if they already have this biller**
@@ -55,6 +56,7 @@ const createBiller = asyncHandler(async (req, res) => {
       nickname,
       email,
       serviceType,
+      serviceAmount,
       walletAddress: user.wallet.walletId || null,
       profilePicture,
       user: userId,
@@ -158,33 +160,6 @@ const searchUserByEmail = async (req, res) => {
   }
 };
 
-// const updateBiller = asyncHandler(async (req, res) => {
-//   const user = await Biller.findOne({
-//     _id: req.params.billerId,
-//     user: req.user._id,
-//   });
-
-//   if (!biller) {
-//     return res.status(404).json({ message: "Biller not found" });
-//   }
-
-//   // Construct full name
-//   const fullName = `${biller.firstName} ${biller.lastName}`;
-
-//   // Return biller details with full name
-//   res.json({
-//     biller: {
-//       ...biller.toObject(),
-//       fullName, // Include full name
-//     },
-//   });
-
-//   // Update only provided fields
-//   //Object.assign(biller, req.body);
-//   await biller.save();
-
-//   res.status(200).json(biller);
-// });
 
 // const updateBiller = async (req, res) => {
 //   try {

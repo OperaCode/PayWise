@@ -47,15 +47,15 @@ cron.schedule("* * * * *", async () => {
         continue;
       }
 
-      if (user.wallet.balance < payment.amount) {
+      if (user.wallet.lockedAmount < payment.amount) {
         console.log(`Skipping Payment ${payment._id} — Insufficient funds`);
         continue;
       }
 
       // Deduct amount
-      user.wallet.balance -= payment.amount;
+      user.wallet.lockedAmount -= payment.amount;
 
-      // 🎁 Rewards Logic
+      // Rewards Logic
       let reward = 0;
       if (payment.amount > 100) {
         reward = 10;
@@ -115,7 +115,7 @@ cron.schedule("* * * * *", async () => {
         await payment.save();
       }
 
-      // 🧾 Update biller if applicable
+      // Update biller if applicable
       const biller = await Biller.findById(payment.recipientBiller);
       if (biller) {
         biller.totalAmountPaid += Number(payment.amount);

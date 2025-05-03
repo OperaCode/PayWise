@@ -108,7 +108,7 @@ const fundWallet = asyncHandler(async (req, res) => {
 
 const withdrawToBank = asyncHandler(async (req, res) => {
   const { userId, amount, account_bank, account_number, narration } = req.body;
-  console.log(req.body)
+  console.log(req.body);
 
   const user = await User.findById(userId);
   if (!user) return res.status(404).json({ message: "User not found" });
@@ -294,8 +294,8 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     }
 
     // 2. Parse the schedule date from the frontend (already in UTC)
-    const scheduledDate = new Date(scheduleDate); 
-    scheduledDate.setSeconds(0, 0); 
+    const scheduledDate = new Date(scheduleDate);
+    scheduledDate.setSeconds(0, 0);
 
     // Validate the schedule date
     if (isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
@@ -307,12 +307,29 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found." });
 
     // 4. Check transaction PIN
+    if (!user.transactionPin) {
+      return res
+        .status(400)
+        .json({
+          message: "Transaction PIN not set. Please set your PIN first.",
+        });
+    }
+
     const isPinValid = await bcrypt.compare(
       transactionPin,
       user.transactionPin
     );
     if (!isPinValid)
       return res.status(403).json({ message: "Invalid transaction PIN." });
+
+    // Ensure sufficient balance
+    if (user.wallet.balance < amount) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    // Lock/reserve funds
+    user.wallet.balance -= amount;
+    user.wallet.lockedAmount += amount; // Add a new `locked` field to wallet schema
 
     // 5. Find biller
     const recipient = await Biller.findOne({ email: billerEmail });
@@ -325,7 +342,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     const newPayment = new Payment({
       user: userId,
       recipientBiller: recipient._id,
-      amount: parsedAmount, 
+      amount: parsedAmount,
       transactionRef: `SCH-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       scheduleDate: scheduledDate,
       paymentType: "Scheduled",
@@ -372,6 +389,10 @@ const scheduleRecurring = async (req, res) => {
     if (user.wallet.balance < amount) {
       return res.status(400).json({ message: "Insufficient balance" });
     }
+
+    // Lock/reserve funds
+    user.wallet.balance -= amount;
+    user.wallet.lockedAmount += amount; // Add a new `locked` field to wallet schema
 
     // Get billers
     const billers = await Biller.find({ email: { $in: billerEmails } });
