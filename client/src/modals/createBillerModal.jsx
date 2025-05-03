@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const CreateBillerModal = (currency) => {
+const CreateBillerModal = () => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -34,10 +34,10 @@ const CreateBillerModal = (currency) => {
     setIsCreating(true);
     setError("");
   
-    const { fullName, nickname, email, serviceType, wallet, profilePicture } = biller;
+    const { fullName, nickname, email, serviceType, wallet, profilePicture,serviceAmount } = biller;
     const userId = localStorage.getItem("userId"); // Retrieve user ID from storage
   
-    if (!fullName || !nickname || !email || !serviceType || !wallet.walletId || !userId) {
+    if (!fullName || !nickname || !email || !serviceType ||!serviceAmount ||!wallet.walletId || !userId) {
       toast.error("Oops, all fields are required!");
       setIsCreating(false);
       return;
@@ -52,7 +52,8 @@ const CreateBillerModal = (currency) => {
           fullName, 
           nickname, 
           email, 
-          serviceType, 
+          serviceType,
+          serviceAmount, 
           walletId: wallet.walletId, 
           profilePicture,
           user: userId, // Ensure user ID is included
@@ -218,11 +219,11 @@ const CreateBillerModal = (currency) => {
         </div>
 
         <div className="flex items-center">
-          <label className="w-1/3">Amount:</label>
+          <label className="w-1/3">Service Amount:</label>
           <Input
-            name="amount"
+            name="serviceAmount"
             placeholder="Enter Amount"
-            value={biller.amount || "" }
+            value={biller.serviceAmount || "" }
             onChange={handleChange}
             
           />

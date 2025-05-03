@@ -561,9 +561,9 @@ const ManageBillers = (currency) => {
                     </div>
                   </div>
                 ) : (
-                  // <EditBillerModal />
+                 
                   // Adding a New Biller
-                  <CreateBillerModal currency={formatCurrency} />
+                  <CreateBillerModal currency={formatCurrency}  />
                 )}
 
                 {/* Close Button */}
