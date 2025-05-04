@@ -90,8 +90,10 @@ const RewardsAndAnalytics = () => {
 
   const handleRedeem = async() => {
     const redeemAmount = parseFloat(amount);
+    const user = localStorage.getItem("userId")
+    console.log(user)
 
-    if (!user || user?.rewardBalance < 100) {
+    if (!user || user?.wallet?.payCoins < 100) {
       toast.error("You need at least 100 PayCoins to redeem.");
       
       return;
@@ -103,7 +105,7 @@ const RewardsAndAnalytics = () => {
       return;
     }
 
-    if (redeemAmount > user.rewardBalance) {
+    if (redeemAmount > user.wallet.payCoins) {
      toast.error("You don't have enough PayCoins.");
      setAmount("");
      return;
