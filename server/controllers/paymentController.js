@@ -274,7 +274,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     const { billerEmail, amount, scheduleDate, transactionPin } = req.body;
     console.log("Incoming payload:", req.body);
 
-    const userId = req.userId; // Extracted from token
+    const userId = req.userId;
 
     // 1. Validate fields
     if (!userId)
@@ -293,11 +293,9 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
         .json({ message: "Missing or invalid required fields." });
     }
 
-    // 2. Parse the schedule date from the frontend (already in UTC)
+    // 2. Parse and validate the schedule date
     const scheduledDate = new Date(scheduleDate);
     scheduledDate.setSeconds(0, 0);
-
-    // Validate the schedule date
     if (isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
       return res.status(400).json({ message: "Invalid schedule date." });
     }
@@ -306,40 +304,37 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found." });
 
-    // 4. Check transaction PIN
+    // 4. Validate transaction PIN
     if (!user.transactionPin) {
-      return res
-        .status(400)
-        .json({
-          message: "Transaction PIN not set. Please set your PIN first.",
-        });
+      return res.status(400).json({
+        message: "Transaction PIN not set. Please set your PIN first.",
+      });
     }
 
-    const isPinValid = await bcrypt.compare(
-      transactionPin,
-      user.transactionPin
-    );
-    if (!isPinValid)
+    const isPinValid = await bcrypt.compare(transactionPin, user.transactionPin);
+    if (!isPinValid) {
       return res.status(403).json({ message: "Invalid transaction PIN." });
-
-    // Ensure sufficient balance
-    if (user.wallet.balance < amount) {
-      return res.status(400).json({ message: "Insufficient balance" });
     }
 
-    // Lock/reserve funds
-    user.wallet.balance -= amount;
-    user.wallet.lockedAmount += amount; // Add a new `locked` field to wallet schema
+    // 5. Check wallet balance
+    if (user.wallet.balance < parsedAmount) {
+      return res.status(400).json({ message: "Insufficient balance." });
+    }
 
-    // 5. Find biller
+    // 6. Lock/reserve funds
+    user.wallet.balance -= parsedAmount;
+    user.wallet.lockedAmount += parsedAmount;
+    user.markModified("wallet");
+    await user.save();
+
+    // 7. Find biller
     const recipient = await Biller.findOne({ email: billerEmail });
-    if (!recipient)
+    if (!recipient) {
       return res.status(404).json({ message: "Biller not found." });
+    }
 
-    // 6. Check if there is already a pending payment for this biller
-
-    // 7. Save scheduled payment
-    const newPayment = new Payment({
+    // 8. Save scheduled payment
+    const newPayment = await Payment.create({
       user: userId,
       recipientBiller: recipient._id,
       amount: parsedAmount,
@@ -347,9 +342,9 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
       scheduleDate: scheduledDate,
       paymentType: "Scheduled",
       status: "Pending",
+      isRecurring: false,
+      isAutoPayment: false,
     });
-
-    await newPayment.save();
 
     return res.status(201).json({
       message: "Payment scheduled successfully.",
@@ -364,12 +359,13 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
   }
 });
 
+
 const scheduleRecurring = async (req, res) => {
   try {
     const userId = req.userId;
     const {
       billerEmails,
-      amount,
+      amount, // still kept in case you want to show the user-requested value
       startDate,
       frequency,
       occurrences,
@@ -382,62 +378,57 @@ const scheduleRecurring = async (req, res) => {
       transactionPin,
       user.transactionPin
     );
-    if (!isPinValid)
+    if (!isPinValid) {
       return res.status(403).json({ message: "Invalid transaction PIN." });
-
-    // Ensure sufficient balance
-    if (user.wallet.balance < amount) {
-      return res.status(400).json({ message: "Insufficient balance" });
     }
 
-    // Lock/reserve funds
-    user.wallet.balance -= amount;
-    user.wallet.lockedAmount += amount; // Add a new `locked` field to wallet schema
-
-    // Get billers
+    // Get billers by email
     const billers = await Biller.find({ email: { $in: billerEmails } });
     if (!billers || billers.length === 0) {
       return res.status(400).json({ message: "No matching billers found." });
     }
 
-    // Generate a transaction reference for each scheduled payment
-    const { v4: uuidv4 } = require("uuid");
+    // Calculate total required amount for all billers
+    const totalAmount = billers.reduce((sum, biller) => sum + biller.serviceAmount, 0);
 
-    // Create a scheduled Payment entry for each biller
+    // Ensure sufficient wallet balance
+    if (user.wallet.balance < totalAmount) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    // Lock the total amount
+    user.wallet.balance -= totalAmount;
+    user.wallet.lockedAmount += totalAmount;
+    user.markModified("wallet");
+    await user.save();
+
+    // Generate recurring payments
     const scheduledPayments = await Promise.all(
       billers.map((biller) => {
-        console.log(
-          `Calculating next execution date for frequency: ${frequency}`
-        ); // Log the frequency value
-        const nextExecutionDate = calculateNextExecutionDate(
-          startDate,
-          frequency
-        );
+        const nextExecutionDate = calculateNextExecutionDate(startDate, frequency);
 
         return Payment.create({
           user: userId,
           recipientBiller: biller._id,
           amount: biller.serviceAmount,
-          status: "Pending", // Initial status is pending
-          transactionRef: `ATP-${Date.now()}-${Math.floor(
-            Math.random() * 10000
-          )}`,
+          status: "Pending",
+          transactionRef: `ATP-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
           isRecurring: true,
-          frequency: frequency,
-          isAutoPayment: true, // Assuming autopay for recurring payments
-          scheduleDate: new Date(startDate), // Use the provided start date
-          nextExecution: nextExecutionDate, // Calculate next execution based on frequency
+          frequency,
+          isAutoPayment: true,
+          scheduleDate: new Date(startDate),
+          nextExecution: nextExecutionDate,
           recurrence: {
             occurrencesLeft: occurrences,
             lastPaidAt: new Date(startDate),
           },
           paymentType: "Scheduled",
-          description: `Recurring payment for ${biller.name}`, // You can add a description
+          description: `Recurring payment for ${biller.name}`,
         });
       })
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Recurring payments scheduled.",
       payments: scheduledPayments,
     });
@@ -446,6 +437,7 @@ const scheduleRecurring = async (req, res) => {
     res.status(500).json({ message: "Failed to schedule recurring payments." });
   }
 };
+
 
 // Function to calculate the next execution date based on frequency
 const calculateNextExecutionDate = (startDate, frequency) => {
@@ -518,6 +510,10 @@ const redeemPayCoin = async (req, res) => {
     const userId = req.userId;
     const { amount } = req.body;
 
+    console.log("Redeem request amount:", amount); // Debug
+   
+    
+
     if (amount < 100) {
       return res
         .status(400)
@@ -525,8 +521,9 @@ const redeemPayCoin = async (req, res) => {
     }
 
     const user = await User.findById(userId);
+    console.log("User PayCoins:", user.wallet?.payCoins); // Debug
 
-    if (!user || user.rewardBalance < amount) {
+    if (!user || user.wallet.payCoins < amount) {
       return res.status(400).json({ message: "Insufficient PayCoins." });
     }
 
