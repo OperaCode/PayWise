@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { fundWallet,p2PTransfer,withdrawToBank ,scheduleTransfer,redeemPayCoin,scheduleRecurring,paymentAggregates ,totalPayments,pauseRecurringPayment,getUserPaymentHistory } = require('../controllers/paymentController');
+const { fundWallet,p2PTransfer,withdrawToBank ,scheduleTransfer,redeemPayCoin,scheduleRecurring,paymentAggregates ,totalPayments,pauseRecurringPayment,getUserPaymentHistory,deleteTransaction } = require('../controllers/paymentController');
 
 
 const { protectUser } = require("../middleware/authMiddleWare");
@@ -18,6 +18,7 @@ router.post('/schedule-transfer',protectUser ,scheduleTransfer);
 router.post('/schedule-recurring',protectUser ,scheduleRecurring);
 router.post('/redeem-coin',protectUser ,redeemPayCoin);
 router.post('/pause-recurring', pauseRecurringPayment);
+router.delete('/delete', deleteTransaction);
 
 
 module.exports = router;

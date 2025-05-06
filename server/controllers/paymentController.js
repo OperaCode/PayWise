@@ -117,7 +117,7 @@ const withdrawToBank = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Insufficient wallet balance" });
   }
 
-  const reference = `paywise-${Date.now()}`;
+  const reference = `withdrawal-${Date.now()}`;
   const payload = {
     account_bank,
     account_number,
@@ -438,7 +438,6 @@ const scheduleRecurring = async (req, res) => {
   }
 };
 
-
 // Function to calculate the next execution date based on frequency
 const calculateNextExecutionDate = (startDate, frequency) => {
   const date = new Date(startDate);
@@ -687,6 +686,12 @@ const pauseRecurringPayment = asyncHandler(async (req, res) => {
   }
 });
 
+
+// delete transaction
+const deleteTransaction = asyncHandler(async(req, res)=>{
+
+});
+
 module.exports = {
   fundWallet,
   p2PTransfer,
@@ -698,4 +703,5 @@ module.exports = {
   totalPayments,
   scheduleTransfer,
   pauseRecurringPayment,
+  deleteTransaction,
 };

@@ -17,12 +17,13 @@ import nodemailer from "nodemailer";
 const sendVerificationEmail = async (email, firstName) => {
   try {
    
-   const activationLink = `http://localhost:5173/dashboard`;
+    const activationLink = `${process.env.FRONTEND_URL}/dashboard`;
+
     // const activationLink = `${process.env.FRONTEND_URL}/verify/${verificationToken}`;
 
-    // Enhanced HTML email with TailwindCSS styling
+
     const mailOptions = {
-      from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
+      from: "PayWise Support",
       to: email,
       subject: "🚀 Welcome to PayWise ",
       html: `

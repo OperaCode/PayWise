@@ -34,10 +34,10 @@ const generateToken = (userId) => {
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
-    console.log("Incoming request body:", req.body);
-
+    
     const { firstName, lastName, email, password } = req.body;
-
+    console.log("Incoming request body:", req.body);
+    
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
     }
