@@ -160,6 +160,33 @@ if (selectedStatus !== "All") {
     setIsModalOpen(true);
   };
 
+ 
+  // delete transaction
+const handleDelete = async (transactionId) => {
+  try {
+    // Confirm before deleting
+    const confirmDelete = window.confirm("Are you sure you want to delete this transaction?");
+    if (!confirmDelete) return;
+
+    // Make a DELETE request to delete the transaction
+    await axios.delete(`${BASE_URL}/payment/${transactionId}`, {
+      withCredentials: true,
+    });
+
+    // Remove the deleted transaction from the local state
+    setFilteredTransactions((prevTransactions) =>
+      prevTransactions.filter((tx) => tx._id !== transactionId)
+    );
+
+    // Notify the user about the successful deletion
+    toast.success("Transaction deleted successfully!");
+  } catch (error) {
+    console.error("Error deleting transaction:", error);
+    toast.error("Error deleting transaction. Please try again.");
+  }
+};
+
+
   // Close receipt modal and navigate back
   const closeReceiptModal = () => {
     setIsModalOpen(false);
@@ -393,9 +420,9 @@ if (selectedStatus !== "All") {
                     <th className="p-2">Date</th>
                     <th className="p-2">Recipient</th>
                     <th className="p-2">Amount</th>
-                    <th className="p-2">Type</th>
-                    <th className="p-2">Status</th>
-                    <th className="p-2">View</th>
+                    <th className="p-2 hidden md:table-cell">Type</th>
+                    <th className="p-2 hidden md:table-cell">Status</th>
+                    <th className="p-2">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -408,7 +435,7 @@ if (selectedStatus !== "All") {
                         {new Date(tx.createdAt).toLocaleDateString()}
                       </td>
                       <td className="p-2">
-                        {tx.paymentType === "Funding"
+                        {tx.paymentType === "Funding" || tx.paymentType === "withdrawal" 
                           ? `${tx.user?.firstName || "Self"} (Self)`
                           : tx.recipientBiller?.name ||
                             (tx.recipientUser
@@ -417,14 +444,20 @@ if (selectedStatus !== "All") {
                       </td>
 
                       <td className="p-2">${tx.amount.toFixed(2)}</td>
-                      <td className="p-2">{tx.paymentType}</td>
-                      <td className="p-2">{tx.status}</td>
-                      <td className="p-2">
+                      <td className="p-2 hidden md:table-cell">{tx.paymentType}</td>
+                      <td className="p-2 hidden md:table-cell">{tx.status}</td>
+                      <td className="p-2 gap-2 items-center flex justify-center">
                         <button
                           onClick={() => openReceiptModal(tx)}
-                          className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
+                          className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-1/3"
                         >
                           View Receipt
+                        </button>
+                        <button
+                          onClick={() => handleDelete(tx._id)}
+                          className="h-10 text-white p-2 bg-red-600 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-red-400 transition w-1/3"
+                        >
+                         Delete 
                         </button>
                       </td>
                     </tr>
@@ -473,6 +506,9 @@ if (selectedStatus !== "All") {
               </div>
             </div>
 
+
+
+                  
             {/* Export buttons */}
             <div className="flex justify-end gap-4 mt-8">
               <button

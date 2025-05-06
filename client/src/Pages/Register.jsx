@@ -89,7 +89,7 @@ const Register = () => {
         const userData = response.data.user;
 
         // Ensure only the backend ID is stored
-        localStorage.removeItem("userId"); // Clear any incorrect ID
+        localStorage.removeItem("userId"); 
         localStorage.setItem("userId", userData._id); 
 
         //localStorage.setItem("userId", userData._id);
@@ -243,9 +243,7 @@ const Register = () => {
               required
             />
 
-            {/* Display error message */}
-            {/* {formValidMessage && <p className="text-red-600">{formValidMessage}</p>} */}
-
+            
             <div className="flex justify-center">
               <button
                 type="submit"

@@ -30,16 +30,16 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const DashBoard = () => {
-  const { user, setUser } = useContext(UserContext);
+  // const { user, setUser } = useContext(UserContext);
   //const { setLoading } = useContext(LoaderContext);
-
+  const [user,setUser] = useState("")
   const [fundModalOpen, setFundModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [manageTokensModalOpen, setManageTokensModalOpen] = useState(false);
   const [p2pModalOpen, setP2pModalOpen] = useState(false);
   const [schedulePayModalOpen, setSchedulePayModalOpen] = useState(false);
   const [autoPayModalOpen, setAutoPayModalOpen] = useState(false);
-  const [wiseCoinTransferOpen, setWiseCoinTransferOpen] = useState(false);
+  
   const [withdrawal, setWithdrawal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,6 +90,7 @@ const DashBoard = () => {
           withCredentials: true,
         });
         console.log(response);
+        setUser(response?.data?.user)
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
         setMetaMaskAddress(
           response?.data?.user?.metamaskWallet || "Wallet not Linked!"
@@ -183,14 +184,14 @@ const DashBoard = () => {
   //Fund Wallet
   const flutterwaveConfig = {
     public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
-    tx_ref: `paywise-${Date.now()}`,
+    tx_ref: `FND-${Date.now()}`,
     amount: parseFloat(amount) || 0,
     currency: "USD",
     payment_options: "card, banktransfer, ussd",
     customer: {
-      email: "user@example.com", // Replace with actual user email
+      email: user.email, // Replace with actual user email
       //phone_number: "08012345678", // Replace with actual user phone
-      name: "John Doe", // Replace with actual user name
+      name: `${user.firstName} ${user.lastName}`, // Replace with actual user name
     },
     customizations: {
       title: "Fund PayWise Wallet",

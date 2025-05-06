@@ -90,7 +90,7 @@ const RewardsAndAnalytics = () => {
 
   const handleRedeem = async() => {
     const redeemAmount = parseFloat(amount);
-    const user = localStorage.getItem("userId")
+    // const user = localStorage.getItem("userId")
     console.log(user)
 
     if (!user || user?.wallet?.payCoins < 100) {
