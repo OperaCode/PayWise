@@ -89,9 +89,9 @@ const RewardsAndAnalytics = () => {
   }, []);
 
   const handleRedeem = async() => {
-    const redeemAmount = parseFloat(amount);
-    // const user = localStorage.getItem("userId")
-    console.log(user)
+    // const redeemAmount = parseFloat(amount);
+     const user = localStorage.getItem("userId")
+    // console.log(user)
 
     if (!user || user?.wallet?.payCoins < 100) {
       toast.error("You need at least 100 PayCoins to redeem.");
@@ -99,11 +99,11 @@ const RewardsAndAnalytics = () => {
       return;
     }
 
-    if (isNaN(redeemAmount) || redeemAmount < 100) {
-      toast.error("Minimum redeem amount is 100 PayCoins.");
+    // if (isNaN(redeemAmount) || redeemAmount < 100) {
+    //   toast.error("Minimum redeem amount is 100 PayCoins.");
     
-      return;
-    }
+    //   return;
+    // }
 
     if (redeemAmount > user.wallet.payCoins) {
      toast.error("You don't have enough PayCoins.");

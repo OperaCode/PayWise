@@ -72,7 +72,7 @@ const TransactionHistory = () => {
             withCredentials: true,
           }
         );
-        // Limit to 10 transactions
+        
         const allTransactions = data.data || [];
         setTransactions(allTransactions);
         console.log(allTransactions);
@@ -164,12 +164,13 @@ if (selectedStatus !== "All") {
   // delete transaction
 const handleDelete = async (transactionId) => {
   try {
+
     // Confirm before deleting
     const confirmDelete = window.confirm("Are you sure you want to delete this transaction?");
     if (!confirmDelete) return;
 
     // Make a DELETE request to delete the transaction
-    await axios.delete(`${BASE_URL}/payment/${transactionId}`, {
+    await axios.delete(`${BASE_URL}/payment/delete/${transactionId}`, {
       withCredentials: true,
     });
 
@@ -288,7 +289,7 @@ const handleDelete = async (transactionId) => {
     doc.text("Recipient:", 20, y);
     valueStyle();
     const recipient =
-      selectedTransaction.paymentType === "Funding"
+      selectedTransaction.paymentType === "Funding" ||  selectedTransaction.paymentType === "withdrawal"
         ? `${selectedTransaction.user?.firstName || "Self"} (Self)`
         : selectedTransaction.recipientBiller?.name ||
           (selectedTransaction.recipientUser

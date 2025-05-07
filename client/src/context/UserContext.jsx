@@ -5,6 +5,9 @@ export const UserContext = createContext();
 
 const savedUser = localStorage.getItem("user");
 const defaultUser = savedUser ? JSON.parse(savedUser) : null;
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+
 
 const UserProvider = ({ children }) => {
   const [user, setUser] = useState(defaultUser);

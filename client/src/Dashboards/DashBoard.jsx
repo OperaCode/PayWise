@@ -39,7 +39,7 @@ const DashBoard = () => {
   const [p2pModalOpen, setP2pModalOpen] = useState(false);
   const [schedulePayModalOpen, setSchedulePayModalOpen] = useState(false);
   const [autoPayModalOpen, setAutoPayModalOpen] = useState(false);
-  
+ 
   const [withdrawal, setWithdrawal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,16 +49,17 @@ const DashBoard = () => {
   const [billers, setBillers] = useState([]);
   const [amount, setAmount] = useState("");
   const [walletBalance, setWalletBalance] = useState("");
+  const [ledgerBalance, setLedgerBalance] = useState("")
   const [walletLinked, setWalletLinked] = useState(false);
   const [metaMaskAddress, setMetaMaskAddress] = useState("");
   const [payWalletAddress, setPayWalletAddress] = useState("");
-  const [scheduleDate, setScheduleDate] = useState("");
+  // const [scheduleDate, setScheduleDate] = useState("");
   // const [activeTab, setActiveTab] = useState("crypto");
   //to show hidden wallet balance
   const [showWallet, setShowWallet] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
-  const [activeBillers, setActiveBillers] = useState({});
-  const [pin, setPin] = useState("");
+  // const [activeBillers, setActiveBillers] = useState({});
+  // const [pin, setPin] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [bankCode, setBankCode] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -92,6 +93,7 @@ const DashBoard = () => {
         console.log(response);
         setUser(response?.data?.user)
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
+        setLedgerBalance(response?.data?.user?.wallet?.lockedAmount || 0);
         setMetaMaskAddress(
           response?.data?.user?.metamaskWallet || "Wallet not Linked!"
         );
@@ -414,12 +416,13 @@ const DashBoard = () => {
           <div className="lg:flex gap-4">
             {/* Wallet Balance Section */}
             <div className="flex-1 h-full font-bodyFont w-full">
-              <h1 className="font-bold mb-4 text-xl py-2">Current Balance:</h1>
+              <h1 className="font-bold mb-2 text-xl py-2">Wallet Balance:</h1>
               <div className="p-4  w-full rounded-lg shadow-md items-center border-4 border-neutral-500">
                 <div className="flex w-full justify-between items-center">
+                  {/* wallet balances */}
                   <div className="p-2">
                     <p className="text-sm md:text-lg font-bold">
-                      Wallet Balance:
+                      Available Balance:
                     </p>
 
                     <div className="flex items-center space-x-2">
@@ -438,6 +441,7 @@ const DashBoard = () => {
                       </button>
                     </div>
                   </div>
+                  
                   <div className="flex gap-2 text-center mt-4">
                     <button
                       className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
@@ -454,6 +458,22 @@ const DashBoard = () => {
                   </div>
                 </div>
 
+                <div className="flex mt-2 items-center space-x-2">
+                  <p className="text-sm font-bold">
+                    Ledger Balance:{" "}
+                    <span className="font-semibold">
+                      {showWallet
+                        ? formatCurrency(ledgerBalance) || "No Unresolved Funds"
+                        : "•••"}
+                    </span>
+                  </p>
+                  <button
+                    onClick={() => setShowWallet(!showWallet)}
+                    className="focus:outline-none hover:cursor-pointer"
+                  >
+                    {showWallet ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </button>
+                </div>
                 {/* <div className="flex mt-4 items-center space-x-2">
                   <p className="text-xs font-bold">
                     MetaMask Wallet:{" "}
