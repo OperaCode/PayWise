@@ -311,7 +311,10 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
       });
     }
 
-    const isPinValid = await bcrypt.compare(transactionPin, user.transactionPin);
+    const isPinValid = await bcrypt.compare(
+      transactionPin,
+      user.transactionPin
+    );
     if (!isPinValid) {
       return res.status(403).json({ message: "Invalid transaction PIN." });
     }
@@ -359,7 +362,6 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
   }
 });
 
-
 const scheduleRecurring = async (req, res) => {
   try {
     const userId = req.userId;
@@ -389,7 +391,10 @@ const scheduleRecurring = async (req, res) => {
     }
 
     // Calculate total required amount for all billers
-    const totalAmount = billers.reduce((sum, biller) => sum + biller.serviceAmount, 0);
+    const totalAmount = billers.reduce(
+      (sum, biller) => sum + biller.serviceAmount,
+      0
+    );
 
     // Ensure sufficient wallet balance
     if (user.wallet.balance < totalAmount) {
@@ -405,14 +410,19 @@ const scheduleRecurring = async (req, res) => {
     // Generate recurring payments
     const scheduledPayments = await Promise.all(
       billers.map((biller) => {
-        const nextExecutionDate = calculateNextExecutionDate(startDate, frequency);
+        const nextExecutionDate = calculateNextExecutionDate(
+          startDate,
+          frequency
+        );
 
         return Payment.create({
           user: userId,
           recipientBiller: biller._id,
           amount: biller.serviceAmount,
           status: "Pending",
-          transactionRef: `ATP-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+          transactionRef: `ATP-${Date.now()}-${Math.floor(
+            Math.random() * 10000
+          )}`,
           isRecurring: true,
           frequency,
           isAutoPayment: true,
@@ -510,8 +520,6 @@ const redeemPayCoin = async (req, res) => {
     const { amount } = req.body;
 
     console.log("Redeem request amount:", amount); // Debug
-   
-    
 
     if (amount < 100) {
       return res
@@ -686,11 +694,36 @@ const pauseRecurringPayment = asyncHandler(async (req, res) => {
   }
 });
 
-
 // delete transaction
-const deleteTransaction = asyncHandler(async(req, res)=>{
+const deleteTransaction = async (req, res) => {
+  const { transactionId } = req.params;
+  console.log(req.params);
+  try {
+    const transaction = await Payment.findById(transactionId);
 
-});
+    if (!transaction) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Transaction not found" });
+    }
+
+    const userId = req.userId; // Assumes user ID is attached to req via auth middleware
+    if (transaction.user.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ success: false, message: "User not authorized" });
+    }
+
+    await transaction.deleteOne(); // or Payment.findByIdAndDelete(transactionId)
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Transaction deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting transaction:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 
 module.exports = {
   fundWallet,

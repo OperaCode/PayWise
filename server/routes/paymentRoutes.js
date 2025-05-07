@@ -18,7 +18,7 @@ router.post('/schedule-transfer',protectUser ,scheduleTransfer);
 router.post('/schedule-recurring',protectUser ,scheduleRecurring);
 router.post('/redeem-coin',protectUser ,redeemPayCoin);
 router.post('/pause-recurring', pauseRecurringPayment);
-router.delete('/delete', deleteTransaction);
+router.delete('/delete/:transactionId',protectUser ,deleteTransaction);
 
 
 module.exports = router;
