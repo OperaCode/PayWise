@@ -514,37 +514,47 @@ const getUserPaymentHistory = async (req, res) => {
   }
 };
 
+// redeem paycoin to wallet
 const redeemPayCoin = async (req, res) => {
   try {
     const userId = req.userId;
     const { amount } = req.body;
 
-    console.log("Redeem request amount:", amount); // Debug
+    if (!amount || isNaN(amount)) {
+      return res.status(400).json({ message: "Invalid amount provided." });
+    }
 
-    if (amount < 100) {
+    const numericAmount = Number(amount);
+
+    if (numericAmount < 100) {
       return res
         .status(400)
         .json({ message: "Minimum redeemable amount is 100 PayCoins." });
     }
 
     const user = await User.findById(userId);
-    console.log("User PayCoins:", user.wallet?.payCoins); // Debug
 
-    if (!user || user.wallet.payCoins < amount) {
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (user.wallet.payCoins < numericAmount) {
       return res.status(400).json({ message: "Insufficient PayCoins." });
     }
 
-    // Deduct from reward balance and credit wallet
-    user.wallet.payCoins -= amount;
-    user.wallet.balance += amount;
+    // Deduct from payCoins and credit wallet
+    user.wallet.payCoins -= numericAmount;
+    user.wallet.balance += numericAmount;
 
     await user.save();
 
     res.status(200).json({ message: "Redeemed successfully." });
   } catch (error) {
+    console.error("Redeem PayCoin Error:", error); // Add log for debugging
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 //total payment for charts
 const totalPayments = asyncHandler(async (req, rers) => {
@@ -713,6 +723,18 @@ const deleteTransaction = async (req, res) => {
         .status(403)
         .json({ success: false, message: "User not authorized" });
     }
+    
+    if (transaction.status === "Pending") {
+      const user = await User.findById(userId);
+
+      // Refund the locked amount to wallet
+      user.wallet.balance += transaction.amount;
+      user.wallet.lockedAmount -= transaction.amount;
+
+      await user.save(); // Save user changes
+    }
+
+
 
     await transaction.deleteOne(); // or Payment.findByIdAndDelete(transactionId)
 
