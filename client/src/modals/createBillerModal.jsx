@@ -33,30 +33,54 @@ const CreateBillerModal = () => {
     e.preventDefault();
     setIsCreating(true);
     setError("");
-  
-    const { fullName, nickname, email, serviceType, wallet, profilePicture,serviceAmount } = biller;
+
+    const {
+      fullName,
+      nickname,
+      email,
+      serviceType,
+      wallet,
+      profilePicture,
+      serviceAmount,
+    } = biller;
     const userId = localStorage.getItem("userId"); // Retrieve user ID from storage
-  
-    if (!fullName || !nickname || !email || !serviceType ||!serviceAmount ||!wallet.walletId || !userId) {
+
+    if (
+      !fullName ||
+      !nickname ||
+      !email ||
+      !serviceType ||
+      !serviceAmount ||
+      !wallet.walletId 
+      // !userId
+    ) {
       toast.error("Oops, all fields are required!");
       setIsCreating(false);
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("token");
-  
+      if (!token) {
+        toast.error("User not authenticated. Please login again.");
+        setIsCreating(false);
+        return;
+      }
+
+      console.log(token);
+      console.log(userId);
+
       const response = await axios.post(
         `${BASE_URL}/biller/createbiller`,
-        { 
-          fullName, 
-          nickname, 
-          email, 
+        {
+          fullName,
+          nickname,
+          email,
           serviceType,
-          serviceAmount, 
-          walletId: wallet.walletId, 
+          serviceAmount,
+          walletId: wallet.walletId,
           profilePicture,
-          user: userId, // Ensure user ID is included
+          // user: userId, // Ensure user ID is included
         },
         {
           headers: {
@@ -65,7 +89,7 @@ const CreateBillerModal = () => {
           },
         }
       );
-  
+
       if (response?.data) {
         toast.success(response.data.message);
         // setIsModalOpen(false);
@@ -79,8 +103,6 @@ const CreateBillerModal = () => {
       setIsModalOpen(false);
     }
   };
-  
-  
 
   const handleCancel = () => {
     setBiller({
@@ -127,7 +149,7 @@ const CreateBillerModal = () => {
       console.log(response.data);
       if (response?.data?.biller) {
         setBiller(response.data.biller);
-        console.log(biller)
+        // console.log(biller)
       } else {
         toast.error("Biller not found");
       }
@@ -166,7 +188,7 @@ const CreateBillerModal = () => {
 
       <h3 className="mt-2 font-semibold">Name:</h3>
       <p className="text-gray-500">{biller?.fullName || "No name provided"}</p>
-      
+
       <div className="w-full space-y-2">
         <div className="flex items-center">
           <label className="w-1/3">Full Name:</label>
@@ -223,9 +245,8 @@ const CreateBillerModal = () => {
           <Input
             name="serviceAmount"
             placeholder="Enter Amount"
-            value={biller.serviceAmount || "" }
+            value={biller.serviceAmount || ""}
             onChange={handleChange}
-            
           />
         </div>
 

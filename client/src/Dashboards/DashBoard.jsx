@@ -108,38 +108,30 @@ const DashBoard = () => {
     fetchUser();
   }, []);
 
-  //fetch Biller
-  useEffect(() => {
-    const fetchBillers = async () => {
-      try {
-        const token = localStorage.getItem("token");
 
-        if (!token) {
-          toast.error("User not authenticated!");
-          return;
-        }
+ // for fetching billers to frontend
+useEffect(() => {
+  const fetchBillers = async () => {
+    try {
+      const UserId = localStorage.getItem("userId");
+      const response = await axios.get(`${BASE_URL}/biller`, {
+        withCredentials: true,
+      });
 
-        console.log("Token:", token);
+      const fetchedBillers = response?.data || [];
+      console.log(fetchedBillers);
+      setBillers(fetchedBillers);
+     
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch billers"
+      );
+    }
+  };
 
-        const response = await axios.get(`${BASE_URL}/biller`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        console.log(response?.data || null);
-
-        setBillers(response.data);
-      } catch (error) {
-        console.error("Error fetching billers:", error);
-        toast.error(
-          error?.response?.data?.message || "Failed to fetch billers"
-        );
-      }
-    };
-
-    fetchBillers();
-  }, []);
+  fetchBillers();
+}, []);
 
   //fetch History
   useEffect(() => {
@@ -458,12 +450,12 @@ const DashBoard = () => {
                   </div>
                 </div>
 
-                <div className="flex mt-2 items-center space-x-2">
-                  <p className="text-sm font-bold">
-                    Ledger Balance:{" "}
+                <div className="flex mt-2 items-center p-2 space-x-2">
+                  <p className="text-sm font-semibold">
+                    Frozen Balance:{" "}
                     <span className="font-semibold">
                       {showWallet
-                        ? formatCurrency(ledgerBalance) || "No Unresolved Funds"
+                        ? formatCurrency(ledgerBalance) 
                         : "•••"}
                     </span>
                   </p>
@@ -474,6 +466,8 @@ const DashBoard = () => {
                     {showWallet ? <Eye size={16} /> : <EyeOff size={16} />}
                   </button>
                 </div>
+
+                {/* proposed Metamask */}
                 {/* <div className="flex mt-4 items-center space-x-2">
                   <p className="text-xs font-bold">
                     MetaMask Wallet:{" "}
@@ -765,7 +759,7 @@ const DashBoard = () => {
               </div>
             </div>
           )}
-          {/* P2P Modal */}
+          {/* transfer Modal */}
           {p2pModalOpen && (
             <div className="fixed inset-0 text-black flex items-center justify-center bg-opacity-50 z-50">
               <div

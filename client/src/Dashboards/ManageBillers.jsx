@@ -71,8 +71,14 @@ const ManageBillers = (currency) => {
     const fetchBillers = async () => {
       try {
         const UserId = localStorage.getItem("userId");
+        const token = localStorage.getItem("token");
+
+
         const response = await axios.get(`${BASE_URL}/biller`, {
-          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`, 
+            "Content-Type": "application/json",
+          },
         });
   
         const fetchedBillers = response?.data || [];

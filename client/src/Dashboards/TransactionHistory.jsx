@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 import logo from "../assets/paywise-logo.png";
-import { Moon, Sun, ArrowLeft, ArrowRight,ListTodo } from "lucide-react";
+import { Moon, Sun, ArrowLeft, ArrowRight, ListTodo } from "lucide-react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx"; // For Excel export
 import { jsPDF } from "jspdf"; // For PDF export
@@ -29,7 +29,7 @@ const TransactionHistory = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10); // You can change this to any number of items per page
-
+  const [cancelled, setCancelled] = useState([]);
   const indexOfLast = currentPage * pageSize;
   const indexOfFirst = indexOfLast - pageSize;
   const paginatedTransactions = filteredTransactions.slice(
@@ -49,7 +49,7 @@ const TransactionHistory = () => {
         });
         const data = response?.data;
         const user = data?.user;
-        console.log(user)
+        console.log(user);
         setUserName(user.firstName);
         setProfilePicture(user.profilePicture || image);
       } catch (error) {
@@ -72,7 +72,7 @@ const TransactionHistory = () => {
             withCredentials: true,
           }
         );
-        
+
         const allTransactions = data.data || [];
         setTransactions(allTransactions);
         console.log(allTransactions);
@@ -99,40 +99,43 @@ const TransactionHistory = () => {
 
     // Filter by status
     let filters = filtered;
-if (selectedStatus !== "All") {
-  filters = filtered.filter((tx) => tx.status === selectedStatus);
-}
-
+    if (selectedStatus !== "All") {
+      filters = filtered.filter((tx) => tx.status === selectedStatus);
+    }
 
     setFilteredTransactions(filters);
     setCurrentPage(1);
   };
 
-
+  const handleCancel = (index) => {
+    setCancelled((prev) => [...prev, index]);
+  };
 
   //handle status filter
   const handleStatusFilter = (status) => {
     setSelectedStatus(status);
     let filtered = transactions;
-  
+
     if (searchQuery) {
       filtered = filtered.filter(
         (tx) =>
-          tx.recipientBiller?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          tx.recipientBiller?.name
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
           `${tx.recipientUser?.firstName} ${tx.recipientUser?.lastName}`
             .toLowerCase()
             .includes(searchQuery.toLowerCase())
       );
     }
-  
+
     if (status !== "All") {
       filtered = filtered.filter((tx) => tx.status === status);
     }
-  
+
     setFilteredTransactions(filtered);
     setCurrentPage(1);
   };
-  
+
   // Handle sorting
   const handleSort = (option) => {
     setSortOption(option);
@@ -160,33 +163,32 @@ if (selectedStatus !== "All") {
     setIsModalOpen(true);
   };
 
- 
   // delete transaction
-const handleDelete = async (transactionId) => {
-  try {
+  const handleCancelTx = async (transactionId) => {
+    try {
+      // Confirm before deleting
+      const confirmCancel = window.confirm(
+        "Are you sure you want to cancel this transaction?"
+      );
+      if (!confirmCancel) return;
 
-    // Confirm before deleting
-    const confirmDelete = window.confirm("Are you sure you want to delete this transaction?");
-    if (!confirmDelete) return;
+      // Make a Cancel request to delete the transaction
+      await axios.delete(`${BASE_URL}/payment/delete/${transactionId}`, {
+        withCredentials: true,
+      });
 
-    // Make a DELETE request to delete the transaction
-    await axios.delete(`${BASE_URL}/payment/delete/${transactionId}`, {
-      withCredentials: true,
-    });
+      // Remove the deleted transaction from the local state
+      setFilteredTransactions((prevTransactions) =>
+        prevTransactions.filter((tx) => tx._id !== transactionId)
+      );
 
-    // Remove the deleted transaction from the local state
-    setFilteredTransactions((prevTransactions) =>
-      prevTransactions.filter((tx) => tx._id !== transactionId)
-    );
-
-    // Notify the user about the successful deletion
-    toast.success("Transaction deleted successfully!");
-  } catch (error) {
-    console.error("Error deleting transaction:", error);
-    toast.error("Error deleting transaction. Please try again.");
-  }
-};
-
+      // Notify the user about the successful deletion
+      toast.success("Transaction cancelled successfully!");
+    } catch (error) {
+      console.error("Error cancelling transaction:", error);
+      toast.error("Error cancellinging transaction. Please try again.");
+    }
+  };
 
   // Close receipt modal and navigate back
   const closeReceiptModal = () => {
@@ -289,7 +291,8 @@ const handleDelete = async (transactionId) => {
     doc.text("Recipient:", 20, y);
     valueStyle();
     const recipient =
-      selectedTransaction.paymentType === "Funding" ||  selectedTransaction.paymentType === "withdrawal"
+      selectedTransaction.paymentType === "Funding" ||
+      selectedTransaction.paymentType === "withdrawal"
         ? `${selectedTransaction.user?.firstName || "Self"} (Self)`
         : selectedTransaction.recipientBiller?.name ||
           (selectedTransaction.recipientUser
@@ -427,7 +430,7 @@ const handleDelete = async (transactionId) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedTransactions.map((tx) => (
+                  {paginatedTransactions.map((tx,index) => (
                     <tr
                       key={tx._id}
                       className="text-center hover:bg-gray-50 hover:text-black cursor-pointer"
@@ -436,7 +439,8 @@ const handleDelete = async (transactionId) => {
                         {new Date(tx.createdAt).toLocaleDateString()}
                       </td>
                       <td className="p-2">
-                        {tx.paymentType === "Funding" || tx.paymentType === "withdrawal" 
+                        {tx.paymentType === "Funding" ||
+                        tx.paymentType === "withdrawal"
                           ? `${tx.user?.firstName || "Self"} (Self)`
                           : tx.recipientBiller?.name ||
                             (tx.recipientUser
@@ -445,7 +449,9 @@ const handleDelete = async (transactionId) => {
                       </td>
 
                       <td className="p-2">${tx.amount.toFixed(2)}</td>
-                      <td className="p-2 hidden md:table-cell">{tx.paymentType}</td>
+                      <td className="p-2 hidden md:table-cell">
+                        {tx.paymentType}
+                      </td>
                       <td className="p-2 hidden md:table-cell">{tx.status}</td>
                       <td className="p-2 gap-2 items-center flex justify-center">
                         <button
@@ -454,12 +460,32 @@ const handleDelete = async (transactionId) => {
                         >
                           View Receipt
                         </button>
-                        <button
-                          onClick={() => handleDelete(tx._id)}
-                          className="h-10 text-white p-2 bg-red-600 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-red-400 transition w-1/3"
-                        >
-                         Delete 
-                        </button>
+
+                        {tx.status === "Successful" ? (
+                          <button className="bg-green-600 text-white p-2 w-1/3 h-10 rounded-xl hover:cursor-pointer text-xs font-semibold">
+                            Done
+                          </button>
+                        ) : tx.status === "Pending" ? (
+                          cancelled.includes(index) ? (
+                            <button
+                              className="bg-gray-500 text-white  p-2 w-1/3 h-10 rounded-xl hover:cursor-pointer text-xs font-semibold"
+                              disabled
+                            >
+                              Cancelled
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleCancelTx(tx._id)}
+                              className="bg-yellow-500 text-white p-2 w-1/3 h-10 rounded-xl hover:cursor-pointer text-xs font-semibold"
+                            >
+                              Cancel
+                            </button>
+                          )
+                        ) : (
+                          <button className="bg-red-600 text-white  p-2 w-1/3 h-10 rounded-xl hover:cursor-pointer text-xs font-semibold">
+                          Cancelled
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -507,9 +533,6 @@ const handleDelete = async (transactionId) => {
               </div>
             </div>
 
-
-
-                  
             {/* Export buttons */}
             <div className="flex justify-end gap-4 mt-8">
               <button

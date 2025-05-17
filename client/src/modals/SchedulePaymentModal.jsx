@@ -8,6 +8,7 @@ import { parseISO } from 'date-fns';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const SchedulePaymentModal = ({ billers, onClose }) => {
+  // const [billers, setBillers] = useState([]);
   const [selectedBiller, setSelectedBiller] = useState(null); // Store full biller object
   const [amount, setAmount] = useState("");
   const [scheduleDate, setScheduleDate] = useState("");
@@ -21,6 +22,36 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
 
   const openPinModal = () => setIsPinModalOpen(true);
   const closePinModal = () => setIsPinModalOpen(false);
+
+
+
+
+// for fetching billers to frontend
+// useEffect(() => {
+//   const fetchBillers = async () => {
+//     try {
+//       const UserId = localStorage.getItem("userId");
+//       const response = await axios.get(`${BASE_URL}/biller`, {
+//         withCredentials: true,
+//       });
+
+//       const fetchedBillers = response?.data || [];
+//       console.log(fetchedBillers);
+//       setBillers(fetchedBillers);
+     
+//     } catch (error) {
+//       console.error(error);
+//       toast.error(
+//         error?.response?.data?.message || "Failed to fetch billers"
+//       );
+//     }
+//   };
+
+//   fetchBillers();
+// }, []);
+
+
+
 
   // Handle cancel action (close modal)
   const handleCancel = () => {
@@ -103,32 +134,32 @@ const handleSchedulePayment = async () => {
     setIsProcessing(true);
   
     try {
-      // 🔹 Validate selected biller
+      // Validate selected biller
       if (!selectedBiller) {
         toast.error("Biller is not selected. Please choose a biller.");
         return;
       }
   
-      // 🔹 Validate token
+      // Validate token
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("You must be logged in to schedule a payment.");
         return;
       }
   
-      // 🔹 Validate amount
+      // Validate amount
       if (!amount || isNaN(amount) || Number(amount) <= 0) {
         toast.error("Please enter a valid amount.");
         return;
       }
   
-      // 🔹 Validate transaction pin
+      // Validate transaction pin
       if (!transactionPin || transactionPin.trim().length === 0) {
         toast.error("Transaction PIN is required.");
         return;
       }
   
-      // 🔹 Validate schedule date
+      // Validate schedule date
       if (!scheduleDate) {
         toast.error("Please select a valid date and time.");
         return;
@@ -272,7 +303,7 @@ const handleSchedulePayment = async () => {
             value={selectedBiller ? selectedBiller._id : ""}
             onChange={(e) => {
               const biller = billers.find((b) => b._id === e.target.value);
-              setSelectedBiller(biller); // Store the entire biller object
+              setSelectedBiller(biller); 
             }}
           >
             <option value="">Select Biller</option>

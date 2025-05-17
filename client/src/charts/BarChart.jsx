@@ -14,8 +14,45 @@ import { ThemeContext } from "../context/ThemeContext"; // Import theme context
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const BarChart = ({ billers }) => {
+const BarChart = ({billers}) => {
   const { theme } = useContext(ThemeContext); // Get current theme
+  //  const [billers, setBillers] = useState([]);
+
+  // useEffect(() => {
+  //   const fetchBillers = async () => {
+  //     try {
+  //       const UserId = localStorage.getItem("userId");
+  //       const token = localStorage.getItem("token");
+
+
+  //       const response = await axios.get(`${BASE_URL}/biller`, {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`, 
+  //           "Content-Type": "application/json",
+  //         },
+  //       });
+  
+  //       const fetchedBillers = response?.data || [];
+  //       console.log(fetchedBillers);
+  //       setBillers(fetchedBillers);
+  
+       
+  //       // // Initialize active states
+  //       // const initialStates = {};
+  //       // fetchedBillers.forEach((biller) => {  // Use fetchedBillers instead of res.data
+  //       //   initialStates[biller._id] = biller.activeBiller;
+  //       // });
+  //       // setActiveBillerStates(initialStates);
+  //     } catch (error) {
+  //       console.error(error);
+  //       toast.error(
+  //         error?.response?.data?.message || "Failed to fetch billers"
+  //       );
+  //     }
+  //   };
+  
+  //   fetchBillers();
+  // }, []);
 
   // Extract labels (biller names) and values (totalAmountPaid)
   const labels = billers.map((biller) => biller.name);
