@@ -42,6 +42,7 @@ cron.schedule("* * * * *", async () => {
 
     for (const payment of duePayments) {
       const user = await User.findById(payment.user);
+      console.log(user)
       if (!user) {
         console.log(`User not found for Payment ${payment._id}`);
         continue;

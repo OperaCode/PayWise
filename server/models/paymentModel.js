@@ -12,7 +12,7 @@ const PaymentSchema = new mongoose.Schema({
   //frequency: { type: String, enum: ["daily", "weekly", "monthly"] },
   status: {
     type: String,
-    enum: ["Pending", "Successful", "Failed"],
+    enum: ["Pending", "Successful", "Failed", "Cancelled"],
     default: "Pending",
   },
   transactionRef: { type: String, unique: true, required: true }, // Unique reference for tracking

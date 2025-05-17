@@ -206,7 +206,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     await sendWelcomeBackEmail(user.email, user.firstName);
-    console.log("welocm e email sent")
+    //console.log("Welcome email sent")
 
     // Generate token
     const token = generateToken(user._id);

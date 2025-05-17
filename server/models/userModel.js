@@ -2,26 +2,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
-// const userSchema = new mongoose.Schema(
-//   {
-//     googleId: { type: String, unique: true, sparse: true },
-//     firstName: { type: String, required: true },
-//     lastName: { type: String, required: true },
-//     email: { type: String, required: true, unique: true, index: true },
-//     password: { type: String, required: function () { return !this.firebaseUID}},
-//     profilePicture: { type: String, default: null }, // Store image URL
-//     wallet: {
-//       walletId: { type: String, default: () => crypto.randomUUID() },
-//       balance: { type: Number,default: 0}, // Ensure new users get 100 tokens
-//       paycoin: { type: Number,default: 0}, // Ensure new users get 100 tokens
-//     },
-//     transactionPin: { type: String, required: false }, // Store hashed PIN
-//     billers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Biller" }], // Reference Vendor model
-//   },
-//   { timestamps: true }
-// );
-
-// **Ensure wallet gets initialized properly**
 
 const userSchema = new mongoose.Schema(
   {
@@ -61,8 +41,8 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0, // Initialize with 0 if user hasn't made any payments yet
     },
-    isVerified: { type: Boolean, default: false },
-    verificationToken: String,
+    // isVerified: { type: Boolean, default: false },
+    // verificationToken: String,
   },
   { timestamps: true }
 );

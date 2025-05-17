@@ -5,12 +5,14 @@ import nodemailer from "nodemailer";
  // Secure email transport setup
  const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 587, // TLS (recommended)
-    secure: false, // Use `true` for port 465
+    port: 465, // TLS (recommended)
+    secure: true, // Use `true` for port 465
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    logger: true,
+  debug: true,
   });
 
 
@@ -23,7 +25,7 @@ const sendVerificationEmail = async (email, firstName) => {
 
 
     const mailOptions = {
-      from: "PayWise Support",
+      from: `"PayWise Support" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "🚀 Welcome to PayWise ",
       html: `
@@ -54,7 +56,7 @@ const sendVerificationEmail = async (email, firstName) => {
           </p>
 
           <p class="text-blue-500 break-words mt-2">
-            <a href="${activationLink}">${activationLink}</a>
+            <a href="">${activationLink}</a>
           </p>
 
           <p class="text-gray-600 mt-4">
@@ -76,7 +78,7 @@ const sendVerificationEmail = async (email, firstName) => {
 
     // Send email and log success message
     const info = await transporter.sendMail(mailOptions);
-    //console.log(`Verification email sent to: ${email}, Message ID: ${info.messageId}`);
+    console.log(`Verification email sent to: ${email}, Message ID: ${info.messageId}`);
   } catch (error) {
     console.error("Email sending error:", error.message);
   }

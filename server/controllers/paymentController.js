@@ -704,10 +704,10 @@ const pauseRecurringPayment = asyncHandler(async (req, res) => {
   }
 });
 
-// delete transaction
-const deleteTransaction = async (req, res) => {
+
+// cancel transaction
+const deleteTransaction = async (req, res) =>{
   const { transactionId } = req.params;
-  console.log(req.params);
   try {
     const transaction = await Payment.findById(transactionId);
 
@@ -723,29 +723,79 @@ const deleteTransaction = async (req, res) => {
         .status(403)
         .json({ success: false, message: "User not authorized" });
     }
-    
-    if (transaction.status === "Pending") {
-      const user = await User.findById(userId);
 
-      // Refund the locked amount to wallet
-      user.wallet.balance += transaction.amount;
-      user.wallet.lockedAmount -= transaction.amount;
-
-      await user.save(); // Save user changes
+    // Only allow cancellation if transaction is Pending
+    if (transaction.status !== "Pending") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Only pending transactions can be cancelled" });
     }
 
+    // Refund locked amount to wallet
+    const user = await User.findById(userId);
+    user.wallet.balance += Number(transaction.amount);
+    user.wallet.lockedAmount -= Number(transaction.amount);
+    await user.save();
 
+    // Update transaction status to Cancelled instead of deleting
+    transaction.status = "Cancelled";
+    await transaction.save();
 
-    await transaction.deleteOne(); // or Payment.findByIdAndDelete(transactionId)
-
-    return res
-      .status(200)
-      .json({ success: true, message: "Transaction deleted successfully" });
+    return res.status(200).json({
+      success: true,
+      message: "Transaction cancelled successfully",
+      transaction,
+    });
   } catch (error) {
-    console.error("Error deleting transaction:", error);
+    console.error("Error cancelling transaction:", error);
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+
+// delete transaction
+// const deleteTransaction = async (req, res) => {
+//   const { transactionId } = req.params;
+//   console.log(req.params);
+//   try {
+//     const transaction = await Payment.findById(transactionId);
+
+//     if (!transaction) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Transaction not found" });
+//     }
+
+//     const userId = req.userId; // Assumes user ID is attached to req via auth middleware
+//     if (transaction.user.toString() !== userId) {
+//       return res
+//         .status(403)
+//         .json({ success: false, message: "User not authorized" });
+//     }
+    
+//     if (transaction.status === "Pending") {
+//       const user = await User.findById(userId);
+
+//       // Refund the locked amount to wallet
+//       user.wallet.balance += transaction.amount;
+//       user.wallet.lockedAmount -= transaction.amount;
+
+//       await user.save(); // Save user changes
+//     }
+
+
+
+//     await transaction.deleteOne(); // or Payment.findByIdAndDelete(transactionId)
+
+//     return res
+//       .status(200)
+//       .json({ success: true, message: "Transaction deleted successfully" });
+//   } catch (error) {
+//     console.error("Error deleting transaction:", error);
+//     return res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
 
 module.exports = {
   fundWallet,
