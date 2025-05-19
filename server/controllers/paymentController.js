@@ -252,8 +252,12 @@ const p2PTransfer = asyncHandler(async (req, res) => {
     await Promise.all([sender.save(), recipient.save(), newPayment.save()]);
 
     // If the recipient is a biller, update their totalAmountPaid
-    const biller =
-      recipient && (await Biller.findOne({ email: recipient.email }));
+    // const biller =
+    //   recipient && (await Biller.findOne({ email: recipient.email }));
+    const biller = await Biller.findOne({
+      email: recipient.email.toLowerCase(),
+      user: senderId, // Ensure biller belongs to sender
+    });
     if (biller) {
       biller.totalAmountPaid += transferAmount;
       await biller.save();
@@ -331,7 +335,9 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
     await user.save();
 
     // 7. Find biller
-    const recipient = await Biller.findOne({ email: billerEmail });
+    // const recipient = await Biller.findOne(payment.biller);
+    const recipient = await Biller.findOne({ email: billerEmail, user: userId });
+
     if (!recipient) {
       return res.status(404).json({ message: "Biller not found." });
     }
@@ -362,20 +368,114 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
   }
 });
 
+// const scheduleRecurring = async (req, res) => {
+//   try {
+//     const userId = req.userId;
+//     const {
+//       billerEmails,
+//       amount, // still kept in case you want to show the user-requested value
+//       startDate,
+//       frequency,
+//       occurrences,
+//       transactionPin,
+//     } = req.body;
+
+//     // Validate PIN
+//     const user = await User.findById(userId);
+//     const isPinValid = await bcrypt.compare(
+//       transactionPin,
+//       user.transactionPin
+//     );
+//     if (!isPinValid) {
+//       return res.status(403).json({ message: "Invalid transaction PIN." });
+//     }
+
+//     // Get billers by email
+//     const billers = await Biller.find({ email: { $in: billerEmails } });
+//     if (!billers || billers.length === 0) {
+//       return res.status(400).json({ message: "No matching billers found." });
+//     }
+
+//     // Calculate total required amount for all billers
+    
+//     const totalAmount = billers.reduce(
+//       (sum, biller) => sum + biller.serviceAmount,
+//       0
+//     );
+
+//     const parsedAmount = parseFloat(totalAmount);
+
+//     // Ensure sufficient wallet balance
+//     if (user.wallet.balance < parsedAmount) {
+//       return res.status(400).json({ message: "Insufficient balance" });
+//     }
+
+//     // Lock the total amount
+//     user.wallet.balance -= parsedAmount;
+//     user.wallet.lockedAmount += parsedAmount;
+//     user.markModified("wallet");
+//     await user.save();
+
+//     // Generate recurring payments
+//     const scheduledPayments = await Promise.all(
+//       billers.map((biller) => {
+//         const nextExecutionDate = calculateNextExecutionDate(
+//           startDate,
+//           frequency
+//         );
+
+//         return Payment.create({
+//           user: userId,
+//           recipientBiller: biller._id,
+//           amount: biller.serviceAmount,
+//           status: "Pending",
+//           transactionRef: `ATP-${Date.now()}-${Math.floor(
+//             Math.random() * 10000
+//           )}`,
+//           isRecurring: true,
+//           frequency,
+//           isAutoPayment: true,
+//           scheduleDate: new Date(startDate),
+//           nextExecution: nextExecutionDate,
+//           recurrence: {
+//             occurrencesLeft: occurrences,
+//             lastPaidAt: new Date(startDate),
+//           },
+//           paymentType: "Scheduled",
+//           description: `Recurring payment for ${biller.name}`,
+//         });
+//       })
+//     );
+
+//     return res.status(201).json({
+//       message: "Recurring payments scheduled.",
+//       payments: scheduledPayments,
+//     });
+//   } catch (error) {
+//     console.error("Recurring schedule error:", error);
+//     res.status(500).json({ message: "Failed to schedule recurring payments." });
+//   }
+// };
+
+// Function to calculate the next execution date based on frequency
+
+
 const scheduleRecurring = async (req, res) => {
   try {
     const userId = req.userId;
     const {
       billerEmails,
-      amount, // still kept in case you want to show the user-requested value
+      amount, // optional, retained for reference
       startDate,
       frequency,
       occurrences,
       transactionPin,
     } = req.body;
 
-    // Validate PIN
+    // 1. Validate user and PIN
     const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
     const isPinValid = await bcrypt.compare(
       transactionPin,
       user.transactionPin
@@ -384,30 +484,44 @@ const scheduleRecurring = async (req, res) => {
       return res.status(403).json({ message: "Invalid transaction PIN." });
     }
 
-    // Get billers by email
-    const billers = await Biller.find({ email: { $in: billerEmails } });
+    // 2. Get billers by email
+    // const billers = await Biller.find({ email: { $in: billerEmails } });
+    const billers = await Biller.find({
+      email: { $in: billerEmails },
+      user: userId, // only fetch billers created/attached by the current user
+    });
+    
     if (!billers || billers.length === 0) {
       return res.status(400).json({ message: "No matching billers found." });
     }
 
-    // Calculate total required amount for all billers
+    // 3. Calculate total required amount
     const totalAmount = billers.reduce(
-      (sum, biller) => sum + biller.serviceAmount,
+      (sum, biller) => sum + parseFloat(biller.serviceAmount || 0),
       0
     );
 
-    // Ensure sufficient wallet balance
-    if (user.wallet.balance < totalAmount) {
-      return res.status(400).json({ message: "Insufficient balance" });
+    console.log("Wallet balance:", user.wallet.balance);
+    console.log("Locked amount:", user.wallet.lockedAmount);
+    console.log("Total scheduled amount:", totalAmount);
+    console.log("Each biller amount:", billers.map(b => ({
+      name: b.name,
+      serviceAmount: b.serviceAmount
+    })));
+
+    // 4. Ensure sufficient wallet balance
+    const availableBalance = user.wallet.balance;
+    if (availableBalance < totalAmount) {
+      return res.status(400).json({ message: "Insufficient balance." });
     }
 
-    // Lock the total amount
+    // 5. Lock the total amount
     user.wallet.balance -= totalAmount;
     user.wallet.lockedAmount += totalAmount;
     user.markModified("wallet");
     await user.save();
 
-    // Generate recurring payments
+    // 6. Generate recurring payments
     const scheduledPayments = await Promise.all(
       billers.map((biller) => {
         const nextExecutionDate = calculateNextExecutionDate(
@@ -418,11 +532,9 @@ const scheduleRecurring = async (req, res) => {
         return Payment.create({
           user: userId,
           recipientBiller: biller._id,
-          amount: biller.serviceAmount,
+          amount: parseFloat(biller.serviceAmount),
           status: "Pending",
-          transactionRef: `ATP-${Date.now()}-${Math.floor(
-            Math.random() * 10000
-          )}`,
+          transactionRef: `ATP-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
           isRecurring: true,
           frequency,
           isAutoPayment: true,
@@ -439,7 +551,7 @@ const scheduleRecurring = async (req, res) => {
     );
 
     return res.status(201).json({
-      message: "Recurring payments scheduled.",
+      message: "Recurring payments scheduled successfully.",
       payments: scheduledPayments,
     });
   } catch (error) {
@@ -448,7 +560,8 @@ const scheduleRecurring = async (req, res) => {
   }
 };
 
-// Function to calculate the next execution date based on frequency
+
+
 const calculateNextExecutionDate = (startDate, frequency) => {
   const date = new Date(startDate);
   const freq = frequency.toLowerCase();

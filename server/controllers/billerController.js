@@ -6,20 +6,19 @@ const { updateBillerAmount } = require("../hooks/aggrAmount");
 
 const createBiller = asyncHandler(async (req, res) => {
   try {
-    
+    console.log("Request body:", req.body); // Debugging line
+
     const { fullName, nickname, email, serviceType, walletId, profilePicture,serviceAmount } =
       req.body;
-      console.log("Request body:", req.body); // Debugging line
+    const userId = req.userId || req.body.user; // Get user ID from req.user or req.body
 
-    const userId = req.userId 
-    console.log(userId)
     if (
       !fullName ||
       !nickname ||
       !email ||
       !serviceType ||
       !walletId ||
-      // !userId ||
+      !userId ||
       !serviceAmount
     ) {
       return res

@@ -4,6 +4,7 @@ const Payment = require("../models/paymentModel");
 const User = require("../models/userModel");
 const Biller = require("../models/billerModel");
 
+// Utility to get next recurring date
 const getNextExecutionDate = (currentDate, frequency) => {
   const next = new Date(currentDate);
   switch (frequency) {
@@ -22,10 +23,11 @@ const getNextExecutionDate = (currentDate, frequency) => {
   return next;
 };
 
+// Cron job runs every minute
 cron.schedule("* * * * *", async () => {
   const now = new Date();
-  now.setSeconds(0, 0);
-  console.log("Cron is running at", new Date().toISOString());
+  now.setSeconds(0, 0); // Normalize for precision
+  console.log("🔄 Cron is running at", new Date().toISOString());
 
   try {
     const duePayments = await Payment.find({
@@ -33,65 +35,59 @@ cron.schedule("* * * * *", async () => {
       scheduleDate: { $lte: now },
     });
 
-    if (duePayments.length === 0) {
-      console.log("No due payments found.");
+    if (!duePayments.length) {
+      console.log("📭 No due payments found.");
       return;
     }
 
-    console.log("Found", duePayments.length, "due payments");
+    console.log(`📌 Found ${duePayments.length} due payment(s)`);
 
     for (const payment of duePayments) {
-      const user = await User.findById(payment.user);
-      console.log(user)
-      if (!user) {
-        console.log(`User not found for Payment ${payment._id}`);
+      const currentUser = await User.findById(payment.user);
+      if (!currentUser) {
+        console.log(`⚠️ User not found for Payment ${payment._id}`);
         continue;
       }
 
-      if (user.wallet.lockedAmount < payment.amount) {
-        console.log(`Skipping Payment ${payment._id} — Insufficient funds`);
+      // Check wallet balance
+      if (currentUser.wallet.lockedAmount < payment.amount) {
+        console.log(`⛔ Skipping Payment ${payment._id} — Insufficient funds`);
         continue;
       }
 
-      // Deduct amount
-      user.wallet.lockedAmount -= payment.amount;
+      // Deduct from locked amount
+      currentUser.wallet.lockedAmount -= payment.amount;
 
-      // Rewards Logic
-      let reward = 0;
-      if (payment.amount > 100) {
-        reward = 10;
-      } else {
-        reward = parseFloat((payment.amount * 0.02).toFixed(2));
-      }
+      // Rewards calculation
+      let reward = payment.amount > 100 ? 10 : parseFloat((payment.amount * 0.02).toFixed(2));
+      const usdEquivalent = parseFloat((reward / 100).toFixed(2));
 
-      user.wallet.payCoins += reward;
-      const usdEquivalent = reward / 100;
-      user.wallet.rewardHistory.push({
+      currentUser.wallet.payCoins += reward;
+      currentUser.wallet.rewardHistory.push({
         amount: reward,
-        usdEquivalent: usdEquivalent,
+        usdEquivalent,
         reason: `Scheduled payment of $${payment.amount}`,
       });
 
       try {
-        await user.save();
+        await currentUser.save();
       } catch (error) {
-        console.log(`Error updating wallet for User ${user._id}: ${error.message}`);
+        console.log(`❌ Error saving user wallet: ${error.message}`);
         continue;
       }
 
-      // Mark payment as successful
+      // Mark current payment as successful
       payment.status = "Successful";
       payment.paidAt = new Date();
 
-      // Recurring?
+      // Recurring logic
       if (payment.isRecurring && payment.recurrence?.occurrencesLeft > 1) {
-        payment.recurrence.occurrencesLeft -= 1;
-        payment.recurrence.lastPaidAt = new Date();
-
         const nextDate = getNextExecutionDate(payment.scheduleDate, payment.frequency);
-        await payment.save();
 
-        await Payment.create({
+        const updatedOccurrencesLeft = payment.recurrence.occurrencesLeft - 1;
+        const lastPaidAt = new Date();
+
+        const newRecurringPayment = {
           user: payment.user,
           recipientUser: payment.recipientUser,
           recipientBiller: payment.recipientBiller,
@@ -104,35 +100,53 @@ cron.schedule("* * * * *", async () => {
           nextExecution: nextDate,
           paymentType: payment.paymentType,
           recurrence: {
-            occurrencesLeft: payment.recurrence.occurrencesLeft,
-            lastPaidAt: payment.recurrence.lastPaidAt,
+            occurrencesLeft: updatedOccurrencesLeft,
+            lastPaidAt,
           },
           description: payment.description,
           status: "Pending",
-        });
+        };
 
-        console.log(`Created next recurring payment for ${nextDate}`);
-      } else {
-        await payment.save();
+        try {
+          await Payment.create(newRecurringPayment);
+          console.log(`🔁 Created next recurring payment for ${nextDate}`);
+        } catch (err) {
+          console.log(`❌ Error creating recurring payment: ${err.message}`);
+        }
+
+        // Save the current payment with updated recurrence
+        payment.recurrence.occurrencesLeft = updatedOccurrencesLeft;
+        payment.recurrence.lastPaidAt = lastPaidAt;
       }
 
-      // Update biller if applicable
-      const biller = await Biller.findById(payment.recipientBiller);
-      if (biller) {
-        biller.totalAmountPaid += Number(payment.amount);
+      try {
+        await payment.save();
+      } catch (err) {
+        console.log(`❌ Error saving payment ${payment._id}: ${err.message}`);
+        continue;
+      }
+
+      // Update biller stats
+      if (payment.recipientBiller) {
         try {
-          await biller.save();
-          console.log(`Updated Biller ${biller.nickname}'s totalAmountPaid`);
-        } catch (error) {
-          console.log(`Error updating Biller ${biller.nickname}: ${error.message}`);
+          const biller = await Biller.findById(payment.recipientBiller);
+          if (biller) {
+            await Biller.findByIdAndUpdate(biller._id, {
+              $inc: { totalAmountPaid: Number(payment.amount) },
+            });
+
+            console.log(`🏦 Updated totalAmountPaid for Biller ${biller.nickname} by $${payment.amount}`);
+          } else {
+            console.log(`⚠️ Biller not found for ID: ${payment.recipientBiller}`);
+          }
+        } catch (err) {
+          console.log(`❌ Error updating biller: ${err.message}`);
         }
-      } else {
-        console.log(`Biller not found for Payment ${payment._id}`);
       }
 
       console.log(`✅ AutoPaid $${payment.amount} | Reward: ${reward} PayCoins`);
     }
   } catch (error) {
-    console.error("Cron job error:", error);
+    console.error("💥 Cron job error:", error);
   }
 });
