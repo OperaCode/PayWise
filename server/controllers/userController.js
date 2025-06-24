@@ -12,6 +12,14 @@ const {
   sendMetaMaskEmail,
 } = require("../config/EmailConfig.js");
 
+
+const {
+  sendRegistrationEmail,
+  sendSignInEmail,
+  sendBillerAddedEmail,
+} = require("../config/ResendEmail.js")
+
+
 // const cloudinary = require("cloudinary").v2;
 // const multer = require("multer");
 
@@ -80,7 +88,8 @@ const registerUser = asyncHandler(async (req, res) => {
     // const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
     // console.log("Sending verification email to:", newUser.email);
     // Send verification email
-    await sendVerificationEmail(newUser.email, firstName);
+    // await sendVerificationEmail(newUser.email, firstName);
+    await sendRegistrationEmail(newUser.email, firstName);
 
     await newUser.save(); // Save user before sending response
 
@@ -205,7 +214,8 @@ const loginUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Invalid Credentials" });
     }
 
-    await sendWelcomeBackEmail(user.email, user.firstName);
+    // await sendWelcomeBackEmail(user.email, user.firstName);
+    await sendSignInEmail(user.email, user.firstName);
     //console.log("Welcome email sent")
 
     // Generate token
