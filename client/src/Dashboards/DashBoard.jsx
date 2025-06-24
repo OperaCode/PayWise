@@ -32,14 +32,14 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const DashBoard = () => {
   // const { user, setUser } = useContext(UserContext);
   //const { setLoading } = useContext(LoaderContext);
-  const [user,setUser] = useState("")
+  const [user, setUser] = useState("");
   const [fundModalOpen, setFundModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [manageTokensModalOpen, setManageTokensModalOpen] = useState(false);
   const [p2pModalOpen, setP2pModalOpen] = useState(false);
   const [schedulePayModalOpen, setSchedulePayModalOpen] = useState(false);
   const [autoPayModalOpen, setAutoPayModalOpen] = useState(false);
- 
+
   const [withdrawal, setWithdrawal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +49,7 @@ const DashBoard = () => {
   const [billers, setBillers] = useState([]);
   const [amount, setAmount] = useState("");
   const [walletBalance, setWalletBalance] = useState("");
-  const [ledgerBalance, setLedgerBalance] = useState("")
+  const [ledgerBalance, setLedgerBalance] = useState("");
   const [walletLinked, setWalletLinked] = useState(false);
   const [metaMaskAddress, setMetaMaskAddress] = useState("");
   const [payWalletAddress, setPayWalletAddress] = useState("");
@@ -91,7 +91,7 @@ const DashBoard = () => {
           withCredentials: true,
         });
         console.log(response);
-        setUser(response?.data?.user)
+        setUser(response?.data?.user);
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
         setLedgerBalance(response?.data?.user?.wallet?.lockedAmount || 0);
         setMetaMaskAddress(
@@ -108,30 +108,28 @@ const DashBoard = () => {
     fetchUser();
   }, []);
 
+  // for fetching billers to frontend
+  useEffect(() => {
+    const fetchBillers = async () => {
+      try {
+        const UserId = localStorage.getItem("userId");
+        const response = await axios.get(`${BASE_URL}/biller`, {
+          withCredentials: true,
+        });
 
- // for fetching billers to frontend
-useEffect(() => {
-  const fetchBillers = async () => {
-    try {
-      const UserId = localStorage.getItem("userId");
-      const response = await axios.get(`${BASE_URL}/biller`, {
-        withCredentials: true,
-      });
+        const fetchedBillers = response?.data || [];
+        console.log(fetchedBillers);
+        setBillers(fetchedBillers);
+      } catch (error) {
+        console.error(error);
+        toast.error(
+          error?.response?.data?.message || "Failed to fetch billers"
+        );
+      }
+    };
 
-      const fetchedBillers = response?.data || [];
-      console.log(fetchedBillers);
-      setBillers(fetchedBillers);
-     
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error?.response?.data?.message || "Failed to fetch billers"
-      );
-    }
-  };
-
-  fetchBillers();
-}, []);
+    fetchBillers();
+  }, []);
 
   //fetch History
   useEffect(() => {
@@ -183,9 +181,8 @@ useEffect(() => {
     currency: "USD",
     payment_options: "card, banktransfer, ussd",
     customer: {
-      email: user.email, // Replace with actual user email
-      //phone_number: "08012345678", // Replace with actual user phone
-      name: `${user.firstName} ${user.lastName}`, // Replace with actual user name
+      email: user.email,
+      name: `${user.firstName} ${user.lastName}`,
     },
     customizations: {
       title: "Fund PayWise Wallet",
@@ -193,57 +190,54 @@ useEffect(() => {
       logo: "https://res.cloudinary.com/dmlhebmi8/image/upload/v1742915517/WhatsApp_Image_2025-03-25_at_16.11.12_izlbju.jpg",
     },
     callback: async (response) => {
-      console.log("Payment successful:", response);
-
+      console.log("Payment callback:", response);
+  
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        toast.error("User ID missing. Please log in again.");
+        return;
+      }
+  
       if (response.status === "successful") {
-        const userId = localStorage.getItem("userId");
-
-        if (!userId) {
-          console.error("User ID is missing!");
-          toast.error("User ID is missing. Please log in again.");
-          return;
-        }
-
         setIsSending(true);
-
         try {
           const result = await fetch(`${BASE_URL}/payment/fund-wallet`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               userId,
-              amount: response.amount,
-              transactionId: response.transaction_id,
+              transactionId: response.transaction_id, // actual ID from Flutterwave
             }),
           });
-
-          if (result.ok) {
+  
+          const data = await result.json();
+          if (result.ok && data.success) {
             toast.success("Wallet Funded!");
-            console.log(result);
+            setWalletBalance(data.walletBalance); // update from backend
           } else {
-            toast.error("Failed to update wallet. Contact support.");
+            toast.error(data.message || "Wallet funding failed.");
           }
-        } catch (error) {
-          console.error("Error updating wallet:", error);
-          toast.error("An error occurred. Please try again.");
+        } catch (err) {
+          console.error("Funding error:", err);
+          toast.error("Something went wrong. Try again.");
         } finally {
           setIsSending(false);
-          setFundModalOpen(false)
+          setFundModalOpen(false);
         }
       }
+  
       closePaymentModal();
-      setWalletBalance((prevBalance) =>
-        Number((Number(prevBalance) + Number(amount)).toFixed(2))
-      );
     },
     onclose: () => {
-      console.log("Payment modal closed");
+      console.log("Flutterwave modal closed");
     },
   };
+  
 
-  // Wallet withdraw
+  // Wallet withdraw from wallet
   const handleWithdraw = async (e) => {
     e.preventDefault();
+
     setWithdrawal(true);
 
     try {
@@ -256,11 +250,28 @@ useEffect(() => {
         return;
       }
 
+      const amountNum = parseFloat(withdrawAmount);
+
+      if (!amountNum || amountNum <= 0) {
+        toast.error("Enter a valid withdrawal amount.");
+        return;
+      }
+
+      if (!accountNumber || !bankCode) {
+        toast.error("Account number and bank code are required.");
+        return;
+      }
+
+      // if (!withdrawAmount || isNaN(withdrawAmount) || withdrawAmount < 1) {
+      //   toast.error("Enter a valid amount to withdraw.");
+      //   return;
+      // }
+
       const response = await axios.post(
         `${BASE_URL}/payment/withdraw-fund`,
         {
           userId,
-          amount: withdrawAmount,
+          amount: amountNum,
           account_bank: bankCode,
           account_number: accountNumber,
           narration,
@@ -279,7 +290,6 @@ useEffect(() => {
       console.error("Withdrawal error:", err);
     } finally {
       setWithdrawModalOpen(false);
-     
     }
   };
 
@@ -433,7 +443,7 @@ useEffect(() => {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2 text-center mt-4">
                     <button
                       className="h-10 text-white p-2 bg-cyan-800 rounded-xl hover:cursor-pointer text-xs font-semibold hover:bg-cyan-500 transition w-30"
@@ -454,9 +464,7 @@ useEffect(() => {
                   <p className="text-sm font-semibold">
                     Frozen Balance:{" "}
                     <span className="font-semibold">
-                      {showWallet
-                        ? formatCurrency(ledgerBalance) 
-                        : "•••"}
+                      {showWallet ? formatCurrency(ledgerBalance) : "•••"}
                     </span>
                   </p>
                   <button
@@ -608,7 +616,7 @@ useEffect(() => {
                       className="p-2 border rounded-md w-full"
                     />
                     <FlutterWaveButton
-                      className={`p-2 w-1/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500 ${
+                      className={`p-2 w-1/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500 cursor-pointer${
                         !amount || amount <= 0
                           ? "opacity-50 cursor-not-allowed"
                           : ""
@@ -872,10 +880,11 @@ useEffect(() => {
               />
               <button
                 type="submit"
-                disabled={loading}
+                disabled={withdrawal}
                 className="btn btn-primary w-full"
               >
                 {/* {loading ? "Processing..." : "Withdraw"} */}
+                {withdrawal ? "Processing..." : "Withdraw Funds"}
               </button>
             </form>
           )}

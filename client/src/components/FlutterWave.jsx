@@ -63,9 +63,9 @@ import { FlutterWaveButton, closePaymentModal } from 'flutterwave-react-v3';
 
 const FlutterWavePayment = () => {
   const flutterwaveConfig = {
-    public_key: import.meta.env.VITE_FLW_PUBLIC_KEY, // Ensure this is correctly set in your .env file
+    public_key: import.meta.env.VITE_FLW_PUBLIC_KEY, 
     tx_ref: "tx_" + Date.now(),
-    amount: 100, // Amount to charge
+    amount: 100, 
     currency: "USD",
     payment_options: "card, mobilemoney, ussd",
     customer: {
@@ -80,7 +80,7 @@ const FlutterWavePayment = () => {
     },
     callback: (response) => {
       console.log("Payment successful:", response);
-      closePaymentModal(); // Close the payment modal
+      closePaymentModal(); 
     },
     onclose: () => {
       console.log("Payment modal closed");

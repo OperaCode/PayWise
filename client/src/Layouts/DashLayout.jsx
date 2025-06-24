@@ -9,6 +9,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import { toast } from "react-toastify";
 import { getAuth } from "firebase/auth";
 import Loader from "../components/Loader";
+import Avatar from "./Avatar";
 
 import axios from "axios";
 
@@ -21,14 +22,16 @@ const override = {
 };
 
 const DashLayout = ({ children }) => {
-  const { theme, toggleTheme } = useContext(ThemeContext); // Get
-  // const { user, setUser } = useContext(UserContext); // Use user from context
-  const { user, setUser } = useState(" "); // Use user from context
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  // const { user, setUser } = useContext(UserContext); 
+  const { user, setUser } = useState(" "); 
   const [username, setUserName] = useState(" ");
   const [res, setRes] = useState({});
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
-  const [profilePicture, setProfilePicture] = useState(" "); 
+  const [profilePicture, setProfilePicture] = useState(
+
+    ); 
   const [isUploading, setIsUploading] = useState(false);
 
   // Handle file selection
@@ -36,7 +39,7 @@ const DashLayout = ({ children }) => {
     const photo = e.target.files[0];
     if (photo) {
       setFile(photo);
-      uploadPhoto(photo); // Pass photo directly
+      uploadPhoto(photo); 
     }
   }; 
 
@@ -56,7 +59,7 @@ const DashLayout = ({ children }) => {
         //console.log(user)
         // setUser(user);
         setUserName(user.firstName)
-        setProfilePicture(user.profilePicture || image)
+        setProfilePicture(user.profilePicture)
       } catch (error) {
         console.error(error);
         toast.error(error?.response?.data?.message);
@@ -81,7 +84,7 @@ const DashLayout = ({ children }) => {
     }
   
     const formData = new FormData();
-    formData.append("profilePicture", photo); // Match backend field name
+    formData.append("profilePicture", photo); 
     formData.append("userId", userId);
   
     try {
@@ -89,13 +92,13 @@ const DashLayout = ({ children }) => {
   
       // Send request to backend
       const res = await axios.put(
-        "http://localhost:3000/user/upload-profile-picture", // Ensure correct endpoint
+        "http://localhost:3000/user/upload-profile-picture", 
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-          withCredentials: true, // Ensure cookies are sent if using authentication
+          withCredentials: true, 
         }
       );
   
@@ -105,14 +108,14 @@ const DashLayout = ({ children }) => {
       if (res.data.user && res.data.user.profilePicture) {
         const imageUrl = res.data.user.profilePicture;
 
-        console.log("New Profile Picture URL:", imageUrl); // Add this log
+        console.log("New Profile Picture URL:", imageUrl); 
   
-        setProfilePicture(imageUrl); // Update the profile picture state
+        setProfilePicture(imageUrl); 
   
-        // Display success message
+      
         toast.success("Profile picture updated!");
       } else {
-        toast.error("Error uploading profile picture. Please try again.");
+        toast.error("Upload Error, Try using another image.");
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -158,11 +161,13 @@ const DashLayout = ({ children }) => {
                 multiple={false}
               />
               <label htmlFor="profileUpload">
-                <img
+                {/* <img
                   src={profilePicture}
                   alt="Profile"
                   className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
-                />
+                /> */}
+                <Avatar name={username} imageUrl={profilePicture} loading={loading} />
+
               </label>
             </div>
 
