@@ -14,7 +14,9 @@ const fundWallet = asyncHandler(async (req, res) => {
     const { userId, transactionId } = req.body;
 
     if (!transactionId) {
-      return res.status(400).json({ success: false, message: "Transaction ID is missing." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Transaction ID is missing." });
     }
 
     const flutterwaveResponse = await fetch(
@@ -29,11 +31,15 @@ const fundWallet = asyncHandler(async (req, res) => {
     );
 
     const data = await flutterwaveResponse.json();
+    console.log(flutterwaveResponse);
     console.log("FLW Verified Data:", JSON.stringify(data, null, 2));
 
     if (data.status === "success" && data.data.status === "successful") {
       const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ success: false, message: "User not found" });
+      if (!user)
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
 
       const verifiedAmount = data.data.amount;
       const txRef = data.data.tx_ref;
@@ -41,14 +47,19 @@ const fundWallet = asyncHandler(async (req, res) => {
       // Prevent duplicate
       const existing = await Payment.findOne({ transactionRef: txRef });
       if (existing) {
-        return res.status(200).json({ success: true, message: "Already processed." });
+        return res
+          .status(200)
+          .json({ success: true, message: "Already processed." });
       }
 
       // Update balance
       user.wallet.balance += verifiedAmount;
 
       // Calculate rewards
-      let reward = verifiedAmount > 100 ? 10 : parseFloat((verifiedAmount * 0.02).toFixed(2));
+      let reward =
+        verifiedAmount > 100
+          ? 10
+          : parseFloat((verifiedAmount * 0.02).toFixed(2));
       user.wallet.payCoins += reward;
 
       user.wallet.rewardHistory.push({
@@ -57,6 +68,7 @@ const fundWallet = asyncHandler(async (req, res) => {
         reason: `Wallet top-up of $${verifiedAmount} (Reward)`,
       });
 
+      user.markModified("wallet");
       await user.save();
 
       const newPayment = new Payment({
@@ -79,14 +91,17 @@ const fundWallet = asyncHandler(async (req, res) => {
         totalPayCoins: user.wallet.payCoins,
       });
     } else {
-      return res.status(400).json({ success: false, message: "Payment not successful." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Payment not successful." });
     }
   } catch (error) {
     console.error("Wallet Funding Error:", error.message);
-    res.status(500).json({ success: false, message: "Funding error occurred." });
+    res
+      .status(500)
+      .json({ success: false, message: "Funding error occurred." });
   }
 });
-
 
 const withdrawToBank = asyncHandler(async (req, res) => {
   const { userId, amount, account_bank, account_number, narration } = req.body;
@@ -114,7 +129,10 @@ const withdrawToBank = asyncHandler(async (req, res) => {
 
   let flutterwaveResponse;
 
-  if (process.env.NODE_ENV === "development" || process.env.MOCK_FLW === "true") {
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.MOCK_FLW === "true"
+  ) {
     flutterwaveResponse = {
       status: "success",
       message: "Mock withdrawal initiated",
@@ -147,7 +165,7 @@ const withdrawToBank = asyncHandler(async (req, res) => {
       user: userId,
       type: "withdrawal",
       amount: withdrawalAmount,
-      transactionRef: flutterwaveResponse.data?.reference || uuidv4(),
+      transactionRef: reference,
       status: "Pending", // Set as pending
       paymentType: "withdrawal",
       reference,
@@ -170,7 +188,6 @@ const withdrawToBank = asyncHandler(async (req, res) => {
   }
 });
 
-
 const flutterwaveWebhookHandler = asyncHandler(async (req, res) => {
   const hash = crypto
     .createHmac("sha256", process.env.FLW_SECRET_HASH)
@@ -184,12 +201,44 @@ const flutterwaveWebhookHandler = asyncHandler(async (req, res) => {
 
   const payload = req.body;
 
-  
   if (payload.event === "charge.completed") {
-    // Your existing logic here (fund wallet)
+    const txRef = payload.data.tx_ref;
+    const amount = payload.data.amount;
+    const email = payload.data.customer.email;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const existing = await Payment.findOne({ transactionRef: txRef });
+    if (existing) return res.status(200).json({ message: "Already processed" });
+
+    user.wallet.balance += amount;
+
+    let reward = amount > 100 ? 10 : parseFloat((amount * 0.02).toFixed(2));
+    user.wallet.payCoins += reward;
+
+    user.wallet.rewardHistory.push({
+      amount: reward,
+      usdEquivalent: reward / 100,
+      reason: `Wallet top-up via Flutterwave Webhook`,
+    });
+
+    user.markModified("wallet");
+    await user.save();
+
+    await new Payment({
+      user: user._id,
+      amount,
+      transactionRef: txRef,
+      status: "Successful",
+      paymentType: "Funding",
+      paidAt: new Date(),
+      description: "Wallet funded via Flutterwave Webhook",
+    }).save();
+
+    return res.status(200).json({ message: "Wallet funded via webhook" });
   }
 
- 
   if (payload.event === "transfer.completed") {
     const { reference, status } = payload.data;
 
@@ -197,32 +246,44 @@ const flutterwaveWebhookHandler = asyncHandler(async (req, res) => {
       return res.status(200).json({ message: "Transfer not successful" });
     }
 
-    const payment = await Payment.findOne({ reference });
+    const payment = await Payment.findOne({
+      $or: [
+        { reference: reference },
+        { transactionRef: reference }, // fallback
+      ],
+    });
+
     if (!payment || payment.status === "Successful") {
-      return res.status(200).json({ message: "Already processed or not found" });
+      return res
+        .status(200)
+        .json({ message: "Already processed or not found" });
     }
 
     const user = await User.findById(payment.user);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    
     if (user.wallet.balance < payment.amount) {
-      return res.status(400).json({ message: "Insufficient balance on confirmation" });
+      return res
+        .status(400)
+        .json({ message: "Insufficient balance on confirmation" });
     }
 
     user.wallet.balance -= payment.amount;
+
+    user.markModified("wallet");
     await user.save();
 
     payment.status = "Successful";
     payment.paidAt = new Date();
     await payment.save();
 
-    return res.status(200).json({ message: "Withdrawal confirmed via webhook" });
+    return res
+      .status(200)
+      .json({ message: "Withdrawal confirmed via webhook" });
   }
 
   res.status(200).json({ message: "Event not handled" });
 });
-
 
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
