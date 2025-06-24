@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDb = require("./config/dbconnect");
-const errorHandler = require("./middleware/errormiddleware");
+// const errorHandler = require("./middleware/errorMiddleWare");
 // const initializePassport = require("./config/passport");
 // const session = require("express-session");
 // const passport = require("passport");
@@ -59,7 +59,7 @@ mongoose.connection.once("open", () => {
   console.log("Connected to Database");
 
   // Error handler middleware at the end
-  app.use(errorHandler);
+  // app.use(errorHandler);
 
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
