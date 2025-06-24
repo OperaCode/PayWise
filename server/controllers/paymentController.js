@@ -4,23 +4,19 @@ const User = require("../models/userModel");
 const Biller = require("../models/billerModel");
 const Payment = require("../models/paymentModel");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const { v4: uuidv4 } = require("uuid");
 const { updateBillerAmount } = require("../hooks/aggrAmount");
 
 //to fund wallet
 const fundWallet = asyncHandler(async (req, res) => {
   try {
-    console.log("Received Flutterwave payment request:", req.body);
-
-    const { userId, amount, transactionId } = req.body;
+    const { userId, transactionId } = req.body;
 
     if (!transactionId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Transaction ID is missing." });
+      return res.status(400).json({ success: false, message: "Transaction ID is missing." });
     }
 
-    // Step 1: Verify transaction with Flutterwave
     const flutterwaveResponse = await fetch(
       `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
       {
@@ -33,48 +29,40 @@ const fundWallet = asyncHandler(async (req, res) => {
     );
 
     const data = await flutterwaveResponse.json();
-    console.log(
-      "Flutterwave Verification Data:",
-      JSON.stringify(data, null, 2)
-    );
+    console.log("FLW Verified Data:", JSON.stringify(data, null, 2));
 
-    // Step 2: Check if payment was successful
     if (data.status === "success" && data.data.status === "successful") {
       const user = await User.findById(userId);
-      if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+      if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+      const verifiedAmount = data.data.amount;
+      const txRef = data.data.tx_ref;
+
+      // Prevent duplicate
+      const existing = await Payment.findOne({ transactionRef: txRef });
+      if (existing) {
+        return res.status(200).json({ success: true, message: "Already processed." });
       }
 
-      // Step 3: Update wallet balance
-      user.wallet.balance += amount;
+      // Update balance
+      user.wallet.balance += verifiedAmount;
 
-      // Step 4: Add rewards (10 PayCoins if >$100)
-      let reward = 0;
-
-      if (amount > 100) {
-        reward = 10; // Reward 10 PayCoins for top-ups above $100
-      } else {
-        reward = parseFloat((amount * 0.02).toFixed(2)); // Otherwise reward 2% of funded amount
-      }
-
-      // Add reward to payCoins balance and track it in rewardHistory
+      // Calculate rewards
+      let reward = verifiedAmount > 100 ? 10 : parseFloat((verifiedAmount * 0.02).toFixed(2));
       user.wallet.payCoins += reward;
-      const usdEquivalent = reward / 100;
+
       user.wallet.rewardHistory.push({
         amount: reward,
-        usdEquivalent: usdEquivalent,
-        reason: `Wallet top-up of $${amount} (Reward)`,
+        usdEquivalent: reward / 100,
+        reason: `Wallet top-up of $${verifiedAmount} (Reward)`,
       });
 
       await user.save();
 
-      // Step 5: Log funding as a Payment
       const newPayment = new Payment({
         user: userId,
-        amount,
-        transactionRef: data.data.tx_ref || uuidv4(),
+        amount: verifiedAmount,
+        transactionRef: txRef,
         status: "Successful",
         paymentType: "Funding",
         paidAt: new Date(),
@@ -83,65 +71,57 @@ const fundWallet = asyncHandler(async (req, res) => {
 
       await newPayment.save();
 
-      // Step 6: Send response
-      res.json({
+      return res.status(200).json({
         success: true,
         message: "Wallet funded successfully.",
         walletBalance: user.wallet.balance,
         rewardEarned: reward,
-        totalPayCoins: user.wallet.payCoins, // Include total PayCoins in the response
+        totalPayCoins: user.wallet.payCoins,
       });
     } else {
-      res.status(400).json({
-        success: false,
-        message: "Payment verification failed with Flutterwave.",
-      });
+      return res.status(400).json({ success: false, message: "Payment not successful." });
     }
   } catch (error) {
-    console.error("Error funding wallet:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong while funding the wallet.",
-    });
+    console.error("Wallet Funding Error:", error.message);
+    res.status(500).json({ success: false, message: "Funding error occurred." });
   }
 });
 
+
 const withdrawToBank = asyncHandler(async (req, res) => {
   const { userId, amount, account_bank, account_number, narration } = req.body;
-  console.log(req.body);
+
+  if (!userId || !amount || !account_bank || !account_number) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
 
   const user = await User.findById(userId);
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  if (user.wallet.balance < amount) {
-    return res.status(400).json({ message: "Insufficient wallet balance" });
-  }
-
   const reference = `withdrawal-${Date.now()}`;
+  const withdrawalAmount = Math.floor(amount);
+
   const payload = {
     account_bank,
     account_number,
-    amount,
+    amount: withdrawalAmount,
     narration: narration || "PayWise Withdrawal",
     currency: "USD",
     reference,
-    callback_url: "https://yourdomain.com/webhook/flutterwave",
+    callback_url: `${process.env.SERVER_URL}/payment/flutterwave`, // Webhook
     debit_currency: "USD",
   };
 
   let flutterwaveResponse;
 
-  if (
-    process.env.NODE_ENV === "development" ||
-    process.env.MOCK_FLW === "true"
-  ) {
+  if (process.env.NODE_ENV === "development" || process.env.MOCK_FLW === "true") {
     flutterwaveResponse = {
       status: "success",
       message: "Mock withdrawal initiated",
       data: {
         id: Math.floor(Math.random() * 10000000),
         reference,
-        amount,
+        amount: withdrawalAmount,
         account_number,
         account_bank,
         currency: "USD",
@@ -161,37 +141,88 @@ const withdrawToBank = asyncHandler(async (req, res) => {
   }
 
   if (flutterwaveResponse.status === "success") {
-    user.wallet.balance -= amount;
-    await user.save();
-
-    console.log("Withdraw Amount:", amount);
-    console.log("Flutterwave Response:", flutterwaveResponse);
+    // Do NOT deduct balance yet
 
     const newPayment = new Payment({
       user: userId,
       type: "withdrawal",
-      amount,
+      amount: withdrawalAmount,
       transactionRef: flutterwaveResponse.data?.reference || uuidv4(),
-      status: "Successful",
+      status: "Pending", // Set as pending
       paymentType: "withdrawal",
-      paidAt: new Date(),
-      description: "Wallet withdrawal via Flutterwave",
       reference,
+      paidAt: null,
       bankAccount: account_number,
+      description: "Withdrawal initiated, awaiting webhook confirmation",
     });
 
     await newPayment.save();
 
     return res.status(200).json({
-      message: "Withdrawal initiated successfully",
+      message: "Withdrawal initiated and pending confirmation",
       details: flutterwaveResponse.message,
     });
   } else {
-    return res
-      .status(500)
-      .json({ message: "Transfer failed", details: flutterwaveResponse });
+    return res.status(500).json({
+      message: "Flutterwave transfer failed",
+      details: flutterwaveResponse,
+    });
   }
 });
+
+
+const flutterwaveWebhookHandler = asyncHandler(async (req, res) => {
+  const hash = crypto
+    .createHmac("sha256", process.env.FLW_SECRET_HASH)
+    .update(JSON.stringify(req.body))
+    .digest("hex");
+
+  const flutterwaveSignature = req.headers["verif-hash"];
+  if (process.env.NODE_ENV === "production" && hash !== flutterwaveSignature) {
+    return res.status(401).json({ message: "Invalid webhook signature" });
+  }
+
+  const payload = req.body;
+
+  
+  if (payload.event === "charge.completed") {
+    // Your existing logic here (fund wallet)
+  }
+
+ 
+  if (payload.event === "transfer.completed") {
+    const { reference, status } = payload.data;
+
+    if (status !== "SUCCESSFUL") {
+      return res.status(200).json({ message: "Transfer not successful" });
+    }
+
+    const payment = await Payment.findOne({ reference });
+    if (!payment || payment.status === "Successful") {
+      return res.status(200).json({ message: "Already processed or not found" });
+    }
+
+    const user = await User.findById(payment.user);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    
+    if (user.wallet.balance < payment.amount) {
+      return res.status(400).json({ message: "Insufficient balance on confirmation" });
+    }
+
+    user.wallet.balance -= payment.amount;
+    await user.save();
+
+    payment.status = "Successful";
+    payment.paidAt = new Date();
+    await payment.save();
+
+    return res.status(200).json({ message: "Withdrawal confirmed via webhook" });
+  }
+
+  res.status(200).json({ message: "Event not handled" });
+});
+
 
 const p2PTransfer = asyncHandler(async (req, res) => {
   try {
@@ -336,7 +367,10 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
 
     // 7. Find biller
     // const recipient = await Biller.findOne(payment.biller);
-    const recipient = await Biller.findOne({ email: billerEmail, user: userId });
+    const recipient = await Biller.findOne({
+      email: billerEmail,
+      user: userId,
+    });
 
     if (!recipient) {
       return res.status(404).json({ message: "Biller not found." });
@@ -397,7 +431,7 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
 //     }
 
 //     // Calculate total required amount for all billers
-    
+
 //     const totalAmount = billers.reduce(
 //       (sum, biller) => sum + biller.serviceAmount,
 //       0
@@ -459,7 +493,6 @@ const scheduleTransfer = asyncHandler(async (req, res) => {
 
 // Function to calculate the next execution date based on frequency
 
-
 const scheduleRecurring = async (req, res) => {
   try {
     const userId = req.userId;
@@ -490,7 +523,7 @@ const scheduleRecurring = async (req, res) => {
       email: { $in: billerEmails },
       user: userId, // only fetch billers created/attached by the current user
     });
-    
+
     if (!billers || billers.length === 0) {
       return res.status(400).json({ message: "No matching billers found." });
     }
@@ -504,10 +537,13 @@ const scheduleRecurring = async (req, res) => {
     console.log("Wallet balance:", user.wallet.balance);
     console.log("Locked amount:", user.wallet.lockedAmount);
     console.log("Total scheduled amount:", totalAmount);
-    console.log("Each biller amount:", billers.map(b => ({
-      name: b.name,
-      serviceAmount: b.serviceAmount
-    })));
+    console.log(
+      "Each biller amount:",
+      billers.map((b) => ({
+        name: b.name,
+        serviceAmount: b.serviceAmount,
+      }))
+    );
 
     // 4. Ensure sufficient wallet balance
     const availableBalance = user.wallet.balance;
@@ -559,8 +595,6 @@ const scheduleRecurring = async (req, res) => {
     res.status(500).json({ message: "Failed to schedule recurring payments." });
   }
 };
-
-
 
 const calculateNextExecutionDate = (startDate, frequency) => {
   const date = new Date(startDate);
@@ -667,7 +701,6 @@ const redeemPayCoin = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 //total payment for charts
 const totalPayments = asyncHandler(async (req, rers) => {
@@ -817,9 +850,8 @@ const pauseRecurringPayment = asyncHandler(async (req, res) => {
   }
 });
 
-
 // cancel transaction
-const deleteTransaction = async (req, res) =>{
+const deleteTransaction = async (req, res) => {
   const { transactionId } = req.params;
   try {
     const transaction = await Payment.findById(transactionId);
@@ -839,9 +871,10 @@ const deleteTransaction = async (req, res) =>{
 
     // Only allow cancellation if transaction is Pending
     if (transaction.status !== "Pending") {
-      return res
-        .status(400)
-        .json({ success: false, message: "Only pending transactions can be cancelled" });
+      return res.status(400).json({
+        success: false,
+        message: "Only pending transactions can be cancelled",
+      });
     }
 
     // Refund locked amount to wallet
@@ -865,8 +898,6 @@ const deleteTransaction = async (req, res) =>{
   }
 };
 
-
-
 // delete transaction
 // const deleteTransaction = async (req, res) => {
 //   const { transactionId } = req.params;
@@ -886,7 +917,7 @@ const deleteTransaction = async (req, res) =>{
 //         .status(403)
 //         .json({ success: false, message: "User not authorized" });
 //     }
-    
+
 //     if (transaction.status === "Pending") {
 //       const user = await User.findById(userId);
 
@@ -896,8 +927,6 @@ const deleteTransaction = async (req, res) =>{
 
 //       await user.save(); // Save user changes
 //     }
-
-
 
 //     await transaction.deleteOne(); // or Payment.findByIdAndDelete(transactionId)
 
@@ -913,6 +942,7 @@ const deleteTransaction = async (req, res) =>{
 module.exports = {
   fundWallet,
   p2PTransfer,
+  flutterwaveWebhookHandler,
   getUserPaymentHistory,
   paymentAggregates,
   withdrawToBank,

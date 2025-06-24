@@ -2,7 +2,7 @@
 
 const express = require("express");
 const User = require("../models/userModel")
-const {userUpload} = require("../config/cloudConfig.js"); // Multer middleware for file uploads
+const {userUpload} = require("../config/cloudConfig.js"); 
 const {
   registerUser,
   // verifyEmail,

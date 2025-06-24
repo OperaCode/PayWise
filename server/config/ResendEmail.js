@@ -44,7 +44,7 @@ export const sendSignInEmail = async (email, firstName) => {
 // 3. Biller Added Email
 export const sendBillerAddedEmail = async (email, billerName) => {
   const html = `
-    <h2>✅ Biller Added</h2>
+    <h2>Biller Added</h2>
     <p>You successfully added <strong>${billerName}</strong> to your PayWise account.</p>
     <p>You can now schedule or automate payments.</p>
   `;

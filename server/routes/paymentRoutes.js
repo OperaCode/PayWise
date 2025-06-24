@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { fundWallet,p2PTransfer,withdrawToBank ,scheduleTransfer,redeemPayCoin,scheduleRecurring,paymentAggregates ,totalPayments,pauseRecurringPayment,getUserPaymentHistory,deleteTransaction } = require('../controllers/paymentController');
+const { fundWallet,p2PTransfer,withdrawToBank ,flutterwaveWebhookHandler,scheduleTransfer,redeemPayCoin,scheduleRecurring,paymentAggregates ,totalPayments,pauseRecurringPayment,getUserPaymentHistory,deleteTransaction } = require('../controllers/paymentController');
 
 
 const { protectUser } = require("../middleware/authMiddleWare");
@@ -10,6 +10,9 @@ const { protectUser } = require("../middleware/authMiddleWare");
 // Route to create a payment
 router.post('/fund-wallet', fundWallet);
 router.post('/withdraw-fund', withdrawToBank);
+router.post('/flutterwave-webhook',express.json({ type: "*/*" }), // Ensures raw JSON body
+ flutterwaveWebhookHandler);
+
 router.get('/history/:userId',protectUser,getUserPaymentHistory)
 router.get('/payments', protectUser,totalPayments);
 router.get('/payment-summary', protectUser,paymentAggregates);
