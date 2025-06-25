@@ -18,18 +18,15 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.FRONTEND_URL,
+  "https://pay-wise-ecru.vercel.app"
 ];
-
-console.log("Allowed Origins:", allowedOrigins);
 
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.error("Blocked origin:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
