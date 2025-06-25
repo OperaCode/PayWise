@@ -8,7 +8,7 @@ import blkchain5 from "../assets/darkbg.jpg";
 import wallpaper from "../assets/paywise.jpeg";
 import { Link } from "react-router-dom";
 
-import SchedulePaymentModal from "../modals/SchedulePaymentModal";
+import SchedulePaymentModal from "../modals/SchedulePaymentModal.jsx";
 import AutoPayModal from "../modals/AutoPayModal";
 import {
   SmartphoneNfc,

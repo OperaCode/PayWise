@@ -53,82 +53,17 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
 
 
 
-  // Handle cancel action (close modal)
+  
+
+
+
+
+// Handle cancel action (close modal)
   const handleCancel = () => {
     onClose();
   };
 
-  // Handle Scheduled Payment
-//   const handleSchedulePayment = async () => {
-//     setIsProcessing(true);
-  
-//     try {
-//       // 🔹 Validate selected biller
-//       if (!selectedBiller) {
-//         console.error("Error: Biller not selected");
-//         toast.error("Biller is not selected. Please choose a biller.");
-//         return;
-//       }
-  
-//       // 🔹 Validate token
-//       const token = localStorage.getItem("token");
-//       if (!token) {
-//         toast.error("You must be logged in to schedule a payment.");
-//         return;
-//       }
-  
-//       // 🔹 Validate amount
-//       if (!amount || isNaN(amount) || Number(amount) <= 0) {
-//         toast.error("Please enter a valid amount.");
-//         return;
-//       }
-  
-//       // 🔹 Validate transaction pin
-//       if (!transactionPin || transactionPin.trim().length === 0) {
-//         toast.error("Transaction PIN is required.");
-//         return;
-//       }
-  
-//       // 🔹 Validate schedule date
-//       if (!scheduleDate) {
-//         toast.error("Please select a valid date and time.");
-//         return;
-//       }
-  
-//       const formattedScheduleDate = new Date(scheduleDate).toISOString();
-//       console.log("Formatted Schedule Date:", formattedScheduleDate);
-  
-//       const payload = {
-//         billerEmail: selectedBiller.email,
-//         amount,
-//         scheduleDate: formattedScheduleDate,
-//         transactionPin,
-//       };
-  
-//       console.log("Scheduling Payment with Payload:", payload);
-  
-//       const response = await axios.post(
-//         `${BASE_URL}/payment/schedule-transfer`,
-//         payload,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-  
-//       console.log("Scheduled Payment Response:", response.data);
-//       toast.success("Payment scheduled successfully.");
-//     } catch (error) {
-//       console.error("Error scheduling payment:", error);
-//       const errorMessage =
-//         error.response?.data?.message || "Failed to schedule payment.";
-//       toast.error(errorMessage);
-//     } finally {
-//       setIsProcessing(false);
-//     }
-//   };
-
+ 
 
 const handleSchedulePayment = async () => {
     setIsProcessing(true);
