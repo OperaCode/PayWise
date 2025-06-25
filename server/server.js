@@ -11,29 +11,8 @@ const connectDb = require("./config/dbconnect");
 //const cloudinary = require("cloudinary").v2;
 // const Multer = require("multer");
 
-require("./config/paymentScheduler");
-const userRoutes = require("./routes/userRoutes");
-const authRoutes = require("./routes/authRoutes");
-const billerRoutes = require("./routes/billerRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
-
-const app = express();
-const PORT = 3000;
-
-connectDb();
-
-// Middleware to parse JSON and URL-encoded bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Middleware for handling cookies
-app.use(cookieParser());
-
 // Set up CORS
-const allowedOrigins = [
-  "http://localhost:5173", 
-  process.env.FRONTEND_URL, 
-];
+const allowedOrigins = ["http://localhost:5173", process.env.FRONTEND_URL];
 
 app.use(
   cors({
@@ -51,6 +30,25 @@ app.use(
 );
 
 app.options("*", cors());
+
+require("./config/paymentScheduler");
+
+const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/authRoutes");
+const billerRoutes = require("./routes/billerRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+
+const app = express();
+const PORT = 3000;
+
+connectDb();
+
+// Middleware to parse JSON and URL-encoded bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Middleware for handling cookies
+app.use(cookieParser());
 
 // Configure passport
 // initializePassport(passport);
