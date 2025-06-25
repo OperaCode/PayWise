@@ -11,7 +11,7 @@ const connectDb = require("./config/dbconnect");
 //const cloudinary = require("cloudinary").v2;
 // const Multer = require("multer");
 
-require('./config/paymentScheduler');
+require("./config/paymentScheduler");
 const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
 const billerRoutes = require("./routes/billerRoutes");
@@ -30,17 +30,27 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Set up CORS
+const allowedOrigins = [
+  "http://localhost:5173", 
+  process.env.FRONTEND_URL, 
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 app.options("*", cors());
-
-
 
 // Configure passport
 // initializePassport(passport);
