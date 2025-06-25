@@ -10,8 +10,8 @@ const TermsAndConditions = () => {
         <h1 className="text-4xl font-bold text-cyan-900 text-center ">Terms & Conditions</h1>
         <p className=" p-2 font-bold">By using PayWise, you agree to the following terms and conditions. Please read them carefully.</p>
 
-        <div className='flex '>
-          <p className="text-lg mb- ">
+        <div className='md:flex '>
+          <p className="text-lg mb- px-4">
             <ol className='text-left space-y-2 list-decimal' >
               <li>Users must provide accurate and up-to-date information.</li>
               <li>PayWise reserves the right to suspend accounts involved in suspicious or fraudulent activities.</li>

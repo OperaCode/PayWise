@@ -159,7 +159,7 @@ const Register = () => {
   };
 
   return (
-    <div className="flex-col justify-center p-4">
+    <div className="flex-col justify-center  p-4">
       {/* Theme Toggle Button */}
       <div className="flex justify-between px-4 items-center">
         <div className="w-50">
@@ -183,17 +183,17 @@ const Register = () => {
         </button>
       </div>
 
-      <div className="p-8 rounded-lg shadow-lg w-full m-auto gap-4 flex">
+      <div className="p-  rounded-lg shadow-lg w-full m-auto gap-4 md:flex items-center ">
         {/* Left - Form Section */}
-        <div className="p-4 flex-1 justify-center">
-          <h2 className="text-5xl text-center text-cyan-900 mb-3 font-extrabold">
+        <div className="p-4 md:flex-1 justify-center">
+          <h2 className=" text-3xl md:text-5xl text-center text-cyan-900 mb-3 font-extrabold">
             Sign up
           </h2>
           <p className="mb-6 text-center">Hello Chief! Let’s get you started</p>
 
           <form
             onSubmit={emailReg}
-            className="space-y-4 flex flex-col items-center"
+            className="space-y-4 flex flex-col items-center w-full justify-center"
           >
             <input
               type="text"
@@ -201,7 +201,7 @@ const Register = () => {
               placeholder="First Name"
               value={formData.firstName}
               onChange={handleChange}
-              className="w-md p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className=" w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
               required
             />
             <input
@@ -210,7 +210,7 @@ const Register = () => {
               placeholder="Last Name"
               value={formData.lastName}
               onChange={handleChange}
-              className="w-md p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
               required
             />
             <input
@@ -219,7 +219,7 @@ const Register = () => {
               placeholder="Email Address"
               value={formData.email}
               onChange={handleChange}
-              className="w-md p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
               required
             />
             <input
@@ -229,7 +229,7 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               onPaste={(e) => e.preventDefault()}
-              className="w-md p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
               required
             />
             <input
@@ -239,17 +239,17 @@ const Register = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               onPaste={(e) => e.preventDefault()}
-              className="w-md p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
               required
             />
 
             
-            <div className="flex justify-center">
+            <div className="flex w-full justify-center">
               <button
                 type="submit"
                 disabled={isSubmitting}
                 onClick={emailReg}
-                className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
+                className="w-2/4 md:w-2/4 bg-cyan-700 text-white p-2 lg:p-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
                 {loading ? "Registering..." : "Let's get started"}
               </button>
@@ -277,7 +277,7 @@ const Register = () => {
         </div>
 
         {/* Right - Illustration */}
-        <div className="w-1/2 hidden md:flex flex-col justify-center items-center">
+        <div className="w-1/2 hidden md:flex flex-col flex-1 justify-center items-center">
           <img src={image} alt="Register Illustration" className="w-md" />
           <p className="hidden md:block p-3">
             Already have an account?{" "}

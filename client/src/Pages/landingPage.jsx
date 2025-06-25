@@ -21,7 +21,7 @@ const LandingPage = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className=' justify-center p-6 pt-40 '>
+                <div className='  flex flex-col justify-center p-6 pt-40 '>
 
                     {/* Hero Section */}
                     <div className='  items-center m-auto flex-col justify-center '>
@@ -39,33 +39,33 @@ const LandingPage = () => {
                     </div>
 
                     {/* Features Section */}
-                    <div className='grid md:grid-cols-2 gap-8 mt-12 '>
+                    <div className='grid md:grid-cols-2 gap-8 mt-12 w-3/4 items-center md:px-4 m-auto'>
 
                         {/* Feature 1 */}
-                        <div className='flex flex-col items-center text-center w-sm border m-auto'>
+                        <div className='flex flex-col items-center text-center  p-4 '>
                             <img src={computer} alt="Manage Bills" className='w-fit' />
-                            <h1 className='text-2xl font-bold mt-4'>Access and manage your bills from anywhere</h1>
+                            <h1 className='md:text-2xl text-xl font-bold mt-4 '>Access and manage your bills from anywhere</h1>
                             <p className='mt-2'>Keep your bills under control regardless of where you are. With PayWise, you can access, track, and pay your bills seamlessly through a single platform.</p>
                         </div>
 
                         {/* Feature 2 */}
-                        <div className='flex flex-col items-center text-center w-sm m-auto'>
-                            <img src={security} alt="Secure Transactions" className='' />
-                            <h1 className='text-2xl font-bold mt-4'>Secure Transactions You Can Trust</h1>
+                        <div className='flex flex-col items-center text-center p-4  '>
+                            <img src={security} alt="Secure Transactions" className='w-fit' />
+                            <h1 className='md:text-2xl text-xl font-bold mt-4'>Secure Transactions You Can Trust</h1>
                             <p className='mt-2'>Experience peace of mind with every transaction. Our secure payment system ensures your financial data is protected with advanced encryption and fraud prevention measures.</p>
                         </div>
 
                         {/* Feature 3 */}
-                        <div className='flex flex-col items-center text-center w-sm m-auto'>
+                        <div className='flex flex-col items-center text-center p-4'>
                             <img src={files} alt="Organize Bills" className='w-fit' />
-                            <h1 className='text-2xl font-bold mt-4'>Simplify and Organize Your Bills</h1>
+                            <h1 className='md:text-2xl text-xl font-bold mt-4'>Simplify and Organize Your Bills</h1>
                             <p className='mt-2'>No more clutter or confusion! PayWise helps you centralize all your bills, making it easy to stay on top of your financial commitments.</p>
                         </div>
 
                         {/* Feature 4 */}
-                        <div className='flex flex-col items-center text-center w-sm m-auto'>
+                        <div className='flex flex-col items-center text-center p-4 '>
                             <img src={tick} alt="Vendor Management" className='w-fit' />
-                            <h1 className='text-2xl font-bold mt-4'>Vendor Management and Payments Made Easy</h1>
+                            <h1 className='md:text-2xl text-xl font-bold mt-4'>Vendor Management and Payments Made Easy</h1>
                             <p className='mt-2'>Manage your vendors with ease. PayWise simplifies vendor payments, keeping your transactions smooth, organized, and on time.</p>
                         </div>
                     </div>
@@ -85,7 +85,7 @@ const LandingPage = () => {
                     </div>
 
                     {/* Testimonials */}
-                    <div className='px-12'>
+                    <div className='lg:px-8 mt-8'>
                         <div className=''>
                             <img src={quote} alt="Testimonials" className=' w-16' />
                         </div>

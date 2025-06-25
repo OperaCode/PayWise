@@ -8,7 +8,7 @@ const AboutUs = () => {
     <section className='pt-40 p-6 flex flex-col items-center'> 
       <div className="max-w-3xl text-center">
         <h1 className="text-4xl font-bold mb-4 text-cyan-900">About PayWise</h1>
-        <div className='flex'>
+        <div className='md:flex'>
         <p className="text-lg mb-6 ">
           PayWise is your trusted partner in seamless, automated bill payments and financial transactions.
           Our platform is designed to give you full control over your payments, ensuring convenience, security,

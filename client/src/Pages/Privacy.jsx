@@ -10,7 +10,7 @@ const Privacy = () => {
         <p className="text-lg mb-6 font-bold">
         Your privacy is important to us. This policy outlines how we collect, use, and protect your data.
         </p>
-        <div className='flex '>
+        <div className='md:flex px-4'>
         <ul className="list-decimal text-left space-y-4 font-bold">
          <li>We collect only necessary data for transactions and security.</li>
            <li>Your personal information is never shared without consent.</li>
