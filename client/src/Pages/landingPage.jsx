@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom';
 const LandingPage = () => {
     return (
         <>
-            <div className=' w-full flex-col  justify-center' >
+            <div className=' w-full flex-col border justify-center' >
 
                 {/* Header  */}
                 <div >
@@ -30,7 +30,7 @@ const LandingPage = () => {
                         <h1 className='font-medium text-5xl md:text-7xl text-center'>Pay Smarter,</h1>
                         <p className='text-4xl md:text-5xl text-center'>live better</p><br />
 
-                        <p className='text-xl w-lg m-auto text-center'>Goodbye to late fines and missed deadlines. PayWise allows you to automate regular payments, such as those for subscription services and utility bills.</p>
+                        <p className='md:text-xl md:w-lg m-auto text-center'>Goodbye to late fines and missed deadlines. PayWise allows you to automate regular payments, such as those for subscription services and utility bills.</p>
                        <div className='flex justify-center'>
                        <Link to="/register">
                        <button className='bg-cyan-700  text-white px-6 hover:cursor-pointer py-3 rounded-3xl font-semibold mt-4 hover:bg-green-900'>Get Started Today!</button>
@@ -39,10 +39,10 @@ const LandingPage = () => {
                     </div>
 
                     {/* Features Section */}
-                    <div className='grid md:grid-cols-2 gap-8 mt-12'>
+                    <div className='grid md:grid-cols-2 gap-8 mt-12 '>
 
                         {/* Feature 1 */}
-                        <div className='flex flex-col items-center text-center w-sm m-auto'>
+                        <div className='flex flex-col items-center text-center w-sm border m-auto'>
                             <img src={computer} alt="Manage Bills" className='w-fit' />
                             <h1 className='text-2xl font-bold mt-4'>Access and manage your bills from anywhere</h1>
                             <p className='mt-2'>Keep your bills under control regardless of where you are. With PayWise, you can access, track, and pay your bills seamlessly through a single platform.</p>
@@ -50,7 +50,7 @@ const LandingPage = () => {
 
                         {/* Feature 2 */}
                         <div className='flex flex-col items-center text-center w-sm m-auto'>
-                            <img src={security} alt="Secure Transactions" className='w-fit' />
+                            <img src={security} alt="Secure Transactions" className='' />
                             <h1 className='text-2xl font-bold mt-4'>Secure Transactions You Can Trust</h1>
                             <p className='mt-2'>Experience peace of mind with every transaction. Our secure payment system ensures your financial data is protected with advanced encryption and fraud prevention measures.</p>
                         </div>

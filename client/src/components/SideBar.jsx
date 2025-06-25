@@ -17,6 +17,10 @@ import {
   BadgeDollarSign,
 } from "lucide-react";
 
+
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 const SideBar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -29,24 +33,24 @@ const SideBar = () => {
   const logoutUser = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/user/logout",
+        `${BASE_URL}/user/logout`,
         {},
         { withCredentials: true }
       );
-
+  
       if (response.status === 200) {
         localStorage.removeItem("userToken");
+        toast.success("Logged out successfully!");
         navigate("/login");
-        //toast.success("Logout successful!");
       } else {
-        console.error("Logout failed");
         toast.error("Failed to log out. Please try again.");
       }
     } catch (error) {
-      console.error("Error logging out:", error);
+      console.error("Logout error:", error);
       toast.error("An error occurred while logging out.");
     }
   };
+  
 
   return (
     <aside className=" lg:flex lg:h-screen lg:fixed border-r-1 shadow-md border-neutral-500 font-headerFont  ">

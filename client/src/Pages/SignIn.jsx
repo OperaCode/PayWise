@@ -186,7 +186,7 @@ const Login = () => {
 
       // Send the ID Token to backend
       const response = await axios.post(
-        "http://localhost:3000/auth/google-auth",
+        `${BASE_URL}/auth/google-auth`,
         { idToken }, // The request body
         {
           headers: { "Content-Type": "application/json" },
