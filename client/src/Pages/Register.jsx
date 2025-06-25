@@ -159,10 +159,10 @@ const Register = () => {
   };
 
   return (
-    <div className="flex-col justify-center  p-4">
+    <div className="flex-col justify-center  p-8 min-h-screen">
       {/* Theme Toggle Button */}
       <div className="flex justify-between px-4 items-center">
-        <div className="w-50">
+        <div className="w-35">
           <Link to="/">
             <img
               src={logo}
@@ -183,7 +183,7 @@ const Register = () => {
         </button>
       </div>
 
-      <div className="p-  rounded-lg shadow-lg w-full m-auto gap-4 md:flex items-center ">
+      <div className="p-  rounded-lg  w-full m-auto gap-4 md:flex items-center ">
         {/* Left - Form Section */}
         <div className="p-4 md:flex-1 justify-center">
           <h2 className=" text-3xl md:text-5xl text-center text-cyan-900 mb-3 font-extrabold">
@@ -249,7 +249,7 @@ const Register = () => {
                 type="submit"
                 disabled={isSubmitting}
                 onClick={emailReg}
-                className="w-2/4 md:w-2/4 bg-cyan-700 text-white p-2 lg:p-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
+                className="w-2/4  bg-cyan-700 text-white p-2 lg:p-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
                 {loading ? "Registering..." : "Let's get started"}
               </button>

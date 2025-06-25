@@ -16,7 +16,7 @@ const Header = () => {
             <img
               src={Logo}
               alt="PayWise Logo"
-              className="hover:cursor-pointer w-40 md:w-48"
+              className="hover:cursor-pointer w-35 md:w-48"
             />
           </Link>
         </div>

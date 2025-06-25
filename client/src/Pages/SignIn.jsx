@@ -255,7 +255,7 @@ const Login = () => {
     <div className="p-8 min-h-screen">
       {/* Theme Toggle Button */}
       <div className="flex justify-between px-4 items-center">
-        <div className="w-50">
+        <div className="w-35">
           <Link to="/">
             <img
               src={logo}
@@ -276,7 +276,7 @@ const Login = () => {
         </button>
       </div>
 
-      <div className="rounded-lg shadow-lg w-full px-10 gap-4 items-center flex">
+      <div className="rounded-lg  w-full px- gap-4 items-center flex">
         {/* Right - Illustration */}
         <div className="w-1/2 hidden md:flex flex-col justify-center items-center">
           <img src={image} alt="Signup Illustration" className="w-md" />
@@ -289,15 +289,15 @@ const Login = () => {
         </div>
 
         {/* Left - Form Section */}
-        <div className="w-1/2 p-6 flex-1 flex-col flex items-center">
-          <h2 className="text-5xl text-center text-cyan-900 mb-3 font-extrabold">
+        <div className="w-full p-6 flex-1 flex-col flex items-center">
+          <h2 className="text-3xl md:text-4xl text-center text-cyan-900 mb-3 font-extrabold">
             Sign in
           </h2>
           <p className="mb-6 text-center">Hello Chief! Welcome Back!</p>
 
           <form
             onSubmit={loginUser}
-            className="space-y-4 flex-col flex items-center w-full m-auto"
+            className="space-y-4 flex flex-col items-center w-full justify-center"
           >
             <input
               type="email"
@@ -305,7 +305,7 @@ const Login = () => {
               onChange={handleInputChange}
               value={formData.email}
               placeholder="Email"
-              className="w-md full p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="md:w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
               required
             />
             <input
@@ -314,15 +314,15 @@ const Login = () => {
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Enter password"
-              className="w-md full p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="md:w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
               required
             />
 
-            <div className="flex-col space-y-4 items-center justify-center">
+            <div className="w-full  flex items-center justify-center p-4 ">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-sm bg-cyan-700 text-white py-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
+                className="w-2/5 bg-cyan-700 text-white p-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
                 {isSubmitting ? "Logging in..." : "Log in"}
               </button>

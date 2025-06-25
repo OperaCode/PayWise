@@ -31,7 +31,11 @@ const Footer = () => {
         </div>
         <div className="">
           <ul className=" hover:cursor-pointer md:flex gap-4 items-center">
-            <a href="https://x.com/0pera_dev" target="blank" rel="noopener noreferrer">
+            <a
+              href="https://x.com/0pera_dev"
+              target="blank"
+              rel="noopener noreferrer"
+            >
               {" "}
               <li>
                 <Twitter />
@@ -39,18 +43,24 @@ const Footer = () => {
             </a>
             <a
               href="https://www.linkedin.com/in/raphael-faboyinde-a031b1195/
-" target="blank" rel="noopener noreferrer"
+"
+              target="blank"
+              rel="noopener noreferrer"
             >
               <li>
                 <Linkedin />
               </li>
             </a>
-            <a href="mailto:your-email@example.com">
+            <a href="mailto:raphaelfaboyinde27@gmail.com">
               <li>
                 <Mail />
               </li>
             </a>
-            <a href="https://github.com/OperaCode" target="blank" rel="noopener noreferrer">
+            <a
+              href="https://github.com/OperaCode"
+              target="blank"
+              rel="noopener noreferrer"
+            >
               <li>
                 <Github />
               </li>
