@@ -498,24 +498,20 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 // function to log out user
-const LogoutUser = asyncHandler(async (req, res) => {
+const LogoutUser = async (req, res) => {
   try {
-    await axios.get("http://localhost:3000/user/logout", {
-      withCredentials: true,
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "None",
+      secure: true,
     });
-
-    // ✅ Clear local storage or session storage
-    localStorage.removeItem("user");
-    localStorage.removeItem("token"); // If stored separately
-
-    // ✅ Redirect to login page
-    navigate("/login");
-    toast.success("Logged out successfully!");
+    return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    toast.error("Logout failed");
-    console.error("Logout Error:", error);
+    console.error("Logout error:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
-});
+};
+
 
 module.exports = {
   registerUser,
