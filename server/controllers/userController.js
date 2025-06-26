@@ -6,19 +6,19 @@ const { OAuth2Client } = require("google-auth-library");
 const userModel = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
 const { userUpload, cloudinary } = require("../config/cloudConfig.js"); // Multer middleware for file uploads
-const {
-  sendVerificationEmail,
-  sendWelcomeBackEmail,
-  sendMetaMaskEmail,
-} = require("../config/EmailConfig.js");
+// const {
+//   sendVerificationEmail,
+//   sendWelcomeBackEmail,
+//   sendMetaMaskEmail,
+// } = require("../config/EmailConfig.js");
 
+// const {
+//   sendRegistrationEmail,
+//   sendSignInEmail,
+//   sendBillerAddedEmail,
+// } = require("../config/ResendEmail.js");
 
-const {
-  sendRegistrationEmail,
-  sendSignInEmail,
-  sendBillerAddedEmail,
-} = require("../config/ResendEmail.js")
-
+const { sendWelcomeEmail, sendSignInEmail } = require("../config/email.js");
 
 // const cloudinary = require("cloudinary").v2;
 // const multer = require("multer");
@@ -42,10 +42,9 @@ const generateToken = (userId) => {
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
-    
     const { firstName, lastName, email, password } = req.body;
     console.log("Incoming request body:", req.body);
-    
+
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -89,7 +88,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // console.log("Sending verification email to:", newUser.email);
     // Send verification email
     // await sendVerificationEmail(newUser.email, firstName);
-    await sendRegistrationEmail(newUser.email, firstName);
+    await sendWelcomeEmail(newUser.email, newUser.firstName);
 
     await newUser.save(); // Save user before sending response
 
@@ -117,7 +116,6 @@ const registerUser = asyncHandler(async (req, res) => {
           paycoin: newUser.wallet.paycoin,
           walletId: newUser.wallet.walletId,
         },
-        token,
       },
     });
   } catch (error) {
@@ -236,11 +234,8 @@ const loginUser = asyncHandler(async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         wallet: user.wallet,
-        token, // Only send if using local storage (not recommended for security)
       },
     });
-
-  
 
     console.log(user);
   } catch (error) {
@@ -291,22 +286,19 @@ const connectWallet = asyncHandler(async (req, res) => {
     user.metamaskWallet = walletAddress;
     await user.save();
 
-
     // Respond with success
     res.status(200).json({
       message: "MetaMask wallet connected successfully",
       user,
       firstTimeLinked,
       updatedWallets: user.metamaskWallet,
-      rewardAmount, 
+      rewardAmount,
     });
   } catch (error) {
     console.log("Error updating wallet:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
-
 
 const setTransactionPin = asyncHandler(async (req, res) => {
   try {
@@ -319,7 +311,9 @@ const setTransactionPin = asyncHandler(async (req, res) => {
 
     // Validate PIN format
     if (!pin || typeof pin !== "string" || pin.length !== 4 || isNaN(pin)) {
-      return res.status(400).json({ message: "Invalid PIN format. Must be a 4-digit number." });
+      return res
+        .status(400)
+        .json({ message: "Invalid PIN format. Must be a 4-digit number." });
     }
 
     const user = await User.findById(userId);
@@ -333,13 +327,16 @@ const setTransactionPin = asyncHandler(async (req, res) => {
     user.transactionPin = hashedPin;
     await user.save();
 
-    return res.status(200).json({ message: "Transaction PIN set successfully." });
+    return res
+      .status(200)
+      .json({ message: "Transaction PIN set successfully." });
   } catch (error) {
     console.error("Error setting transaction PIN:", error);
-    return res.status(500).json({ message: "Server error. Please try again later." });
+    return res
+      .status(500)
+      .json({ message: "Server error. Please try again later." });
   }
 });
-
 
 const uploadProfilePicture = async (req, res) => {
   try {
@@ -416,19 +413,12 @@ const getUsers = asyncHandler(async (req, res) => {
   }
 });
 
-
 const updateUser = asyncHandler(async (req, res) => {
   const userId = req.userId; // coming from auth middleware
-  const {
-    currentPassword,
-    newPassword,
-    currentPin,
-    newPin,
-    ...rest
-  } = req.body;
+  const { currentPassword, newPassword, currentPin, newPin, ...rest } =
+    req.body;
 
-  
-  const allowedFields = ['firstName', 'lastName', 'email'];
+  const allowedFields = ["firstName", "lastName", "email"];
 
   try {
     const user = await userModel.findById(userId);
@@ -452,7 +442,10 @@ const updateUser = asyncHandler(async (req, res) => {
       if (!currentPin) {
         return res.status(400).json({ message: "Current PIN required" });
       }
-      const isMatch = await bcrypt.compare(currentPin, user.transactionPin || "");
+      const isMatch = await bcrypt.compare(
+        currentPin,
+        user.transactionPin || ""
+      );
       if (!isMatch) {
         return res.status(400).json({ message: "Incorrect current PIN" });
       }
@@ -473,13 +466,11 @@ const updateUser = asyncHandler(async (req, res) => {
       message: "Profile updated successfully",
       user: updatedUser,
     });
-
   } catch (err) {
     console.error("Profile update error:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 const deleteUser = asyncHandler(async (req, res) => {
   try {
@@ -511,7 +502,6 @@ const LogoutUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 module.exports = {
   registerUser,
