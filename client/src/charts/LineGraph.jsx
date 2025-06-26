@@ -126,9 +126,9 @@ const LineGraph = ({ payments }) => {
   };
 
   return (
-    <div className="rounded ">
+    <div className="rounded  ">
       <h3 className="text-xl font-bold text-center p-6">Payment Trends</h3>
-      <div className="w-full lg:h-80 flex justify-center">
+      <div className="w-full m-auto ">
         <Line data={data} options={options} />
       </div>
     </div>

@@ -12,12 +12,9 @@ import {
   TabletSmartphone,
   UserRoundCog,
   ArrowRightLeft,
-
   LogOut,
   BadgeDollarSign,
 } from "lucide-react";
-
-
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -37,7 +34,7 @@ const SideBar = () => {
         {},
         { withCredentials: true }
       );
-  
+
       if (response.status === 200) {
         localStorage.removeItem("userToken");
         toast.success("Logged out successfully!");
@@ -50,7 +47,6 @@ const SideBar = () => {
       toast.error("An error occurred while logging out.");
     }
   };
-  
 
   return (
     <aside className=" lg:flex lg:h-screen lg:fixed border-r-1 shadow-md border-neutral-500 font-headerFont  ">
@@ -58,13 +54,13 @@ const SideBar = () => {
         <div className="flex justify-between items-center lg:flex-col">
           {/* Logo */}
           <div className=" p-4 lg:pt-14 ">
-            <Link to="/">
+            
               <img
                 src={logo}
                 alt="Logo"
                 className="hover:cursor-pointer w-50 bg-zinc-100 rounded-lg"
               />
-            </Link>
+           
           </div>
 
           {/* Menu Items */}
@@ -73,7 +69,7 @@ const SideBar = () => {
               <Link to="/dashboard">
                 <div className="flex gap-2 items-center hover:text-cyan-900 ">
                   <House size={17} strokeWidth={3} />
-                  <li className="hover:cursor-pointer  md:block hover:text-cyan-900 font-bold lg:text-md ">
+                  <li className="hover:cursor-pointer  md:block hover:text-cyan-900 font-bold text-s lg:text-md ">
                     {" "}
                     Home
                   </li>
@@ -83,7 +79,7 @@ const SideBar = () => {
               <Link to="/billers">
                 <div className=" gap-2 items-center hover:text-cyan-900 hidden lg:flex ">
                   <TabletSmartphone size={17} strokeWidth={3} />
-                  <li className="hover:cursor-pointer  font-bold lg:text-md ">
+                  <li className="hover:cursor-pointer  font-bold text-sm lg:text-md ">
                     Manage Billers
                   </li>
                 </div>
@@ -138,8 +134,14 @@ const SideBar = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0  bg-opacity-50  justify-center  flex items-center  bg-opacity-50 z-50">
-          <div className="  rounded-lg bg-zinc-300 text-black shadow-lg p-6 relative">
+        <div className={`fixed inset-0 z-40 bg-opacity-40 border-l-2 ease-in-out transition duration-500 ${
+          isModalOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}>
+          <div
+            className={`fixed top-0 right-0 h-full w-80 bg-zinc-300 text-black shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${
+              isModalOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
+          >
             {/* Close Button */}
             <button
               className="top-4 left-4 p-4 text-lg "

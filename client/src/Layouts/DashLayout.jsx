@@ -134,7 +134,7 @@ const DashLayout = ({ children }) => {
       <div className="flex-col w-full pt-8 lg:ml-78">
         <div>
           {/* Navbar */}
-          <div className="flex items-center justify-end px-10 py-4 gap-2">
+          <div className="flex items-center  justify-end px-10 py-4 gap-2">
             <h1 className="text-cyan- text-xl font-bold">
               Welcome, {username.charAt(0).toUpperCase() + username.slice(1)}!
             </h1>

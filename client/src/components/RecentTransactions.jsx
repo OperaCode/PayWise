@@ -198,10 +198,10 @@ const Recent = () => {
             <tr>
               <th className="p-2 border-gray-300">Date</th>
               <th className="p-2 border-gray-300">Recipient</th>
-              <th className="p-2 border-gray-300">Category</th>
+              <th className="p-2 hidden md:block border-gray-300">Category</th>
               <th className="p-2 border-gray-300">Type</th>
               <th className="p-2 border-gray-300">Amount</th>
-              <th className="p-2 border-gray-300">Status</th>
+              <th className="p-2 border-gray-300 hidden md:block">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -230,12 +230,12 @@ const Recent = () => {
                       : payment.recipientBiller?.name || "Unknown"}
                   </td>
 
-                  <td className="p-2">
+                  <td className="p-2 hidden md:block">
                     {payment.recipientBiller?.serviceType || "Others"}
                   </td>
                   <td className="p-2">{payment.paymentType}</td>
                   <td className="p-2">${payment.amount.toFixed(2)}</td>
-                  <td className="p-2">{payment.status}</td>
+                  <td className="p-2 hidden md:block">{payment.status}</td>
                 </tr>
               ))
             )}

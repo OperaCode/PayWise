@@ -493,16 +493,18 @@ const DashBoard = () => {
                   </button>
                 </div> */}
               </div>
+
+
               {/* Quick Links */}
-              <div>
-                <h1 className="font-semibold py-4 md:text-lg">Quick Links</h1>
-                <div className="flex items-center gap-6 justify-around px-6 ">
+              <div className="w-full ">
+                <h1 className="font-semibold py-4 text-sm md:text-xl">Quick Links</h1>
+                <div className="flex items-center gap-6 justify-around px-2 ">
                   <div
                     className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105 hover:text-cyan-900"
                     onClick={() => setP2pModalOpen(true)}
                   >
                     <HandCoins className="font-extrabold" />
-                    <p className="font-bold text-sm hover:text-cyan-900">
+                    <p className="font-bold md:text-sm text-xs hover:text-cyan-900">
                       TRANSFER
                     </p>
                   </div>
@@ -511,7 +513,7 @@ const DashBoard = () => {
                     onClick={() => setSchedulePayModalOpen(true)}
                   >
                     <CalendarSync className="hover:text-cyan-900 font-extrabold" />
-                    <p className="font-bold text-sm hover:text-cyan-900">
+                    <p className="font-bold md:text-sm text-xs hover:text-cyan-900">
                       SCHEDULE-PAY
                     </p>
                   </div>
@@ -521,30 +523,30 @@ const DashBoard = () => {
                     onClick={() => setAutoPayModalOpen(true)}
                   >
                     <SmartphoneNfc className="hover:text-cyan-900 font-extrabold" />
-                    <p className="font-bold text-sm hover:text-cyan-900">
+                    <p className="font-bold md:text-sm text-xs hover:text-cyan-900">
                       AUTOPAY
                     </p>
                   </div>
 
+                    <div className="items-center hidden md:flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
                   <Link to="/analytics">
-                    <div className="items-center flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
                       <ChartNoAxesCombined className="hover:text-cyan-900" />
-                      <p className="font-bold text-sm hover:text-cyan-900">
+                      <p className="font-bold md:text-sm text-xs hover:text-cyan-900">
                         ANALYTICS
                       </p>
-                    </div>
                   </Link>
+                    </div>
                 </div>
               </div>
             </div>
             {/* Line Graph */}
-            <div className="flex-1 w-full lg:w-50">
+            <div className="flex-1 justify-center p-2 m-auto">
               <Line payments={history} />
             </div>
           </div>
           {/* Pie Chart */}
-          <div className="md:flex justify-center">
-            <div className="flex-1 w-90 h-90">
+          <div className="md:flex justify-center gap-2 ">
+            <div className="flex-1 justify-center m-auto p-2">
               <DashPieChart payments={history} currency={formatCurrency} />
             </div>
             <div className="flex-1 justify-center m-auto">
@@ -564,7 +566,7 @@ const DashBoard = () => {
               ></div>
               <div className="stars"></div>
 
-              <div className="bg-zinc-100 shadow-lg w-1/3 h-2/3 relative m-auto p-3 rounded-lg text-black z-50">
+              <div className="bg-zinc-100 shadow-lg  relative m-auto p-3 rounded-lg text-black z-50">
                 <X
                   strokeWidth={7}
                   color="#FF0000"
@@ -582,10 +584,10 @@ const DashBoard = () => {
                 </div>
 
                 {/* Toggle Header */}
-                <div className="flex justify-center gap-4 mb-6 ">
+                <div className="flex justify-center w-full gap-4 mb-6 ">
                   <button
                     onClick={() => setActiveTab("fund")}
-                    className={`transition-all duration-300 ease-in-out px-4 py-2 cursor-pointer rounded-md font-semibold ${
+                    className={`transition-all duration-300 ease-in-out  px-4 py-2 cursor-pointer rounded-md font-semibold ${
                       activeTab === "fund"
                         ? "border-b-3 border-cyan-500 "
                         : "bg-zinc-100"
@@ -616,7 +618,7 @@ const DashBoard = () => {
                       className="p-2 border rounded-md w-full"
                     />
                     <FlutterWaveButton
-                      className={`p-2 w-1/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500 cursor-pointer${
+                      className={`p-2 w-2/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500 cursor-pointer${
                         !amount || amount <= 0
                           ? "opacity-50 cursor-not-allowed"
                           : ""

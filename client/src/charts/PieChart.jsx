@@ -77,13 +77,13 @@ const PieChart = ({ payments, currency}) => {
   }
 
   return (
-    <div className='m-auto rounded w-full'>
-      <h2 className='font-bold text-xl p-3 flex justify-center'>
+    <div className='m-auto rounded flex flex-col justify-center '>
+      <h2 className='font-bold text-md md:text-xl p-3 flex justify-center'>
         Bill Breakdown (Last 30 Days)
       </h2>
 
-      <div className="items-center flex justify-center m-auto">
-        <div className="chart w-70 h-70 relative">
+      <div className="items-center flex m-auto">
+        <div className="chart  relative  w-full">
           <Doughnut data={chartData} options={options} />
 
           {/* Total amount inside the doughnut */}
@@ -93,7 +93,9 @@ const PieChart = ({ payments, currency}) => {
           </h3>
         </div>
 
-        <Label labels={serviceTypes} values={amounts} />
+       <div className='hidden lg:block'>
+       <Label labels={serviceTypes} values={amounts} />
+       </div>
       </div>
     </div>
   )

@@ -173,7 +173,7 @@ const Register = () => {
         </div>
         <button
           onClick={toggleTheme}
-          className="h-10 p-2 bg-gray-200 dark:bg-gray-700 rounded-2xl"
+          className="h-10  p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
         >
           {theme === "light" ? (
             <Moon className="text-gray-200" />
