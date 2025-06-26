@@ -9,7 +9,7 @@ const sendEmailJS = async ({ to_name, to_email, template_id, extras = {} }) => {
     const payload = {
       service_id: process.env.EMAILJS_SERVICE_ID,
       template_id,
-      user_id: process.env.EMAILJS_API_KEY,
+      private_key: process.env.EMAILJS_API_KEY,
       template_params: {
         to_name,
         to_email,

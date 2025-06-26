@@ -4,7 +4,7 @@ const userModel = require("../models/userModel");
 
 const protectUser = asyncHandler(async(req,res,next) => {
   let token;
-  console.log("Request Cookies:", req.cookies);
+  // console.log("Request Cookies:", req.cookies);
  
   if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
