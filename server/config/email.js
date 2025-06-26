@@ -1,28 +1,28 @@
 const axios = require("axios");
 
 const sendEmailJS = async ({ to_name, to_email, template_id, extras = {} }) => {
-  try {
-    if (!to_name || !to_email || !template_id) {
-      throw new Error("Missing required email parameters.");
+    try {
+      if (!to_name || !to_email || !template_id) {
+        throw new Error("Missing required email parameters.");
+      }
+  
+      const payload = {
+        service_id: process.env.EMAILJS_SERVICE_ID,
+        template_id,
+        private_key: process.env.EMAILJS_API_KEY, 
+        template_params: {
+          to_name,
+          to_email,
+          ...extras,
+        },
+      };
+  
+      await axios.post("https://api.emailjs.com/api/v1.0/email/send-private", payload); 
+      console.log(`✅ Email sent to: ${to_email}`);
+    } catch (error) {
+      console.error("❌ Email sending failed:", error.response?.data || error.message || error);
     }
-
-    const payload = {
-      service_id: process.env.EMAILJS_SERVICE_ID,
-      template_id,
-      private_key: process.env.EMAILJS_API_KEY,
-      template_params: {
-        to_name,
-        to_email,
-        ...extras,
-      },
-    };
-
-    await axios.post("https://api.emailjs.com/api/v1.0/email/send", payload);
-    console.log(`✅ Email sent to: ${to_email}`);
-  } catch (error) {
-    console.error("❌ Email sending failed:", error.response?.data || error.message || error);
-  }
-};
+  };
 
 // Send welcome email on registration
 const sendWelcomeEmail = (name, email) => {
