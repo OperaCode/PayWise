@@ -62,7 +62,7 @@ const Login = () => {
         //console.log("Backend Response:", user);
         // Store user data locally
         localStorage.setItem("userId", user._id);
-        localStorage.setItem("token", user.token);
+        // localStorage.setItem("token", user.token);
         //console.log(user);
         //console.log(token)
 
@@ -322,7 +322,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-2/5 bg-cyan-700 text-white p-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
+                className="w-2/4 bg-cyan-700 text-white p-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
               >
                 {isSubmitting ? "Logging in..." : "Log in"}
               </button>
