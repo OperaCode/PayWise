@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import "./App.css";
 import { Route, Routes } from "react-router-dom";
+import LandingPage from "./Pages/LandingPage.jsx";
 import LandingLayout from "./Layouts/LandingLayout";
 import TermsAndConditions from "./Pages/TermsAndConditions.jsx";
 // import LandingPage from "./Pages/LandingPage";
@@ -10,7 +11,7 @@ import AboutUs from "./Pages/AboutUs.jsx";
 import Privacy from "./Pages/Privacy.jsx";
 import Loader from "./components/Loader.jsx";
 import { ThemeContext } from "./context/ThemeContext.jsx";
-import PaymentAnalytics from "./Pages/PaymentAnalytics.jsx";
+// import PaymentAnalytics from "./Pages/PaymentAnalytics.jsx";
 import DashLayout from "./Layouts/DashLayout.jsx";
 import DashBoard from "./Dashboards/DashBoard.jsx";
 // import Payment from "./Dashboards/MakePayment.jsx";
@@ -19,11 +20,10 @@ import TransactionHistory from "./Dashboards/TransactionHistory.jsx";
 import Analytics from "./Dashboards/RewardsAndAnalytics.jsx";
 import Receipt from "./modals/RecieptViewModal.jsx";
 import ProfileSettings from "./Dashboards/ProfileSettings.jsx";
-import LandingPage from "./Pages/LandingPage.jsx";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
-  const { theme } = useContext(ThemeContext); 
+  const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 3000);
@@ -37,10 +37,9 @@ const App = () => {
   };
 
   return (
-   
     <div className={`app-container ${theme}`}>
       <Routes>
-        <Route path="/" element={<LandingPage/>} />
+        <Route path="/" element={<LandingPage />} />
         <Route
           path="/about"
           element={
@@ -70,9 +69,6 @@ const App = () => {
         <Route path="/transactions" element={<TransactionHistory />} />
         <Route path="/receipt/:id" element={<Receipt />} />
 
-
-
-        
         <Route
           path="/dashboard"
           element={
