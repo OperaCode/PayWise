@@ -16,6 +16,7 @@ import { Moon, Sun } from "lucide-react";
 import image from "../assets/Register.png";
 import logo from "../assets/paywise-logo.png";
 import Loader from "../components/Loader";
+import { sendSignInEmail } from "../Hooks/email";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -40,8 +41,6 @@ const Login = () => {
 
   const loginUser = async (e) => {
     e.preventDefault();
-    // setError("");
-    //setLoading(true);
 
     try {
       const { email, password } = formData;
@@ -50,30 +49,34 @@ const Login = () => {
         toast.error("All fields are required");
         return;
       }
+
       setIsSubmitting(true);
 
       const response = await axios.post(`${BASE_URL}/user/login`, formData, {
         withCredentials: true,
       });
 
-      if (response?.data) {
-        //console.log("Backend Response:", response.data);
+      if (response?.data?.user) {
         const user = response.data.user;
-        //console.log("Backend Response:", user);
-        // Store user data locally
-        localStorage.setItem("userId", user._id);
-        // localStorage.setItem("token", user.token);
-        //console.log(user);
-        //console.log(token)
 
+  
+        localStorage.setItem("userId", user._id);
         setUser(user);
+        // console.log("✅ User from backend:", user);
+
+        await sendSignInEmail(user.firstName, user.email);
+
         navigate("/dashboard");
-        toast.success("Login Succesful!, Welcome Back!");
+        toast.success("Login Successful! Welcome Back!");
+      } else {
+        toast.error("Invalid server response.");
       }
     } catch (error) {
-      console.error(error);
-      toast.error(error?.response?.data?.message);
-      setError(error?.response?.data?.message);
+      console.error("Login Error:", error);
+      const message =
+        error?.response?.data?.message || "An unexpected error occurred";
+      toast.error(message);
+      setError(message);
     } finally {
       setIsSubmitting(false);
       setLoading(false);
@@ -180,14 +183,14 @@ const Login = () => {
         console.log(
           "Token stored in localStorage:",
           localStorage.getItem("token")
-        ); 
+        );
       }
       // console.log("Google Auth Token:", idToken);
 
-      // Send the ID Token to backend
+     
       const response = await axios.post(
         `${BASE_URL}/auth/google-auth`,
-        { idToken }, // The request body
+        { idToken }, 
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
@@ -197,7 +200,7 @@ const Login = () => {
         console.log("Backend Response:", response.data);
         const user = response.data.user;
         console.log("Backend Response:", user);
-        // Store user data locally
+        
         localStorage.setItem("userId", user._id);
         console.log(user);
 
@@ -237,8 +240,8 @@ const Login = () => {
 
   //         // Store user ID explicitly
   //         localStorage.setItem("userId", response.data.user._id);
-  //         //localStorage.setItem("token", response.data.token); // 
-  //         localStorage.setItem("user", JSON.stringify(response.data.user)); // 
+  //         //localStorage.setItem("token", response.data.token); //
+  //         localStorage.setItem("user", JSON.stringify(response.data.user)); //
 
   //         setUser(response.data.user);
   //         navigate("/dashboard", { state: { user: response.data.user } });
@@ -250,7 +253,6 @@ const Login = () => {
   //     }
   //   };
 
-  
   return (
     <div className="p-8 min-h-screen">
       {/* Theme Toggle Button */}

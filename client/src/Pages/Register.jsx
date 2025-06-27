@@ -12,10 +12,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
-  createUserWithEmailAndPassword,
-  fetchSignInMethodsForEmail,
-  updateProfile,
 } from "firebase/auth";
+import {sendWelcomeEmail} from '../Hooks/email'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -52,7 +50,7 @@ const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setError(""); // Clear the error when the user types
+    setError(""); 
   };
 
   //   const handlePastePassword = (e) => {
@@ -65,7 +63,7 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
     setIsSubmitting(true);
-    setError(""); // Reset error before validation
+    setError(""); 
 
     try {
       const { firstName, lastName, email, password, confirmPassword } =
@@ -88,12 +86,13 @@ const Register = () => {
       if (response?.data) {
         const userData = response.data.user;
 
-        // Ensure only the backend ID is stored
+        
         localStorage.removeItem("userId"); 
         localStorage.setItem("userId", userData._id); 
 
         //localStorage.setItem("userId", userData._id);
         setUser(userData);
+        await sendWelcomeEmail(userData.firstName, userData.email);
         navigate("/dashboard");
         toast.success(response.data.message);
       }
