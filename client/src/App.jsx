@@ -3,7 +3,7 @@ import "./App.css";
 import { Route, Routes } from "react-router-dom";
 import LandingLayout from "./Layouts/LandingLayout";
 import TermsAndConditions from "./Pages/TermsAndConditions.jsx";
-import LandingPage from "./Pages/landingPage";
+import LandingPage from "./Pages/LandingPage.jsx";
 import Login from "./Pages/SignIn";
 import Register from "./Pages/Register";
 import AboutUs from "./Pages/AboutUs.jsx";

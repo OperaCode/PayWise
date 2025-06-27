@@ -6,11 +6,12 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
 import image from "../assets/profileP.jpg";
+import Avatar from '../Layouts/Avatar'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const ProfileSettings = () => {
-  //   const [username, setUserName] = useState(" ");
+  const [username, setUserName] = useState(" ");
   //   const [userData, setUserData] = useState({});
   const [transactionPin, setTransactionPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
@@ -68,11 +69,12 @@ const ProfileSettings = () => {
         });
         const data = response?.data;
         const user = data?.user;
+        setUserName(user.firstName);
         setFirstName(user.firstName);
         setLastName(user.lastName);
         setEmail(user.email);
 
-        setProfilePicture(user.profilePicture || image);
+        setProfilePicture(user.profilePicture);
       } catch (error) {
         console.error(error);
         toast.error(error?.response?.data?.message);
@@ -538,11 +540,12 @@ const ProfileSettings = () => {
                 multiple={false}
               />
               <label htmlFor="profileUpload">
-                <img
+                {/* <img
                   src={profilePicture}
                   alt="Profile"
                   className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
-                />
+                /> */}
+                <Avatar name={username} imageUrl={profilePicture} loading={loading} />
               </label>
             </div>
             <button

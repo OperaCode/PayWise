@@ -11,6 +11,8 @@ import { jsPDF } from "jspdf"; // For PDF export
 import { Input, Select } from "antd";
 import ReceiptModal from "../modals/ReceiptModal";
 import image from "../assets/profileP.jpg";
+import Avatar from "../Layouts/Avatar";
+import Loader from "../components/Loader";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -18,7 +20,7 @@ const TransactionHistory = () => {
   const [username, setUserName] = useState(" ");
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("");
   const { user, setUser } = useState(" ");
   const [profilePicture, setProfilePicture] = useState(" ");
@@ -39,6 +41,13 @@ const TransactionHistory = () => {
   const statusFilters = ["All", "Successful", "Pending", "Failed"];
   const [selectedStatus, setSelectedStatus] = useState("All");
 
+//Loading Timeout
+  useEffect(() => {
+    // Simulate an API call or app initialization delay
+    setTimeout(() => setLoading(false), 3000);
+  }, []);
+
+
   // Fetch user
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,7 +60,7 @@ const TransactionHistory = () => {
         const user = data?.user;
         console.log(user);
         setUserName(user.firstName);
-        setProfilePicture(user.profilePicture || image);
+        setProfilePicture(user.profilePicture );
       } catch (error) {
         console.error(error);
         toast.error(error?.response?.data?.message);
@@ -312,7 +321,10 @@ const TransactionHistory = () => {
   };
 
   return (
-    <div className="lg:flex h-full ">
+    <>
+  
+    { loading ? ( <Loader/> ) : (
+      <div className="lg:flex h-full ">
       <SideBar />
 
       {/* Main Content */}
@@ -330,11 +342,12 @@ const TransactionHistory = () => {
               multiple={false}
             />
             <label htmlFor="profileUpload">
-              <img
+              {/* <img
                 src={profilePicture}
                 alt="Profile"
                 className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
-              />
+              /> */}
+              <Avatar name={username} imageUrl={profilePicture} loading={loading}/>
             </label>
           </div>
           <button
@@ -603,6 +616,8 @@ const TransactionHistory = () => {
         )}
       </div>
     </div>
+    )}
+      </>
   );
 };
 

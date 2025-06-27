@@ -92,7 +92,7 @@ const DashLayout = ({ children }) => {
   
       // Send request to backend
       const res = await axios.put(
-        "http://localhost:3000/user/upload-profile-picture", 
+        `${BASE_URL}/user/upload-profile-picture`, 
         formData,
         {
           headers: {
