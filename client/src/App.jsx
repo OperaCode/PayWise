@@ -22,7 +22,7 @@ import ProfileSettings from "./Dashboards/ProfileSettings.jsx";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
-  const { theme } = useContext(ThemeContext); // Get theme from context
+  const { theme } = useContext(ThemeContext); 
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 3000);
