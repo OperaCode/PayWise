@@ -3,7 +3,7 @@ import "./App.css";
 import { Route, Routes } from "react-router-dom";
 import LandingLayout from "./Layouts/LandingLayout";
 import TermsAndConditions from "./Pages/TermsAndConditions.jsx";
-import LandingPage from "./Pages/LandingPage.jsx";
+// import LandingPage from "./Pages/LandingPage";
 import Login from "./Pages/SignIn";
 import Register from "./Pages/Register";
 import AboutUs from "./Pages/AboutUs.jsx";
@@ -19,6 +19,7 @@ import TransactionHistory from "./Dashboards/TransactionHistory.jsx";
 import Analytics from "./Dashboards/RewardsAndAnalytics.jsx";
 import Receipt from "./modals/RecieptViewModal.jsx";
 import ProfileSettings from "./Dashboards/ProfileSettings.jsx";
+import LandingPage from "./Pages/LandingPage.jsx";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -39,7 +40,7 @@ const App = () => {
    
     <div className={`app-container ${theme}`}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage/>} />
         <Route
           path="/about"
           element={
