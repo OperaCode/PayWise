@@ -20,25 +20,20 @@ const { userUpload, cloudinary } = require("../config/cloudConfig.js"); // Multe
 
 const { sendWelcomeEmail, sendSignInEmail } = require("../config/email.js");
 
-// const cloudinary = require("cloudinary").v2;
-// const multer = require("multer");
 
-// const admin = require("../middleware/firebaseAdminAuth");
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Initialize Google client
 
-// GOOGLE_CLIENT_ID="345493382219-9ancu2on81977erh7re38brdjo11qj43.apps.googleusercontent.com"
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); 
+
+
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "30d", // Token expires in 30 days
   });
 };
 
-// cloudinary.config({
-//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-//   api_key: process.env.CLOUDINARY_API_KEY,
-//   api_secret: process.env.CLOUDINARY_API_SECRET,
-// });
+
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
@@ -49,14 +44,14 @@ const registerUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Validate password length
+ 
     if (password.length < 8 || password.length > 12) {
       return res
         .status(400)
         .json({ message: "Password must be between 8 and 12 characters" });
     }
 
-    // Check if user already exists
+   
     const userExist = await userModel.findOne({ email });
     console.log("Existing user check result:", userExist);
 
@@ -66,7 +61,7 @@ const registerUser = asyncHandler(async (req, res) => {
         .json({ message: "User already exists. Please log in." });
     }
 
-    // Create user with wallet
+
     const newUser = await userModel.create({
       firstName,
       lastName,
@@ -77,21 +72,11 @@ const registerUser = asyncHandler(async (req, res) => {
         paycoin: 0,
         walletId: uuidv4(),
       },
-      // isVerified: false, // New users are NOT verified initially
-      // verificationToken: jwt.sign({ email }, process.env.JWT_SECRET, {
-      //   expiresIn: "1d",
-      // }),
+     
     });
 
-    // Generate verification link
-    // const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
-    // console.log("Sending verification email to:", newUser.email);
-    // Send verification email
-    // await sendVerificationEmail(newUser.email, firstName);
-    await sendWelcomeEmail(newUser.email, newUser.firstName);
-
-    await newUser.save(); // Save user before sending response
-
+   
+    await newUser.save(); 
     const token = generateToken(newUser._id);
 
     res.cookie("token", token, {
@@ -200,23 +185,12 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User Not Found!" });
     }
-
-    // to restrict unverififed users
-    // if (!user.isVerified) {
-    //   return res.status(403).json({ message: "Please verify your email before logging in." });
-    // }
-
     // Check password
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return res.status(400).json({ message: "Invalid Credentials" });
     }
 
-    // await sendWelcomeBackEmail(user.email, user.firstName);
-    await sendSignInEmail(user.email, user.firstName);
-    //console.log("Welcome email sent")
-
-    // Generate token
     const token = generateToken(user._id);
     res.cookie("token", token, {
       path: "/",
