@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import "./App.css";
 import { Route, Routes } from "react-router-dom";
-import LandingPage from "./Pages/LandingPage.jsx";
+import LandingPage from "./Pages/LandingPage.jsx"
 import LandingLayout from "./Layouts/LandingLayout";
 import TermsAndConditions from "./Pages/TermsAndConditions.jsx";
 // import LandingPage from "./Pages/LandingPage";
@@ -9,6 +9,7 @@ import Login from "./Pages/SignIn";
 import Register from "./Pages/Register";
 import AboutUs from "./Pages/AboutUs.jsx";
 import Privacy from "./Pages/Privacy.jsx";
+
 import Loader from "./components/Loader.jsx";
 import { ThemeContext } from "./context/ThemeContext.jsx";
 // import PaymentAnalytics from "./Pages/PaymentAnalytics.jsx";
