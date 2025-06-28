@@ -181,7 +181,7 @@ const DashBoard = () => {
     currency: "USD",
     payment_options: "card, banktransfer, ussd",
     customer: {
-      email: user.email,
+      // email: user.email,
       name: `${user.firstName} ${user.lastName}`,
     },
     customizations: {

@@ -23,27 +23,23 @@ const override = {
 
 const DashLayout = ({ children }) => {
   const { theme, toggleTheme } = useContext(ThemeContext);
-  // const { user, setUser } = useContext(UserContext); 
-  const { user, setUser } = useState(" "); 
+  // const { user, setUser } = useContext(UserContext);
+  const [ user, setUser ] = useState(null);
   const [username, setUserName] = useState(" ");
   const [res, setRes] = useState({});
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
-  const [profilePicture, setProfilePicture] = useState(
-
-    ); 
+  const [profilePicture, setProfilePicture] = useState();
   const [isUploading, setIsUploading] = useState(false);
 
   // Handle file selection
- const handleSelectFile = (e) => {
+  const handleSelectFile = (e) => {
     const photo = e.target.files[0];
     if (photo) {
       setFile(photo);
-      uploadPhoto(photo); 
+      uploadPhoto(photo);
     }
-  }; 
-
-  
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -55,64 +51,57 @@ const DashLayout = ({ children }) => {
         });
         //console.log(response)
         const data = response?.data;
-        const user = data?.user
+        const user = data?.user;
         //console.log(user)
         // setUser(user);
-        setUserName(user.firstName)
-        setProfilePicture(user.profilePicture)
+        setUserName(user.firstName);
+        setProfilePicture(user.profilePicture);
       } catch (error) {
         console.error(error);
         toast.error(error?.response?.data?.message);
-       
       }
     };
 
     fetchUser();
   }, [setUser]);
 
-  
   const uploadPhoto = async (photo) => {
     if (!photo) {
       return toast.error("Please select an image");
     }
   
-    const userId = localStorage.getItem("userId");
-    console.log("LocalStorage userId:", userId);
+    const token = localStorage.getItem("token");
   
-    if (!userId) {
-      return toast.error("User ID not found. Please log in again.");
+    if (!token) {
+      return toast.error("Session expired. Please log in again.");
     }
   
     const formData = new FormData();
-    formData.append("profilePicture", photo); 
-    formData.append("userId", userId);
-  
+    formData.append("profilePicture", photo);
+    
     try {
       setLoading(true);
   
       // Send request to backend
       const res = await axios.put(
-        `${BASE_URL}/user/upload-profile-picture`, 
+        `${BASE_URL}/user/upload-profile-picture`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`, // ✅ Send token in header
           },
-          withCredentials: true, 
+          withCredentials: true,
         }
       );
   
       console.log("Upload Response:", res.data);
   
-      // Check if the response contains the Cloudinary URL
       if (res.data.user && res.data.user.profilePicture) {
         const imageUrl = res.data.user.profilePicture;
-
-        console.log("New Profile Picture URL:", imageUrl); 
   
-        setProfilePicture(imageUrl); 
-  
-      
+        console.log("New Profile Picture URL:", imageUrl);
+        setProfilePicture(imageUrl);
         toast.success("Profile picture updated!");
       } else {
         toast.error("Upload Error, Try using another image.");
@@ -126,7 +115,6 @@ const DashLayout = ({ children }) => {
   };
   
   return (
-    
     <div className="lg:flex">
       <SideBar />
 
@@ -166,8 +154,11 @@ const DashLayout = ({ children }) => {
                   alt="Profile"
                   className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
                 /> */}
-                <Avatar name={username} imageUrl={profilePicture} loading={loading} />
-
+                <Avatar
+                  name={username}
+                  imageUrl={profilePicture}
+                  loading={loading}
+                />
               </label>
             </div>
 
