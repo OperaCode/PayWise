@@ -314,7 +314,8 @@ const setTransactionPin = asyncHandler(async (req, res) => {
 
 const uploadProfilePicture = async (req, res) => {
   try {
-    const userId = req.userId; // Get userId from middleware
+    const userId = req.userId; 
+    console.log(userId)
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized, no user ID" });
     }
@@ -325,7 +326,7 @@ const uploadProfilePicture = async (req, res) => {
 
     // Upload to Cloudinary
     const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
-      folder: "Users", // Ensure this folder exists in Cloudinary
+      folder: "Users", 
     });
 
     console.log("Cloudinary Image URL:", uploadedImage.secure_url); // Debugging log
@@ -347,6 +348,11 @@ const uploadProfilePicture = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
+
 
 const getUser = asyncHandler(async (req, res) => {
   try {
