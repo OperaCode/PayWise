@@ -70,26 +70,27 @@ const DashLayout = ({ children }) => {
       return toast.error("Please select an image");
     }
   
+    const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
   
-    if (!token) {
-      return toast.error("Session expired. Please log in again.");
+    if (!token || !userId) {
+      return toast.error("User ID not found. Please log in again.");
     }
   
     const formData = new FormData();
     formData.append("profilePicture", photo);
-    
+    formData.append("userId", userId);
+  
     try {
       setLoading(true);
   
-      // Send request to backend
       const res = await axios.put(
         `${BASE_URL}/user/upload-profile-picture`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`, // ✅ Send token in header
+            Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         }
@@ -99,8 +100,6 @@ const DashLayout = ({ children }) => {
   
       if (res.data.user && res.data.user.profilePicture) {
         const imageUrl = res.data.user.profilePicture;
-  
-        console.log("New Profile Picture URL:", imageUrl);
         setProfilePicture(imageUrl);
         toast.success("Profile picture updated!");
       } else {
@@ -113,6 +112,7 @@ const DashLayout = ({ children }) => {
       setLoading(false);
     }
   };
+  
   
   return (
     <div className="lg:flex">
