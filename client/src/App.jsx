@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import "./App.css";
 import { Route, Routes } from "react-router-dom";
-// import LandingPage from "./Pages/LandingPage.jsx"
+import LandingPage from "./Pages/LandingPage.jsx"
 import LandingLayout from "./Layouts/LandingLayout";
 import TermsAndConditions from "./Pages/TermsAndConditions.jsx";
 // import LandingPage from "./Pages/LandingPage";

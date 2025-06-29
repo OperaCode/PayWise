@@ -70,16 +70,14 @@ const DashLayout = ({ children }) => {
       return toast.error("Please select an image");
     }
   
-    const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
   
-    if (!token || !userId) {
-      return toast.error("User ID not found. Please log in again.");
+    if (!token) {
+      return toast.error("No token found. Please log in again.");
     }
   
     const formData = new FormData();
     formData.append("profilePicture", photo);
-    formData.append("userId", userId);
   
     try {
       setLoading(true);
@@ -92,7 +90,7 @@ const DashLayout = ({ children }) => {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
-          withCredentials: true,
+          withCredentials: true, // only if your backend uses cookies
         }
       );
   
@@ -112,6 +110,7 @@ const DashLayout = ({ children }) => {
       setLoading(false);
     }
   };
+  
   
   
   return (
