@@ -3,12 +3,12 @@ import "./App.css";
 import { Route, Routes } from "react-router-dom";
 import LandingLayout from "./Layouts/LandingLayout";
 import TermsAndConditions from "./Pages/TermsAndConditions.jsx";
-// import LandingPage from "./Pages/LandingPage.jsx";
+
 import Login from "./Pages/SignIn";
 import Register from "./Pages/Register";
 import AboutUs from "./Pages/AboutUs.jsx";
 import Privacy from "./Pages/Privacy.jsx";
-import LandingPage from "./Pages/LandingPage.jsx"
+import LandingPage from "./Pages/landingPage.jsx"
 
 import Loader from "./components/Loader.jsx";
 import { ThemeContext } from "./context/ThemeContext.jsx";
