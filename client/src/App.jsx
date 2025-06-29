@@ -4,7 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import LandingPage from "./Pages/LandingPage.jsx"
 import LandingLayout from "./Layouts/LandingLayout";
 import TermsAndConditions from "./Pages/TermsAndConditions.jsx";
-// import LandingPage from "./Pages/LandingPage";
+import LandingPage from "./Pages/LandingPage.jsx";
 import Login from "./Pages/SignIn";
 import Register from "./Pages/Register";
 import AboutUs from "./Pages/AboutUs.jsx";
