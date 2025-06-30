@@ -312,43 +312,90 @@ const setTransactionPin = asyncHandler(async (req, res) => {
   }
 });
 
+// const uploadProfilePicture = async (req, res) => {
+//   try {
+//     const userId = req.userId; 
+//     console.log(userId)
+//     if (!userId) {
+//       return res.status(401).json({ message: "Unauthorized, no user ID" });
+//     }
+
+//     if (!req.file) {
+//       return res.status(400).json({ message: "No file uploaded" });
+//     }
+
+//     // Upload to Cloudinary
+//     const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
+//       folder: "Users", 
+//     });
+
+//     console.log("Cloudinary Image URL:", uploadedImage.secure_url); // Debugging log
+//     console.log("Searching userId:", userId);
+//     // Update the user in MongoDB with the Cloudinary URL
+//     const updatedUser = await User.findByIdAndUpdate(
+//       userId,
+//       { profilePicture: uploadedImage.secure_url }, // Store the image URL
+//       { new: true }
+//     );
+
+//     if (!updatedUser) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     res.json({ message: "Profile picture updated", user: updatedUser });
+//   } catch (error) {
+//     console.error("Error updating profile picture:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+
 const uploadProfilePicture = async (req, res) => {
   try {
-    const userId = req.userId; 
-    console.log(userId)
+    const userId = req.userId;
+
+    console.log("🧩 [Auth] Received userId:", userId);
+
     if (!userId) {
+      console.warn("❌ No user ID found in request");
       return res.status(401).json({ message: "Unauthorized, no user ID" });
     }
 
     if (!req.file) {
+      console.warn("❌ No file attached in request");
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    // Upload to Cloudinary
+    console.log("📤 Uploading image to Cloudinary...");
     const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
-      folder: "Users", 
+      folder: "Users",
     });
 
-    console.log("Cloudinary Image URL:", uploadedImage.secure_url); // Debugging log
+    console.log("✅ [Cloudinary] Uploaded Image URL:", uploadedImage.secure_url);
 
-    // Update the user in MongoDB with the Cloudinary URL
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { profilePicture: uploadedImage.secure_url }, // Store the image URL
-      { new: true }
-    );
+    console.log("🔍 Searching for user in DB with ID:", userId);
+    const userBefore = await User.findById(userId);
 
-    if (!updatedUser) {
+    if (!userBefore) {
+      console.error("❌ No user found with ID:", userId);
       return res.status(404).json({ message: "User not found" });
     }
 
+    console.log("📝 Updating user profile with new image URL...");
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePicture: uploadedImage.secure_url },
+      { new: true }
+    );
+
+    console.log("✅ [MongoDB] User updated successfully");
+
     res.json({ message: "Profile picture updated", user: updatedUser });
   } catch (error) {
-    console.error("Error updating profile picture:", error);
+    console.error("💥 Error during profile picture update:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 
 
