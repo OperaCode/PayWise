@@ -4,7 +4,7 @@ import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
 import cardImage from "../assets/profileP.jpg";
 import { useNavigate } from "react-router-dom";
-import CreateBillerModal from "../modals/createBillerModal";
+import CreateBillerModal from "../modals/CreateBillerModal";
 import EditBillerModal from "../modals/EditBillerModal";
 import cardBg2 from "../assets/cardBg2.webp";
 import { toast } from "react-toastify";
@@ -75,10 +75,7 @@ const ManageBillers = (currency) => {
 
 
         const response = await axios.get(`${BASE_URL}/biller`, {
-          headers: {
-            Authorization: `Bearer ${token}`, 
-            "Content-Type": "application/json",
-          },
+          withCredentials: true,
         });
   
         const fetchedBillers = response?.data || [];

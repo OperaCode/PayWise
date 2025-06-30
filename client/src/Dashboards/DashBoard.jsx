@@ -112,7 +112,8 @@ const DashBoard = () => {
   useEffect(() => {
     const fetchBillers = async () => {
       try {
-        const UserId = localStorage.getItem("userId");
+        // const UserId = localStorage.getItem("userId");
+        const token = localStorage.getItem("token");
         const response = await axios.get(`${BASE_URL}/biller`, {
           withCredentials: true,
         });
@@ -191,13 +192,13 @@ const DashBoard = () => {
     },
     callback: async (response) => {
       console.log("Payment callback:", response);
-  
+
       const userId = localStorage.getItem("userId");
       if (!userId) {
         toast.error("User ID missing. Please log in again.");
         return;
       }
-  
+
       if (response.status === "successful") {
         setIsSending(true);
         try {
@@ -209,7 +210,7 @@ const DashBoard = () => {
               transactionId: response.transaction_id, // actual ID from Flutterwave
             }),
           });
-  
+
           const data = await result.json();
           if (result.ok && data.success) {
             toast.success("Wallet Funded!");
@@ -225,14 +226,13 @@ const DashBoard = () => {
           setFundModalOpen(false);
         }
       }
-  
+
       closePaymentModal();
     },
     onclose: () => {
       console.log("Flutterwave modal closed");
     },
   };
-  
 
   // Wallet withdraw from wallet
   const handleWithdraw = async (e) => {
@@ -494,10 +494,11 @@ const DashBoard = () => {
                 </div> */}
               </div>
 
-
               {/* Quick Links */}
               <div className="w-full ">
-                <h1 className="font-semibold py-4 text-sm md:text-xl">Quick Links</h1>
+                <h1 className="font-semibold py-4 text-sm md:text-xl">
+                  Quick Links
+                </h1>
                 <div className="flex items-center gap-6 justify-around px-2 ">
                   <div
                     className="items-center rounded-md space-y-2 flex flex-col hover:cursor-pointer hover:scale-105 hover:text-cyan-900"
@@ -528,14 +529,14 @@ const DashBoard = () => {
                     </p>
                   </div>
 
-                    <div className="items-center hidden md:flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
-                  <Link to="/analytics">
+                  <div className="items-center hidden md:flex flex-col hover:cursor-pointer rounded-md space-y-2 hover:scale-105 hover:text-cyan-900">
+                    <Link to="/analytics">
                       <ChartNoAxesCombined className="hover:text-cyan-900" />
                       <p className="font-bold md:text-sm text-xs hover:text-cyan-900">
                         ANALYTICS
                       </p>
-                  </Link>
-                    </div>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

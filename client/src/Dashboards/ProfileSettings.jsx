@@ -84,59 +84,60 @@ const ProfileSettings = () => {
     fetchUser();
   }, []);
 
-  //   const uploadPhoto = async (photo) => {
-  //     if (!photo) {
-  //       return toast.error("Please select an image");
-  //     }
+  
+ // Handle file selection
+ const handleSelectFile = (e) => {
+  const photo = e.target.files[0];
+  if (photo) {
+    setFile(photo);
+    uploadPhoto(photo);
+  }
+};
 
-  //     const userId = localStorage.getItem("userId");
-  //     console.log("LocalStorage userId:", userId);
 
-  //     if (!userId) {
-  //       return toast.error("User ID not found. Please log in again.");
-  //     }
+  const uploadPhoto = async (photo) => {
+    if (!photo) {
+      return toast.error("Please select an image");
+    }
 
-  //     const formData = new FormData();
-  //     formData.append("profilePicture", photo); // Match backend field name
-  //     formData.append("userId", userId);
+    const token = localStorage.getItem("token");
+    console.log("🪪 Token being sent:", token);
 
-  //     try {
-  //       setLoading(true);
+    if (!token) {
+      return toast.error("No token found. Please log in again.");
+    }
 
-  //       // Send request to backend
-  //       const res = await axios.put(
-  //         "http://localhost:3000/user/upload-profile-picture", // Ensure correct endpoint
-  //         formData,
-  //         {
-  //           headers: {
-  //             "Content-Type": "multipart/form-data",
-  //           },
-  //           withCredentials: true, // Ensure cookies are sent if using authentication
-  //         }
-  //       );
+    const formData = new FormData();
+    formData.append("profilePicture", photo);
 
-  //       console.log("Upload Response:", res.data);
+    try {
+      setLoading(true);
 
-  //       // Check if the response contains the Cloudinary URL
-  //       if (res.data.user && res.data.user.profilePicture) {
-  //         const imageUrl = res.data.user.profilePicture;
+      const res = await axios.put(
+        `${BASE_URL}/user/upload-profile-picture`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
 
-  //         console.log("New Profile Picture URL:", imageUrl); // Add this log
+      console.log("Upload Response:", res.data);
 
-  //         setProfilePicture(imageUrl); //Update the profile picture state
+      if (res.data.user && res.data.user.profilePicture) {
+        const imageUrl = res.data.user.profilePicture;
+        setProfilePicture(imageUrl);
+        toast.success("Profile picture updated!");
+      } else {
+        toast.error("Upload Error, Try using another image.");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Upload failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  //         // Display success message
-  //         toast.success("Profile picture updated!");
-  //       } else {
-  //         toast.error("Error uploading profile picture. Please try again.");
-  //       }
-  //     } catch (error) {
-  //       console.error("Upload error:", error);
-  //       toast.error("Upload failed. Please try again.");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
 
   const handleUpdateInfo = async (e) => {
     e.preventDefault();
@@ -177,7 +178,6 @@ const ProfileSettings = () => {
     }
   };
   
-
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
@@ -532,9 +532,10 @@ const ProfileSettings = () => {
               Welcome, {firstname.charAt(0).toUpperCase() + firstname.slice(1)}!
             </h1>
             <div className="relative">
-              <input
+            <input
                 type="file"
                 accept="image/*"
+                onChange={handleSelectFile}
                 className="hidden"
                 id="profileUpload"
                 multiple={false}
@@ -545,7 +546,11 @@ const ProfileSettings = () => {
                   alt="Profile"
                   className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
                 /> */}
-                <Avatar name={username} imageUrl={profilePicture} loading={loading} />
+                <Avatar
+                  name={username}
+                  imageUrl={profilePicture}
+                  loading={loading}
+                />
               </label>
             </div>
             <button

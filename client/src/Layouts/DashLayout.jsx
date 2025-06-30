@@ -24,7 +24,7 @@ const override = {
 const DashLayout = ({ children }) => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   // const { user, setUser } = useContext(UserContext);
-  const [ user, setUser ] = useState(null);
+  const [user, setUser] = useState(null);
   const [username, setUserName] = useState(" ");
   const [res, setRes] = useState({});
   const [loading, setLoading] = useState(false);
@@ -65,37 +65,35 @@ const DashLayout = ({ children }) => {
     fetchUser();
   }, [setUser]);
 
+ 
   const uploadPhoto = async (photo) => {
     if (!photo) {
       return toast.error("Please select an image");
     }
-  
+
     const token = localStorage.getItem("token");
-  
+    console.log("🪪 Token being sent:", token);
+
     if (!token) {
       return toast.error("No token found. Please log in again.");
     }
-  
+
     const formData = new FormData();
     formData.append("profilePicture", photo);
-  
+
     try {
       setLoading(true);
-  
+
       const res = await axios.put(
         `${BASE_URL}/user/upload-profile-picture`,
         formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true, // only if your backend uses cookies
+          withCredentials: true,
         }
       );
-  
+
       console.log("Upload Response:", res.data);
-  
+
       if (res.data.user && res.data.user.profilePicture) {
         const imageUrl = res.data.user.profilePicture;
         setProfilePicture(imageUrl);
@@ -110,9 +108,7 @@ const DashLayout = ({ children }) => {
       setLoading(false);
     }
   };
-  
-  
-  
+
   return (
     <div className="lg:flex">
       <SideBar />
