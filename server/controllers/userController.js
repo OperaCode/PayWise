@@ -377,7 +377,7 @@ const uploadProfilePicture = async (req, res) => {
     const userBefore = await User.findById(userId);
 
     if (!userBefore) {
-      console.error("❌ No user found with ID:", userId);
+      console.error("No user found with ID:", userId);
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -390,7 +390,7 @@ const uploadProfilePicture = async (req, res) => {
 
     console.log("✅ [MongoDB] User updated successfully");
 
-    res.json({ message: "Profile picture updated", user: updatedUser });
+    res.status(200).json({ message: "Profile picture updated", user: updatedUser });
   } catch (error) {
     console.error("💥 Error during profile picture update:", error);
     res.status(500).json({ message: "Server error" });
