@@ -59,7 +59,6 @@ const Login = () => {
       if (response?.data?.user) {
         const user = response.data.user;
 
-  
         localStorage.setItem("userId", user._id);
         setUser(user);
         // console.log("✅ User from backend:", user);
@@ -187,10 +186,9 @@ const Login = () => {
       }
       // console.log("Google Auth Token:", idToken);
 
-     
       const response = await axios.post(
         `${BASE_URL}/auth/google-auth`,
-        { idToken }, 
+        { idToken },
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
@@ -200,7 +198,7 @@ const Login = () => {
         console.log("Backend Response:", response.data);
         const user = response.data.user;
         console.log("Backend Response:", user);
-        
+
         localStorage.setItem("userId", user._id);
         console.log(user);
 
@@ -268,7 +266,7 @@ const Login = () => {
         </div>
         <button
           onClick={toggleTheme}
-          className="h-10 p-2 bg-gray-200 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
+          className="h-10  p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
         >
           {theme === "light" ? (
             <Moon className="text-gray-200" />
