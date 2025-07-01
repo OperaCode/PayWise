@@ -4,7 +4,7 @@ import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
 import cardImage from "../assets/profileP.jpg";
 import { useNavigate } from "react-router-dom";
-import CreateBillerModal from "../modals/temp";
+import CreateBillerModal from "../modals/CreateBillerModal";
 import EditBillerModal from "../modals/EditBillerModal";
 
 import { toast } from "react-toastify";
