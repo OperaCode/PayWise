@@ -4,9 +4,9 @@ import Loader from "../components/Loader";
 import image from "../assets/avatar.jpg";
 import cardImage from "../assets/profileP.jpg";
 import { useNavigate } from "react-router-dom";
-import CreateBillerModal from "../modals/CreateBillerModal";
+import CreateBillerModal from "../modals/temp";
 import EditBillerModal from "../modals/EditBillerModal";
-import cardBg2 from "../assets/cardBg2.webp";
+
 import { toast } from "react-toastify";
 import axios from "axios";
 
