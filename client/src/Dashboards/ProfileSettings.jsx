@@ -164,9 +164,7 @@ const ProfileSettings = () => {
          
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          
           withCredentials: true,
         }
       );
@@ -212,9 +210,7 @@ const ProfileSettings = () => {
           newPassword,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials:true
         }
       );
 
@@ -271,9 +267,7 @@ const ProfileSettings = () => {
           newPin,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials:true
         }
       );
 

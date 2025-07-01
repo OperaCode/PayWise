@@ -31,7 +31,6 @@ const SideBar = () => {
     try {
       const response = await axios.post(
         `${BASE_URL}/user/logout`,
-        {},
         { withCredentials: true }
       );
 
@@ -54,13 +53,11 @@ const SideBar = () => {
         <div className="flex justify-between items-center lg:flex-col">
           {/* Logo */}
           <div className=" p-4 lg:pt-14 ">
-            
-              <img
-                src={logo}
-                alt="Logo"
-                className="hover:cursor-pointer w-50 bg-zinc-100 rounded-lg"
-              />
-           
+            <img
+              src={logo}
+              alt="Logo"
+              className="hover:cursor-pointer w-50 bg-zinc-100 rounded-lg"
+            />
           </div>
 
           {/* Menu Items */}
@@ -134,12 +131,16 @@ const SideBar = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className={`fixed inset-0 z-40 bg-opacity-40 border-l-2 ease-in-out transition duration-500 ${
-          isModalOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}>
+        <div
+          className={`fixed inset-0 z-40 bg-opacity-40 border-l-2 ease-in-out transition duration-500 ${
+            isModalOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }`}
+        >
           <div
             className={`fixed top-0 right-0 h-full w-80 bg-zinc-300 text-black shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${
-              isModalOpen ? 'translate-x-0' : 'translate-x-full'
+              isModalOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
             {/* Close Button */}

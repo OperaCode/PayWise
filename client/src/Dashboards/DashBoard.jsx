@@ -182,7 +182,7 @@ const DashBoard = () => {
     currency: "USD",
     payment_options: "card, banktransfer, ussd",
     customer: {
-      // email: user.email,
+      email: user.email,
       name: `${user.firstName} ${user.lastName}`,
     },
     customizations: {
@@ -202,31 +202,38 @@ const DashBoard = () => {
       if (response.status === "successful") {
         setIsSending(true);
         try {
-          const result = await fetch(`${BASE_URL}/payment/fund-wallet`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          const result = await axios.post(
+            `${BASE_URL}/payment/fund-wallet`,
+            {
               userId,
-              transactionId: response.transaction_id, // actual ID from Flutterwave
-            }),
-          });
-
-          const data = await result.json();
-          if (result.ok && data.success) {
+              transactionId: response.transaction_id,
+              amount: parseFloat(amount),
+            },
+            {
+              withCredentials: true, 
+            }
+          );
+  
+          if (result.data.success) {
             toast.success("Wallet Funded!");
-            setWalletBalance(data.walletBalance); // update from backend
+            setWalletBalance(result.data.walletBalance);
           } else {
-            toast.error(data.message || "Wallet funding failed.");
+            toast.error(result.data.message || "Wallet funding failed.");
           }
         } catch (err) {
           console.error("Funding error:", err);
-          toast.error("Something went wrong. Try again.");
+          toast.error(
+            err.response?.data?.message ||
+              "Something went wrong. Try again."
+          );
         } finally {
           setIsSending(false);
           setFundModalOpen(false);
         }
+      } else {
+        toast.error("Payment not successful.");
       }
-
+  
       closePaymentModal();
     },
     onclose: () => {
@@ -277,9 +284,7 @@ const DashBoard = () => {
           narration,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials:true
         }
       );
 
@@ -323,7 +328,7 @@ const DashBoard = () => {
       const response = await axios.post(
         `${BASE_URL}/payment/wallet-transfer`,
         { senderId, recipientEmail, amount },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials:true }
       );
 
       console.log("Transfer Success:", response);
@@ -384,7 +389,7 @@ const DashBoard = () => {
         `${BASE_URL}/user/connect-metamask`,
         { userId, walletAddress },
         {
-          headers: { "Content-Type": "application/json" },
+         
           withCredentials: true,
         }
       );

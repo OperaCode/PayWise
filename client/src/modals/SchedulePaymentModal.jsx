@@ -24,47 +24,12 @@ const SchedulePaymentModal = ({ billers, onClose }) => {
   const closePinModal = () => setIsPinModalOpen(false);
 
 
-
-
-// for fetching billers to frontend
-// useEffect(() => {
-//   const fetchBillers = async () => {
-//     try {
-//       const UserId = localStorage.getItem("userId");
-//       const response = await axios.get(`${BASE_URL}/biller`, {
-//         withCredentials: true,
-//       });
-
-//       const fetchedBillers = response?.data || [];
-//       console.log(fetchedBillers);
-//       setBillers(fetchedBillers);
-     
-//     } catch (error) {
-//       console.error(error);
-//       toast.error(
-//         error?.response?.data?.message || "Failed to fetch billers"
-//       );
-//     }
-//   };
-
-//   fetchBillers();
-// }, []);
-
-
-
-
-  
-
-
-
-
 // Handle cancel action (close modal)
   const handleCancel = () => {
     onClose();
   };
 
  
-
 const handleSchedulePayment = async () => {
     setIsProcessing(true);
   
@@ -118,9 +83,7 @@ const handleSchedulePayment = async () => {
         `${BASE_URL}/payment/schedule-transfer`,
         payload,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials:true
         }
       );
   
@@ -137,13 +100,10 @@ const handleSchedulePayment = async () => {
   };
   
   
-  
-  
-
   // Confirm Pin and Schedule Payment
   const handleConfirm = () => {
     if (isSettingPin && transactionPin !== confirmPin) {
-      alert("Pins do not match!");
+      toast.error("Pins do not match!");
       return;
     }
 
@@ -186,9 +146,7 @@ const handleSchedulePayment = async () => {
         `${BASE_URL}/user/set-pin`,
         { pin: transactionPin },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials: true
         }
       );
 

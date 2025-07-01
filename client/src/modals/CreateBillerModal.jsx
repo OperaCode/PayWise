@@ -83,10 +83,7 @@ const CreateBillerModal = () => {
           // user: userId, // Ensure user ID is included
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          withCredentials:true
         }
       );
 

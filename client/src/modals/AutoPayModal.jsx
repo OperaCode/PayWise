@@ -46,7 +46,7 @@ const AutoPayModal = ({ billers, onClose }) => {
         `${BASE_URL}/user/set-pin`,
         { pin: transactionPin },
         {
-          headers: { Authorization: `Bearer ${token}` },
+         withCredentials:true
         }
       );
       toast.success("PIN set successfully.");
@@ -90,7 +90,7 @@ const AutoPayModal = ({ billers, onClose }) => {
       console.log("PAYLOAD TO BACKEND:", payload);
 
       await axios.post(`${BASE_URL}/payment/schedule-recurring`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
+       withCredentials:true,
       });
 
       toast.success("Recurring payment scheduled.");

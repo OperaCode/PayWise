@@ -88,7 +88,7 @@ const DashLayout = ({ children }) => {
         `${BASE_URL}/user/upload-profile-picture`,
         formData,
         {
-          withCredentials: true,
+        withCredentials: true,
         }
       );
 
