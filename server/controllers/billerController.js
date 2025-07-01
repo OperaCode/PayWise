@@ -216,7 +216,7 @@ const updateBiller = async (req, res) => {
       return res.status(404).json({ message: "Biller not found!" });
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Biller updated successfully!",
       biller: updatedBiller,

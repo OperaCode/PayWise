@@ -398,9 +398,6 @@ const uploadProfilePicture = async (req, res) => {
 };
 
 
-
-
-
 const getUser = asyncHandler(async (req, res) => {
   try {
     // Extract user ID from request (set by auth middleware)
