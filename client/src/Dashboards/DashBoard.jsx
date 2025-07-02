@@ -176,10 +176,10 @@ const DashBoard = () => {
 
   //Fund Wallet
   const flutterwaveConfig = {
-    public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
+    public_key: import.meta.env.VITE_FLW_PUBLIC_KEY_LIVE,
     tx_ref: `FND-${Date.now()}`,
     amount: parseFloat(amount) || 0,
-    currency: "USD",
+    currency: "NGN",
     payment_options: "card, banktransfer, ussd",
     customer: {
       email: user.email,
@@ -572,7 +572,7 @@ const DashBoard = () => {
               ></div>
               <div className="stars"></div>
 
-              <div className="bg-zinc-100 shadow-lg  relative m-auto p-3 rounded-lg text-black z-50">
+              <div className="bg-zinc-100 shadow-lg relative m-auto p-2 w-2/5 rounded-lg text-black z-50">
                 <X
                   strokeWidth={7}
                   color="#FF0000"
