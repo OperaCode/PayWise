@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require("uuid");
 const { updateBillerAmount } = require("../hooks/aggrAmount");
+const axios = require("axios");
 
 //to fund wallet
 const fundWallet = asyncHandler(async (req, res) => {
@@ -25,7 +26,7 @@ const fundWallet = asyncHandler(async (req, res) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+          Authorization: `Bearer ${process.env.FLW_SECRET_KEY_LIVE}`,
         },
       }
     );
@@ -103,6 +104,91 @@ const fundWallet = asyncHandler(async (req, res) => {
   }
 });
 
+// const withdrawToBank = asyncHandler(async (req, res) => {
+//   const { userId, amount, account_bank, account_number, narration } = req.body;
+
+//   if (!userId || !amount || !account_bank || !account_number) {
+//     return res.status(400).json({ message: "Missing required fields" });
+//   }
+
+//   const user = await User.findById(userId);
+//   if (!user) return res.status(404).json({ message: "User not found" });
+
+//   const reference = `withdrawal-${Date.now()}`;
+//   const withdrawalAmount = Math.floor(amount);
+
+//   const payload = {
+//     account_bank,
+//     account_number,
+//     amount: withdrawalAmount,
+//     narration: narration || "PayWise Withdrawal",
+//     currency: "USD",
+//     reference,
+//     callback_url: `${process.env.SERVER_URL}/payment/flutterwave`, // Webhook
+//     debit_currency: "USD",
+//   };
+
+//   let flutterwaveResponse;
+
+//   if (
+//     process.env.NODE_ENV === "development" ||
+//     process.env.MOCK_FLW === "true"
+//   ) {
+//     flutterwaveResponse = {
+//       status: "success",
+//       message: "Mock withdrawal initiated",
+//       data: {
+//         id: Math.floor(Math.random() * 10000000),
+//         reference,
+//         amount: withdrawalAmount,
+//         account_number,
+//         account_bank,
+//         currency: "USD",
+//       },
+//     };
+//   } else {
+//     const response = await axios.post(
+//       "https://api.flutterwave.com/v3/transfers",
+//       payload,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+//         },
+//       }
+//     );
+//     flutterwaveResponse = response.data;
+//   }
+
+//   if (flutterwaveResponse.status === "success") {
+//     // Do NOT deduct balance yet
+
+//     const newPayment = new Payment({
+//       user: userId,
+//       type: "withdrawal",
+//       amount: withdrawalAmount,
+//       transactionRef: reference,
+//       status: "Pending", // Set as pending
+//       paymentType: "withdrawal",
+//       reference,
+//       paidAt: null,
+//       bankAccount: account_number,
+//       description: "Withdrawal initiated, awaiting webhook confirmation",
+//     });
+
+//     await newPayment.save();
+
+//     return res.status(200).json({
+//       message: "Withdrawal initiated and pending confirmation",
+//       details: flutterwaveResponse.message,
+//     });
+//   } else {
+//     return res.status(500).json({
+//       message: "Flutterwave transfer failed",
+//       details: flutterwaveResponse,
+//     });
+//   }
+// });
+
 const withdrawToBank = asyncHandler(async (req, res) => {
   const { userId, amount, account_bank, account_number, narration } = req.body;
 
@@ -113,77 +199,90 @@ const withdrawToBank = asyncHandler(async (req, res) => {
   const user = await User.findById(userId);
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  const reference = `withdrawal-${Date.now()}`;
   const withdrawalAmount = Math.floor(amount);
+
+  if (user.walletBalance < withdrawalAmount) {
+    return res.status(400).json({ message: "Insufficient wallet balance" });
+  }
+
+  const reference = `withdrawal-${Date.now()}`;
 
   const payload = {
     account_bank,
     account_number,
     amount: withdrawalAmount,
     narration: narration || "PayWise Withdrawal",
-    currency: "USD",
+    currency: "NGN",
     reference,
-    callback_url: `${process.env.SERVER_URL}/payment/flutterwave`, // Webhook
-    debit_currency: "USD",
+    callback_url: `${process.env.SERVER_URL}/payment/flutterwave-webhook`,
+    debit_currency: "NGN",
   };
 
   let flutterwaveResponse;
 
-  if (
-    process.env.NODE_ENV === "development" ||
-    process.env.MOCK_FLW === "true"
-  ) {
-    flutterwaveResponse = {
-      status: "success",
-      message: "Mock withdrawal initiated",
-      data: {
-        id: Math.floor(Math.random() * 10000000),
-        reference,
-        amount: withdrawalAmount,
-        account_number,
-        account_bank,
-        currency: "USD",
-      },
-    };
-  } else {
-    const response = await axios.post(
-      "https://api.flutterwave.com/v3/transfers",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+  try {
+    if (
+      process.env.NODE_ENV === "development" ||
+      process.env.MOCK_FLW === "true"
+    ) {
+      flutterwaveResponse = {
+        status: "success",
+        message: "Mock withdrawal initiated",
+        data: {
+          id: Math.floor(Math.random() * 10000000),
+          reference,
+          amount: withdrawalAmount,
+          account_number,
+          account_bank,
+          currency: "NGN",
         },
-      }
-    );
-    flutterwaveResponse = response.data;
-  }
+      };
+    } else {
+      const response = await axios.post(
+        "https://api.flutterwave.com/v3/transfers",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.FLW_SECRET_KEY_LIVE}`,
+          },
+        }
+      );
+      flutterwaveResponse = response.data;
+    }
 
-  if (flutterwaveResponse.status === "success") {
-    // Do NOT deduct balance yet
+    if (flutterwaveResponse.status === "success") {
+      const newPayment = new Payment({
+        user: userId,
+        type: "withdrawal",
+        amount: withdrawalAmount,
+        transactionRef: reference,
+        status: "Pending",
+        paymentType: "withdrawal",
+        reference,
+        paidAt: null,
+        bankAccount: account_number,
+        description: "Withdrawal initiated, awaiting webhook confirmation",
+        externalTransferId: flutterwaveResponse.data.id,
+      });
 
-    const newPayment = new Payment({
-      user: userId,
-      type: "withdrawal",
-      amount: withdrawalAmount,
-      transactionRef: reference,
-      status: "Pending", // Set as pending
-      paymentType: "withdrawal",
-      reference,
-      paidAt: null,
-      bankAccount: account_number,
-      description: "Withdrawal initiated, awaiting webhook confirmation",
-    });
+      await newPayment.save();
 
-    await newPayment.save();
-
-    return res.status(200).json({
-      message: "Withdrawal initiated and pending confirmation",
-      details: flutterwaveResponse.message,
-    });
-  } else {
+      return res.status(200).json({
+        message: "Withdrawal initiated and pending confirmation",
+        details: flutterwaveResponse.message,
+      });
+    } else {
+      console.error("Flutterwave transfer error:", flutterwaveResponse);
+      return res.status(500).json({
+        message: "Flutterwave transfer failed",
+        details: flutterwaveResponse,
+      });
+    }
+  } catch (error) {
+    console.error("Withdrawal error:", error.response?.data || error.message);
     return res.status(500).json({
-      message: "Flutterwave transfer failed",
-      details: flutterwaveResponse,
+      message: "Withdrawal request failed",
+      details: error.response?.data || error.message,
     });
   }
 });
