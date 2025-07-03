@@ -42,7 +42,7 @@ const fundWallet = asyncHandler(async (req, res) => {
           .status(404)
           .json({ success: false, message: "User not found" });
 
-      const verifiedAmount = data.data.amount;
+      const verifiedAmount = data.data.amount_settled || data.data.amount;
       const txRef = data.data.tx_ref;
 
       // Prevent duplicate
@@ -201,9 +201,13 @@ const withdrawToBank = asyncHandler(async (req, res) => {
 
   const withdrawalAmount = Math.floor(amount);
 
-  if (user.walletBalance < withdrawalAmount) {
+  if (user.wallet.balance < withdrawalAmount) {
     return res.status(400).json({ message: "Insufficient wallet balance" });
   }
+
+  // Lock amount immediately
+  user.wallet.lockAmount += withdrawalAmount;
+  await user.save();
 
   const reference = `withdrawal-${Date.now()}`;
 
@@ -302,7 +306,7 @@ const flutterwaveWebhookHandler = asyncHandler(async (req, res) => {
 
   if (payload.event === "charge.completed") {
     const txRef = payload.data.tx_ref;
-    const amount = payload.data.amount;
+    const amount = payload.data.amount_settled || payload.data.amount;
     const email = payload.data.customer.email;
 
     const user = await User.findOne({ email });
@@ -367,6 +371,7 @@ const flutterwaveWebhookHandler = asyncHandler(async (req, res) => {
         .json({ message: "Insufficient balance on confirmation" });
     }
 
+    user.wallet.lockAmount -= payment.amount;
     user.wallet.balance -= payment.amount;
 
     user.markModified("wallet");
