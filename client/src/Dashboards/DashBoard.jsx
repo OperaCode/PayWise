@@ -623,7 +623,7 @@ const DashBoard = () => {
                       onChange={handleAmountChange}
                       className="p-2 border rounded-md w-full"
                     />
-                    {/* <FlutterWaveButton
+                    <FlutterWaveButton
                       className={`p-2 w-2/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500 cursor-pointer${
                         !amount || amount <= 0
                           ? "opacity-50 cursor-not-allowed"
@@ -633,8 +633,8 @@ const DashBoard = () => {
                       disabled={!amount || amount <= 0}
                     >
                       {isSending ? "Processing..." : "Fund Wallet"}
-                    </FlutterWaveButton> */}
-                    {isSending ? (
+                    </FlutterWaveButton>
+                    {/* {isSending ? (
                       <div className="p-2 w-2/3 bg-gray-300 text-center rounded-md">
                         Processing...
                       </div>
@@ -650,7 +650,7 @@ const DashBoard = () => {
                       >
                         Fund Wallet
                       </FlutterWaveButton>
-                    )}
+                    )} */}
                   </div>
                 ) : (
                   <form
