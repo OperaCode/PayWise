@@ -41,6 +41,7 @@ const DashBoard = () => {
   const [autoPayModalOpen, setAutoPayModalOpen] = useState(false);
 
   const [withdrawal, setWithdrawal] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -198,7 +199,7 @@ const DashBoard = () => {
         toast.error("User ID missing. Please log in again.");
         return;
       }
-
+      console.log(response);
       if (response.status === "successful") {
         setIsSending(true);
         try {
@@ -210,10 +211,10 @@ const DashBoard = () => {
               amount: parseFloat(amount),
             },
             {
-              withCredentials: true, 
+              withCredentials: true,
             }
           );
-  
+
           if (result.data.success) {
             toast.success("Wallet Funded!");
             setWalletBalance(result.data.walletBalance);
@@ -223,8 +224,7 @@ const DashBoard = () => {
         } catch (err) {
           console.error("Funding error:", err);
           toast.error(
-            err.response?.data?.message ||
-              "Something went wrong. Try again."
+            err.response?.data?.message || "Something went wrong. Try again."
           );
         } finally {
           setIsSending(false);
@@ -233,7 +233,7 @@ const DashBoard = () => {
       } else {
         toast.error("Payment not successful.");
       }
-  
+
       closePaymentModal();
     },
     onclose: () => {
@@ -245,7 +245,7 @@ const DashBoard = () => {
   const handleWithdraw = async (e) => {
     e.preventDefault();
 
-    setWithdrawal(true);
+    setIsWithdrawing(true);
 
     try {
       const token = localStorage.getItem("token");
@@ -253,7 +253,7 @@ const DashBoard = () => {
 
       if (!token || !userId) {
         toast.error("Authentication error. Please log in again.");
-        setWithdrawal(false);
+        setIsWithdrawing(false)
         return;
       }
 
@@ -284,7 +284,7 @@ const DashBoard = () => {
           narration,
         },
         {
-          withCredentials:true
+          withCredentials: true,
         }
       );
 
@@ -294,6 +294,7 @@ const DashBoard = () => {
       toast.error("Error: " + (err.response?.data?.message || err.message));
       console.error("Withdrawal error:", err);
     } finally {
+      setIsWithdrawing(false);
       setWithdrawModalOpen(false);
     }
   };
@@ -328,7 +329,7 @@ const DashBoard = () => {
       const response = await axios.post(
         `${BASE_URL}/payment/wallet-transfer`,
         { senderId, recipientEmail, amount },
-        { withCredentials:true }
+        { withCredentials: true }
       );
 
       console.log("Transfer Success:", response);
@@ -389,7 +390,6 @@ const DashBoard = () => {
         `${BASE_URL}/user/connect-metamask`,
         { userId, walletAddress },
         {
-         
           withCredentials: true,
         }
       );
@@ -673,10 +673,10 @@ const DashBoard = () => {
                     />
                     <button
                       type="submit"
-                      disabled={loading}
+                      disabled={isWithdrawing}
                       className="p-2 w-2/3 bg-cyan-700 text-white rounded-md hover:bg-cyan-500"
                     >
-                      {withdrawal ? "Processing..." : "Withdraw Funds"}
+                      {isWithdrawing ? "Processing..." : "Withdraw Funds"}
                     </button>
                   </form>
                 )}
