@@ -90,7 +90,7 @@ const ManageBillers = (currency) => {
         setActiveBillerStates(initialStates);
       } catch (error) {
         console.error(error);
-        toast.error(
+        toast.info(
           error?.response?.data?.message || "Failed to fetch billers"
         );
       }
@@ -104,7 +104,7 @@ const ManageBillers = (currency) => {
     const { name, value } = e.target;
     setUpdatedData((prev) => ({
       ...prev,
-      [name]: name === "amount" ? Number(value) : value, // Convert amount to number
+      [name]: name === "amount" ? Number(value) : value, 
     }));
   };
 
