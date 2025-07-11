@@ -124,7 +124,7 @@ const DashBoard = () => {
         setBillers(fetchedBillers);
       } catch (error) {
         console.error(error);
-        toast.error(
+        toast.info(
           error?.response?.data?.message || "Failed to fetch billers"
         );
       }
