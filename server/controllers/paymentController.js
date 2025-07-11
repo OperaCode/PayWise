@@ -42,7 +42,8 @@ const fundWallet = asyncHandler(async (req, res) => {
           .status(404)
           .json({ success: false, message: "User not found" });
 
-      const verifiedAmount = data.data.amount_settled || data.data.amount;
+      // const verifiedAmount = data.data.amount_settled || data.data.amount;
+      const verifiedAmount = data.data.amount;
       const txRef = data.data.tx_ref;
 
       // Prevent duplicate
