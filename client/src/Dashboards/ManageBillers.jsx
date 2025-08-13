@@ -16,7 +16,7 @@ import { Navigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const ManageBillers = (currency) => {
+const ManageBillers = ({formatCurrency}) => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,12 +54,12 @@ const ManageBillers = (currency) => {
     "Other",
   ];
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
+  // const formatCurrency = (amount) => {
+  //   return new Intl.NumberFormat("en-US", {
+  //     style: "currency",
+  //     currency: "USD",
+  //   }).format(amount);
+  // };
 
   useEffect(() => {
     // Simulate an API call or app initialization delay

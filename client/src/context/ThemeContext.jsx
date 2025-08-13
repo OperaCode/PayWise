@@ -4,12 +4,12 @@ export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
     const [theme, setTheme] = useState(() => {
-        return localStorage.getItem("theme") || "light"; // Get saved theme or default to light
+        return localStorage.getItem("theme") || "light"; 
     });
 
     useEffect(() => {
-        document.body.className = theme; // Apply theme to body
-        localStorage.setItem("theme", theme); // Save theme to localStorage
+        document.body.className = theme; 
+        localStorage.setItem("theme", theme); 
     }, [theme]);
 
     const toggleTheme = () => {

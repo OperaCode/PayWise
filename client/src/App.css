@@ -1,5 +1,7 @@
 
-
+html{
+  scroll-behavior: smooth;
+}
 #root {
   /* --bg-color: #f4f4f5; */
   --text-color: black;
@@ -15,9 +17,9 @@
 
 .app-container.dark {
   /* background-color: rgba(0, 0, 0, 0.917); */
-  background-color:#0d1117;
+  background-color:#1b2028;
   color: #E4E4E7;
-  --bg-color: #121212;
+  --bg-color: #155E75;
   --text-color: white;
 }
 
@@ -33,15 +35,15 @@
 .ant-input,
 .ant-select-selector,
 .ant-picker {
-  border-width: 3px !important; /* Make border thicker */
-  border-radius: 8px !important; /* Rounded corners */
+  border-width: 3px !important; 
+  border-radius: 8px !important; 
   padding: 5px !important;
 }
 
 .ant-input:focus,
 .ant-select-selector:focus,
 .ant-picker:focus {
-  box-shadow: 0 0 2px rgba(37, 99, 235, 0.5) !important; /* Focus glow */
+  box-shadow: 0 0 2px rgba(37, 99, 235, 0.5) !important; 
 }
 
 @keyframes gradientMove {
@@ -123,3 +125,14 @@
   z-index: -1;
 } */
 
+@keyframes blob {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+.animate-blob {
+  animation: blob 8s infinite;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
