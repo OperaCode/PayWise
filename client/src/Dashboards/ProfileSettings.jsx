@@ -522,9 +522,10 @@ const ProfileSettings = () => {
         {/* Layout Content */}
         <div className="flex-col w-full pt-8 lg:ml-78 ">
           <div className="flex items-center justify-end px-10 py-4 gap-2">
-            <h1 className="text-cyan- text-xl font-bold">
-              Welcome, {firstname.charAt(0).toUpperCase() + firstname.slice(1)}!
-            </h1>
+            <h1 className="text-cyan- text-xl font-bold bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-600 bg-clip-text text-transparent">
+              Welcome, {firstname.charAt(0).toUpperCase() + firstname.slice(1)}
+            </h1><br />
+            
             <div className="relative">
             <input
                 type="file"

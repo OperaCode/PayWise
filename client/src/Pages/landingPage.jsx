@@ -123,7 +123,7 @@ const LandingPage = () => {
             />
 
             <h1 className="font-extrabold tracking-tight text-5xl md:text-6xl leading-tight">
-              Pay Smarter,{" "}
+              Pay Smarter,
               <span className="bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-600 bg-clip-text text-transparent">
                 Live Better
               </span>

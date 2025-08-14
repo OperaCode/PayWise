@@ -27,10 +27,10 @@ const TransactionHistory = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [sortOption, setSortOption] = useState(""); // State for sorting
+  const [sortOption, setSortOption] = useState(""); 
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10); // You can change this to any number of items per page
+  const [pageSize] = useState(10); 
   const [cancelled, setCancelled] = useState([]);
   const indexOfLast = currentPage * pageSize;
   const indexOfFirst = indexOfLast - pageSize;
@@ -330,7 +330,7 @@ const TransactionHistory = () => {
       {/* Main Content */}
       <div className="flex-col w-full pt-8 lg:ml-78 ">
         <div className="flex items-center justify-end px-10 py-4 gap-2">
-          <h1 className="text-cyan- text-xl font-bold">
+          <h1 className="text-cyan- text-xl font-bold bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-600 bg-clip-text text-transparent">
             Welcome, {username.charAt(0).toUpperCase() + username.slice(1)}!
           </h1>
           <div className="relative">
@@ -519,7 +519,7 @@ const TransactionHistory = () => {
                     setCurrentPage((prev) => Math.max(prev - 1, 1))
                   }
                   disabled={currentPage === 1}
-                  className="px-4 py-2 bg-blue-600 text-white flex items-center justify-center gap-2 rounded-md disabled:bg-gray-400  w-1/7  hover:scale-105 cursor-pointer"
+                  className="px-4 py-2 bg-cyan-700 text-white flex items-center justify-center gap-2 rounded-md disabled:bg-gray-400  w-1/7  hover:scale-105 cursor-pointer"
                 >
                   <ArrowLeft size={14} /> Previous
                 </button>
@@ -539,7 +539,7 @@ const TransactionHistory = () => {
                     currentPage ===
                     Math.ceil(filteredTransactions.length / pageSize)
                   }
-                  className="px-4 py-2 bg-blue-600 text-white flex items-center gap-2 justify-center rounded-md disabled:bg-gray-400 w-1/7  hover:scale-105 cursor-pointer"
+                  className="px-4 py-2 bg-cyan-600 text-white flex items-center gap-2 justify-center rounded-md disabled:bg-gray-400 w-1/7  hover:scale-105 cursor-pointer"
                 >
                   Next <ArrowRight size={14} />
                 </button>
@@ -550,7 +550,7 @@ const TransactionHistory = () => {
             <div className="flex justify-end gap-4 mt-8">
               <button
                 onClick={exportToExcel}
-                className="bg-blue-500 text-white px-6 py-2 rounded-lg cursor-pointer transition hover:scale-105 border-2"
+                className=" bg-cyan-600  text-white px-6 py-2 rounded-lg cursor-pointer transition hover:scale-105 border-2"
               >
                 Export Transactions as Excel
               </button>
