@@ -106,11 +106,11 @@ const LandingPage = () => {
           {/* soft background accents */}
           <div
             aria-hidden
-            className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl"
+            className=" pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl"
           ></div>
           <div
             aria-hidden
-            className="pointer-events-none absolute top-32 -right-20 h-72 w-72 rounded-full bg-cyan-300/40 blur-3xl"
+            className="hidden md:block pointer-events-none absolute top-32 right-40 lg:-right-20 h-72 w-72 rounded-full bg-cyan-300/40 blur-3xl"
           ></div>
 
           <div className="flex flex-col items-center text-center">
@@ -141,12 +141,12 @@ const LandingPage = () => {
 
             <div className="flex justify-center gap-4 mt-7">
               <Link to="/register" aria-label="Register for PayWise">
-                <button className="bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-600 text-white px-8 py-3 rounded-3xl font-semibold shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                <button className="bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-600 text-white text-xs lg:text-base px-4 md:px-8 py-3 rounded-3xl font-semibold shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                   Get Started Today
                 </button>
               </Link>
               <Link to="/about" aria-label="Learn more about PayWise">
-                <button className="border-2 border-cyan-700 text-cyan-700 px-8 py-3 rounded-3xl font-semibold hover:bg-cyan-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                <button className="border-2 border-cyan-700 text-cyan-700 text-xs lg:text-base px-4 md:px-8 py-3 rounded-3xl font-semibold hover:bg-cyan-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                   Learn More
                 </button>
               </Link>
@@ -257,7 +257,7 @@ const LandingPage = () => {
               </div>
 
               <Link to="/about" aria-label="Learn more about PayWise rewards">
-                <button className="mt-6 bg-cyan-700 text-white px-8 py-3 rounded-3xl font-semibold shadow-lg hover:bg-cyan-600 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                <button className="mt-6 bg-cyan-700 text-white text-xs lg:text-base px-4 md:px-8  py-3 rounded-3xl font-semibold shadow-lg hover:bg-cyan-600 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                   Learn More
                 </button>
               </Link>
