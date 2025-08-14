@@ -111,7 +111,7 @@ const Header = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-cyan-900 backdrop-blur-lg px-4 py-6 space-y-4">
+        <div className="md:hidden bg-cyan-900 text-white backdrop-blur-lg px-4 py-6 space-y-4">
           <ul className="flex flex-col items-center py-4 bg-cyan-900/10">
             {navItems.map((item) => (
               <li key={item.name} className="w-full text-center">

@@ -185,7 +185,7 @@ const Register = () => {
       <div className="p-  rounded-lg  w-full m-auto gap-4 md:flex items-center ">
         {/* Left - Form Section */}
         <div className="p-4 md:flex-1 justify-center">
-          <h2 className=" text-3xl md:text-5xl text-center text-cyan-900 mb-3 font-extrabold">
+          <h2 className=" text-3xl md:text-5xl text-center mb-3 font-extrabold bg-gradient-to-r from-green-800 via-cyan-600 to-cyan-500 bg-clip-text text-transparent">
             Sign up
           </h2>
           <p className="mb-6 text-center">Hello Chief! Let’s get you started</p>
@@ -243,14 +243,14 @@ const Register = () => {
             />
 
             
-            <div className="flex w-full justify-center">
+            <div className="flex w-full justify-center ">
               <button
                 type="submit"
                 disabled={isSubmitting}
                 onClick={emailReg}
-                className="w-2/4  bg-cyan-700 text-white p-2 lg:p-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
+                className="cursor-pointer  bg-gradient-to-r from-cyan-900 via-cyan-700 to-cyan-600 text-white px-8 py-3 rounded-3xl font-semibold shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 hover:scale-105"
               >
-                {loading ? "Registering..." : "Let's get started"}
+                {loading ? "Registering..." : "Create Account"}
               </button>
             </div>
           </form>
