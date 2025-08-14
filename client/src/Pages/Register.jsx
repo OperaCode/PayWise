@@ -14,6 +14,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import {sendWelcomeEmail} from '../Hooks/email'
+import { motion } from "framer-motion";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -182,9 +183,21 @@ const Register = () => {
         </button>
       </div>
 
+      
+
+
       <div className="p-  rounded-lg  w-full m-auto gap-4 md:flex items-center ">
+        {/* soft background accents */}
+          <div
+            aria-hidden
+            className=" pointer-events-none absolute top-2 -left-24 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl"
+          ></div>
+          <div
+            aria-hidden
+            className="hidden md:block pointer-events-none absolute top-40 right-5  h-72 w-72 rounded-full bg-cyan-300/40 blur-3xl"
+          ></div>
         {/* Left - Form Section */}
-        <div className="p-4 md:flex-1 justify-center">
+        <div className="py-4 md:flex-1 justify-center ">
           <h2 className=" text-3xl md:text-5xl text-center mb-3 font-extrabold bg-gradient-to-r from-green-800 via-cyan-600 to-cyan-500 bg-clip-text text-transparent">
             Sign up
           </h2>
@@ -200,7 +213,7 @@ const Register = () => {
               placeholder="First Name"
               value={formData.firstName}
               onChange={handleChange}
-              className=" w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className=" w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-cyan-700 shadow-lg"
               required
             />
             <input
@@ -209,7 +222,7 @@ const Register = () => {
               placeholder="Last Name"
               value={formData.lastName}
               onChange={handleChange}
-              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-cyan-700 shadow-lg"
               required
             />
             <input
@@ -218,7 +231,7 @@ const Register = () => {
               placeholder="Email Address"
               value={formData.email}
               onChange={handleChange}
-              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-cyan-700 shadow-lg"
               required
             />
             <input
@@ -228,7 +241,7 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               onPaste={(e) => e.preventDefault()}
-              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-cyan-700 shadow-lg"
               required
             />
             <input
@@ -238,7 +251,7 @@ const Register = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               onPaste={(e) => e.preventDefault()}
-              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-cyan-700 shadow-lg"
               required
             />
 
@@ -248,7 +261,7 @@ const Register = () => {
                 type="submit"
                 disabled={isSubmitting}
                 onClick={emailReg}
-                className="cursor-pointer  bg-gradient-to-r from-cyan-900 via-cyan-700 to-cyan-600 text-white px-8 py-3 rounded-3xl font-semibold shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 hover:scale-105"
+                className="cursor-pointer  bg-gradient-to-r from-cyan-900 via-cyan-700 to-cyan-600 text-white px-8 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 hover:scale-105 w-2/4"
               >
                 {loading ? "Registering..." : "Create Account"}
               </button>
@@ -277,7 +290,14 @@ const Register = () => {
 
         {/* Right - Illustration */}
         <div className="w-1/2 hidden md:flex flex-col flex-1 justify-center items-center">
-          <img src={image} alt="Register Illustration" className="w-md" />
+         
+          <motion.img
+              src={image}
+              alt="Register Illustration"
+              className="w-md drop-shadow-xl"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+            />
           <p className="hidden md:block p-3">
             Already have an account?{" "}
             <Link to="/login" className="font-bold">

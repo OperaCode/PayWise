@@ -9,6 +9,7 @@ import Register from "./Pages/Register";
 import AboutUs from "./Pages/AboutUs.jsx";
 import Privacy from "./Pages/Privacy.jsx";
 import LandingPage from "./Pages/landingPage.jsx"
+// import LandingPage from "./Pages/LandingPage.jsx";
 
 import Loader from "./components/Loader.jsx";
 import { ThemeContext } from "./context/ThemeContext.jsx";

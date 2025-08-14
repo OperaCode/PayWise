@@ -17,6 +17,7 @@ import image from "../assets/Register.png";
 import logo from "../assets/paywise-logo.png";
 import Loader from "../components/Loader";
 import { sendSignInEmail } from "../Hooks/email";
+import { motion } from "framer-motion";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -196,9 +197,25 @@ const Login = () => {
       </div>
 
       <div className="rounded-lg  w-full px- gap-4 items-center flex">
+        {/* soft background accents */}
+          <div
+            aria-hidden
+            className=" pointer-events-none absolute top-2 -left-24 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl"
+          ></div>
+          <div
+            aria-hidden
+            className="hidden md:block pointer-events-none absolute top-40 right-5  h-72 w-72 rounded-full bg-cyan-300/40 blur-3xl"
+          ></div>
         {/* Right - Illustration */}
         <div className="w-1/2 hidden md:flex flex-col justify-center items-center">
-          <img src={image} alt="Signup Illustration" className="w-md" />
+          {/* <img  alt="" className="w-md" /> */}
+          <motion.img
+              src={image}
+              alt="Signup Illustration"
+              className="w-md drop-shadow-xl"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+            />
           <p className="hidden md:block">
             Don't have an account?{" "}
             <Link to="/register" className="font-bold">
@@ -209,7 +226,7 @@ const Login = () => {
 
         {/* Left - Form Section */}
         <div className="w-full p-6 flex-1 flex-col flex items-center">
-          <h2 className="text-3xl md:text-4xl text-center text-cyan-900 mb-3 font-extrabold">
+          <h2 className=" text-3xl md:text-5xl text-center mb-3 font-extrabold bg-gradient-to-r from-green-800 via-cyan-600 to-cyan-500 bg-clip-text text-transparent">
             Sign in
           </h2>
           <p className="mb-6 text-center">Hello Chief! Welcome Back!</p>
@@ -224,7 +241,7 @@ const Login = () => {
               onChange={handleInputChange}
               value={formData.email}
               placeholder="Email"
-              className="md:w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="md:w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-cyan-700 shadow-lg"
               required
             />
             <input
@@ -233,7 +250,7 @@ const Login = () => {
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Enter password"
-              className="md:w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-neutral-500 shadow-lg"
+              className="md:w-3/4 p-3 rounded-2xl text-black bg-gray-200 border-4 border-cyan-700 shadow-lg"
               required
             />
 
@@ -241,7 +258,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-2/4 bg-cyan-700 text-white p-3 rounded-3xl font-semibold hover:bg-green-900 transition hover:cursor-pointer"
+                className="cursor-pointer  bg-gradient-to-r from-cyan-900 via-cyan-700 to-cyan-600 text-white px-8 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 hover:scale-105 w-2/4"
               >
                 {isSubmitting ? "Logging in..." : "Log in"}
               </button>
