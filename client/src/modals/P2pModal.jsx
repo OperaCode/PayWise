@@ -41,7 +41,7 @@ const P2pModal = () => {
       const senderId = localStorage.getItem("userId"); // Fetch sender ID
       const token = localStorage.getItem("token");
 
-      console.log("🔹 Sender ID from localStorage:", senderId); // Debugging
+       ("🔹 Sender ID from localStorage:", senderId); // Debugging
 
       if (!senderId) {
         toast.error("User ID is missing. Please log in again.");
@@ -53,7 +53,7 @@ const P2pModal = () => {
         return;
       }
 
-      console.log("🔹 Sending Transfer Request:", {
+       ("🔹 Sending Transfer Request:", {
         senderId,
         recipientEmail,
         amount,
@@ -65,7 +65,7 @@ const P2pModal = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      console.log("Transfer Success:", response);
+       ("Transfer Success:", response);
 
       toast.success(response.data.message);
 

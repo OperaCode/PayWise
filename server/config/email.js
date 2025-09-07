@@ -18,7 +18,7 @@ const sendEmailJS = async ({ to_name, to_email, template_id, extras = {} }) => {
       };
   
       await axios.post("https://api.emailjs.com/api/v1.0/email/send-private", payload); 
-      console.log(`✅ Email sent to: ${to_email}`);
+       (`✅ Email sent to: ${to_email}`);
     } catch (error) {
       console.error("❌ Email sending failed:", error.response?.data || error.message || error);
     }

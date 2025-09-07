@@ -36,7 +36,7 @@ app.use(
   })
 );
 
-// No need for app.options("*", cors()) — already handled
+
 
 // payment scheduler
 require("./config/paymentScheduler");
@@ -49,8 +49,8 @@ app.use("/payment", require("./routes/paymentRoutes"));
 
 //Start server after DB is ready
 mongoose.connection.once("open", () => {
-  console.log("Connected to Database");
+   ("Connected to Database");
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+     (`Server is running on port ${PORT}`);
   });
 });

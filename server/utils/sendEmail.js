@@ -22,7 +22,7 @@ const sendEmail = async ({ to, subject, html }) => {
       return { success: false, error };
     }
 
-    console.log("Email sent:", data.id);
+     ("Email sent:", data.id);
     return { success: true, id: data.id };
   } catch (err) {
     console.error("Unexpected error:", err.message);

@@ -48,7 +48,7 @@ const googleAuth = asyncHandler(async (req, res) => {
     const { uid, email, name, picture } = decodedToken;
 
 
-    console.log("🔍 Received request for /auth/me");
+     ("🔍 Received request for /auth/me");
 
 
     if (!email) {
@@ -74,11 +74,11 @@ const googleAuth = asyncHandler(async (req, res) => {
     
     } 
 
-    console.log(user)
-    console.log("📧 Welcome email sent to new user:", email);
+     (user)
+     ("📧 Welcome email sent to new user:", email);
     await sendVerificationEmail(email, user.firstName); // Only send this
    
-      // console.log(" Welcome back email sent to existing user:", email);
+      //  (" Welcome back email sent to existing user:", email);
       // await sendWelcomeBackEmail(email, name); // Only for existing users
     
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {

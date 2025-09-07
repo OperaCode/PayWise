@@ -77,7 +77,7 @@ const handleSchedulePayment = async () => {
       };
 
      
-      console.log("Scheduling Payment with Payload:", payload);
+       ("Scheduling Payment with Payload:", payload);
   
       const response = await axios.post(
         `${BASE_URL}/payment/schedule-transfer`,
@@ -87,7 +87,7 @@ const handleSchedulePayment = async () => {
         }
       );
   
-      console.log("Scheduled Payment Response:", response.data);
+       ("Scheduled Payment Response:", response.data);
       toast.success("Payment scheduled successfully.");
     } catch (error) {
       console.error("Error scheduling payment:", error);

@@ -62,7 +62,7 @@ const Login = () => {
 
         localStorage.setItem("userId", user._id);
         setUser(user);
-        // console.log("✅ User from backend:", user);
+        //  ("✅ User from backend:", user);
 
         await sendSignInEmail(user.firstName, user.email);
 
@@ -91,20 +91,20 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log(user);
+       (user);
 
       // Get Firebase ID token
       const idToken = await user.getIdToken();
-      //   console.log("Firebase ID Token:", idToken);
+      //    ("Firebase ID Token:", idToken);
       if (idToken) {
-        //console.log(idToken)
+        // (idToken)
         localStorage.setItem("token", idToken);
-        console.log(
+         (
           "Token stored in localStorage:",
           localStorage.getItem("token")
         );
       }
-      // console.log("Google Auth Token:", idToken);
+      //  ("Google Auth Token:", idToken);
 
       const response = await axios.post(
         `${BASE_URL}/auth/google-auth`,
@@ -115,12 +115,12 @@ const Login = () => {
         }
       );
       if (response?.data) {
-        console.log("Backend Response:", response.data);
+         ("Backend Response:", response.data);
         const user = response.data.user;
-        console.log("Backend Response:", user);
+         ("Backend Response:", user);
 
         localStorage.setItem("userId", user._id);
-        console.log(user);
+         (user);
 
         setUser(user);
         navigate("/dashboard");
@@ -142,7 +142,7 @@ const Login = () => {
 
   //       // Get Firebase ID token
   //       const idToken = await user.getIdToken();
-  //       console.log("Firebase ID Token:", idToken);
+  //        ("Firebase ID Token:", idToken);
 
   //       // Send the ID Token to backend
   //       const response = await axios.post(
@@ -151,10 +151,10 @@ const Login = () => {
   //       );
 
   //       if (response?.data) {
-  //         console.log("Backend Response:", response);
+  //          ("Backend Response:", response);
 
-  //         console.log("Google Login - Backend Response:", response.data);
-  //         console.log("Expected userId:", response.data?.user?._id);
+  //          ("Google Login - Backend Response:", response.data);
+  //          ("Expected userId:", response.data?.user?._id);
 
   //         // Store user ID explicitly
   //         localStorage.setItem("userId", response.data.user._id);

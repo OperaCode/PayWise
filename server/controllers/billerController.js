@@ -6,7 +6,7 @@ const { updateBillerAmount } = require("../hooks/aggrAmount");
 
 const createBiller = asyncHandler(async (req, res) => {
   try {
-    console.log("Request body:", req.body); // Debugging line
+     ("Request body:", req.body); // Debugging line
 
     const { fullName, nickname, email, serviceType, walletId, profilePicture,serviceAmount } =
       req.body;
@@ -29,8 +29,8 @@ const createBiller = asyncHandler(async (req, res) => {
     // to find user and check if they already have this biller**
     const user = await User.findById(userId).populate("billers");
 
-    console.log("Fetched User:", user);
-    console.log("User Wallet ID:", user?.wallet?.walletId);
+     ("Fetched User:", user);
+     ("User Wallet ID:", user?.wallet?.walletId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found!" });
@@ -62,7 +62,7 @@ const createBiller = asyncHandler(async (req, res) => {
       user: userId,
     });
 
-    console.log("Biller Before Saving:", newBiller); // Debugging Log
+     ("Biller Before Saving:", newBiller); // Debugging Log
 
     await newBiller.save();
 
@@ -70,7 +70,7 @@ const createBiller = asyncHandler(async (req, res) => {
     user.billers.push(newBiller._id);
     await user.save();
 
-    //console.log("Updated User Billers:", user.billers);
+    // ("Updated User Billers:", user.billers);
 
     res
       .status(201)
@@ -153,7 +153,7 @@ const searchUserByEmail = async (req, res) => {
       },
     });
 
-    console.log("Biller found:", biller);
+     ("Biller found:", biller);
   } catch (error) {
     console.error("Error searching for biller:", error);
     res.status(500).json({ message: "Error searching for biller" });
@@ -197,7 +197,7 @@ const updateBiller = async (req, res) => {
   try {
     const { billerId } = req.params;
     const { nickname, serviceType, serviceAmount, activeBiller } = req.body; 
-    console.log("Request Body:", req.body);
+     ("Request Body:", req.body);
 
 
     if (!billerId) {
@@ -323,16 +323,16 @@ const uploadBillerPicture = asyncHandler(async (req, res) => {
   }
 
   // Upload to Cloudinary, ensuring it goes into the "billers" folder
-  console.log("Uploading to Cloudinary...");
+   ("Uploading to Cloudinary...");
   const result = await cloudinary.uploader.upload(req.file.path, {
     folder: "Billers", // ✅ Ensures it goes into the "billers" folder
     public_id: `biller_${id}`, // Optional: Assign a unique name
     resource_type: "image", // Ensures it's an image
   });
 
-  console.log("Cloudinary Upload Success:", result);
+   ("Cloudinary Upload Success:", result);
 
-  console.log(result);
+   (result);
   // ✅ Update biller model, not user model
   biller.profilePicture = result.secure_url;
   await biller.save();

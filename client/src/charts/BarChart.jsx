@@ -33,7 +33,7 @@ const BarChart = ({billers}) => {
   //       });
   
   //       const fetchedBillers = response?.data || [];
-  //       console.log(fetchedBillers);
+  //        (fetchedBillers);
   //       setBillers(fetchedBillers);
   
        

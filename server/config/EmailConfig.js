@@ -79,7 +79,7 @@ const sendVerificationEmail = async (email, firstName) => {
 
     // Send email and log success message
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Verification email sent to: ${email}, Message ID: ${info.messageId}`);
+     (`Verification email sent to: ${email}, Message ID: ${info.messageId}`);
   } catch (error) {
     console.error("Email sending error:", error.message);
   }
@@ -138,7 +138,7 @@ const sendWelcomeBackEmail = async (email, firstName) => {
 
     // Send email and log success message
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Welcome back email sent to: ${email}, Message ID: ${info.messageId}`);
+     (`Welcome back email sent to: ${email}, Message ID: ${info.messageId}`);
   } catch (error) {
     console.error("Email sending error:", error.message);
   }
@@ -209,7 +209,7 @@ const sendWelcomeBackEmail = async (email, firstName) => {
 
 //     // ✅ Send email and log success message
 //     const info = await transporter.sendMail(mailOptions);
-//     console.log(`✅ Verification email sent to: ${email}, Message ID: ${info.messageId}`);
+//      (`✅ Verification email sent to: ${email}, Message ID: ${info.messageId}`);
 //   } catch (error) {
 //     console.error("❌ Email sending error:", error.message);
 //   }

@@ -66,7 +66,7 @@ const integrations = [
 //   { label: "Vendors", value: `${vendors.toLocaleString()}+` },
 // ];
 
-// simple count-up hook for stats
+// simple count hook for stats section
 const useCounter = (end = 1000, duration = 1200) => {
   const [value, setValue] = useState(0);
   useEffect(() => {
@@ -106,7 +106,7 @@ const LandingPage = () => {
           {/* soft background accents */}
           <div
             aria-hidden
-            className=" pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl"
+            className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl"
           ></div>
           <div
             aria-hidden

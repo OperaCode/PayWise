@@ -38,7 +38,7 @@ const generateToken = (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
-    console.log("Incoming request body:", req.body);
+     ("Incoming request body:", req.body);
 
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: "All fields are required" });
@@ -53,7 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
    
     const userExist = await userModel.findOne({ email });
-    console.log("Existing user check result:", userExist);
+     ("Existing user check result:", userExist);
 
     if (userExist) {
       return res
@@ -87,7 +87,7 @@ const registerUser = asyncHandler(async (req, res) => {
       secure: true,
     });
 
-    console.log("User registered successfully:", newUser.email);
+     ("User registered successfully:", newUser.email);
 
     res.status(201).json({
       message: `Registration Successful! A verification email has been sent.`,
@@ -122,12 +122,12 @@ const registerUser = asyncHandler(async (req, res) => {
 //     const decodedToken = await admin.auth().verifyIdToken(idToken);
 //     const email = decodedToken.email;
 
-//     console.log("Decoded Token:", decodedToken);
+//      ("Decoded Token:", decodedToken);
 
 //     // ✅ Find user in MongoDB
 //     const user = await userModel.findOne({ email });
-//     console.log("✅ Searching for user with email:", email);
-//     console.log("🔍 Found user:", user);
+//      ("✅ Searching for user with email:", email);
+//      ("🔍 Found user:", user);
 
 //     if (!user) {
 //       return res.status(401).json({ message: "User not found" });
@@ -211,9 +211,9 @@ const loginUser = asyncHandler(async (req, res) => {
       },
     });
 
-    console.log(user);
+     (user);
   } catch (error) {
-    console.log("Login Error:", error);
+     ("Login Error:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -269,7 +269,7 @@ const connectWallet = asyncHandler(async (req, res) => {
       rewardAmount,
     });
   } catch (error) {
-    console.log("Error updating wallet:", error);
+     ("Error updating wallet:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
@@ -297,7 +297,7 @@ const setTransactionPin = asyncHandler(async (req, res) => {
 
     // Hash the PIN before saving
     const hashedPin = await bcrypt.hash(pin, 10);
-    console.log("Hashed transaction PIN:", hashedPin);
+     ("Hashed transaction PIN:", hashedPin);
     user.transactionPin = hashedPin;
     await user.save();
 
@@ -315,7 +315,7 @@ const setTransactionPin = asyncHandler(async (req, res) => {
 // const uploadProfilePicture = async (req, res) => {
 //   try {
 //     const userId = req.userId; 
-//     console.log(userId)
+//      (userId)
 //     if (!userId) {
 //       return res.status(401).json({ message: "Unauthorized, no user ID" });
 //     }
@@ -329,8 +329,8 @@ const setTransactionPin = asyncHandler(async (req, res) => {
 //       folder: "Users", 
 //     });
 
-//     console.log("Cloudinary Image URL:", uploadedImage.secure_url); // Debugging log
-//     console.log("Searching userId:", userId);
+//      ("Cloudinary Image URL:", uploadedImage.secure_url); // Debugging log
+//      ("Searching userId:", userId);
 //     // Update the user in MongoDB with the Cloudinary URL
 //     const updatedUser = await User.findByIdAndUpdate(
 //       userId,
@@ -354,7 +354,7 @@ const uploadProfilePicture = async (req, res) => {
   try {
     const userId = req.userId;
 
-    console.log("🧩 [Auth] Received userId:", userId);
+     ("🧩 [Auth] Received userId:", userId);
 
     if (!userId) {
       console.warn("❌ No user ID found in request");
@@ -366,14 +366,14 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    console.log("📤 Uploading image to Cloudinary...");
+     ("📤 Uploading image to Cloudinary...");
     const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
       folder: "Users",
     });
 
-    console.log("✅ [Cloudinary] Uploaded Image URL:", uploadedImage.secure_url);
+     ("✅ [Cloudinary] Uploaded Image URL:", uploadedImage.secure_url);
 
-    console.log("🔍 Searching for user in DB with ID:", userId);
+     ("🔍 Searching for user in DB with ID:", userId);
     const userBefore = await User.findById(userId);
 
     if (!userBefore) {
@@ -381,14 +381,14 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log("📝 Updating user profile with new image URL...");
+     ("📝 Updating user profile with new image URL...");
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { profilePicture: uploadedImage.secure_url },
       { new: true }
     );
 
-    console.log("✅ [MongoDB] User updated successfully");
+     ("✅ [MongoDB] User updated successfully");
 
     res.status(200).json({ message: "Profile picture updated", user: updatedUser });
   } catch (error) {
@@ -432,7 +432,7 @@ const getUsers = asyncHandler(async (req, res) => {
     }
     res.status(200).json(users);
   } catch (error) {
-    console.log(error);
+     (error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -507,7 +507,7 @@ const deleteUser = asyncHandler(async (req, res) => {
     await user.deleteOne();
     res.status(200).json({ message: "user deleted successfully" });
   } catch (err) {
-    console.log(err.message);
+     (err.message);
     res.status(500).json({ errorMessage: err.message });
   }
 });

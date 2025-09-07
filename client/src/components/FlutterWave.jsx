@@ -79,11 +79,11 @@ const FlutterWavePayment = () => {
       logo: "https://your-logo-url.com/logo.png",
     },
     callback: (response) => {
-      console.log("Payment successful:", response);
+      //  ("Payment successful:", response);
       closePaymentModal(); 
     },
     onclose: () => {
-      console.log("Payment modal closed");
+      //  ("Payment modal closed");
     },
   };
 

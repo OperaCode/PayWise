@@ -78,7 +78,7 @@ const ManageBillers = ({formatCurrency}) => {
         });
 
         const fetchedBillers = response?.data || [];
-        console.log(fetchedBillers);
+         (fetchedBillers);
         setBillers(fetchedBillers);
 
         // Initialize active states
@@ -134,7 +134,7 @@ const ManageBillers = ({formatCurrency}) => {
       return;
     }
 
-    console.log("Attempting to delete biller with ID:", id);
+     ("Attempting to delete biller with ID:", id);
 
     const confirmDelete = confirm(
       "Are you sure you want to delete this biller?"
@@ -150,8 +150,8 @@ const ManageBillers = ({formatCurrency}) => {
         return;
       }
 
-      //console.log("Auth Token:", token);
-      //console.log("Sending DELETE request to:", `${BASE_URL}/biller/${id}`);
+      // ("Auth Token:", token);
+      // ("Sending DELETE request to:", `${BASE_URL}/biller/${id}`);
 
       const response = await axios.delete(`${BASE_URL}/biller/${id}`, {
         headers: {
@@ -160,7 +160,7 @@ const ManageBillers = ({formatCurrency}) => {
         },
       });
 
-      //console.log("Server Response:", response);
+      // ("Server Response:", response);
 
       setBillers((prev) => prev.filter((biller) => biller._id !== id));
       setIsModalOpen(false);
@@ -247,7 +247,7 @@ const ManageBillers = ({formatCurrency}) => {
         }
       );
 
-      console.log("Sent Payload:", updatedPayload);
+       ("Sent Payload:", updatedPayload);
 
       if (response.data && response.data.success) {
         toast.success("Biller updated successfully!");

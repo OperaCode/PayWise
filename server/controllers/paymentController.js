@@ -32,8 +32,8 @@ const fundWallet = asyncHandler(async (req, res) => {
     );
 
     const data = await flutterwaveResponse.json();
-    console.log(flutterwaveResponse);
-    console.log("FLW Verified Data:", JSON.stringify(data, null, 2));
+     (flutterwaveResponse);
+     ("FLW Verified Data:", JSON.stringify(data, null, 2));
 
     if (data.status === "success" && data.data.status === "successful") {
       const user = await User.findById(userId);
@@ -473,7 +473,7 @@ const p2PTransfer = asyncHandler(async (req, res) => {
 const scheduleTransfer = asyncHandler(async (req, res) => {
   try {
     const { billerEmail, amount, scheduleDate, transactionPin } = req.body;
-    console.log("Incoming payload:", req.body);
+     ("Incoming payload:", req.body);
 
     const userId = req.userId;
 
@@ -700,10 +700,10 @@ const scheduleRecurring = async (req, res) => {
       0
     );
 
-    console.log("Wallet balance:", user.wallet.balance);
-    console.log("Locked amount:", user.wallet.lockedAmount);
-    console.log("Total scheduled amount:", totalAmount);
-    console.log(
+     ("Wallet balance:", user.wallet.balance);
+     ("Locked amount:", user.wallet.lockedAmount);
+     ("Total scheduled amount:", totalAmount);
+     (
       "Each biller amount:",
       billers.map((b) => ({
         name: b.name,
@@ -910,8 +910,8 @@ const paymentAggregates = asyncHandler(async (req, res) => {
     const lastMonthDate = new Date(currentDate);
     lastMonthDate.setMonth(currentDate.getMonth() - 1);
 
-    // console.log("Getting payments for userId:", req.userId);
-    // console.log("Searching from:", lastMonthDate.toISOString(), "to:", currentDate.toISOString());
+    //  ("Getting payments for userId:", req.userId);
+    //  ("Searching from:", lastMonthDate.toISOString(), "to:", currentDate.toISOString());
 
     // Fetch only successful payments paid within the last month, excluding funding payments
     const payments = await Payment.find({
@@ -921,7 +921,7 @@ const paymentAggregates = asyncHandler(async (req, res) => {
       paymentType: { $ne: "Funding" }, // Exclude 'Funding' payment type
     });
 
-    //console.log("Fetched Payments Count:", payments.length);
+    // ("Fetched Payments Count:", payments.length);
 
     if (payments.length === 0) {
       return res.json({
@@ -1067,7 +1067,7 @@ const deleteTransaction = async (req, res) => {
 // delete transaction
 // const deleteTransaction = async (req, res) => {
 //   const { transactionId } = req.params;
-//   console.log(req.params);
+//    (req.params);
 //   try {
 //     const transaction = await Payment.findById(transactionId);
 

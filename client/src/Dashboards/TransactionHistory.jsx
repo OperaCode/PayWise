@@ -58,7 +58,7 @@ const TransactionHistory = () => {
         });
         const data = response?.data;
         const user = data?.user;
-        console.log(user);
+         (user);
         setUserName(user.firstName);
         setProfilePicture(user.profilePicture );
       } catch (error) {
@@ -84,7 +84,7 @@ const TransactionHistory = () => {
 
         const allTransactions = data.data || [];
         setTransactions(allTransactions);
-        console.log(allTransactions);
+         (allTransactions);
         setFilteredTransactions(allTransactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);

@@ -4,7 +4,7 @@ const userModel = require("../models/userModel");
 
 const protectUser = asyncHandler(async (req, res, next) => {
   let token;
-  // console.log("Request Cookies:", req.cookies);
+  //  ("Request Cookies:", req.cookies);
 
   if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
@@ -18,15 +18,15 @@ const protectUser = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    //console.log("🔹 Verifying token...");
+    // ("🔹 Verifying token...");
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id;
     // req.user = await userModel.findById(decoded.id).select("-password");
 
-    // console.log("Auth header:", req.headers.authorization);
-    // console.log("Decoded user:", decoded);
+    //  ("Auth header:", req.headers.authorization);
+    //  ("Decoded user:", decoded);
 
-    //console.log("🔹 Fetching user from DB...");
+    // ("🔹 Fetching user from DB...");
     const foundUser = await userModel.findById(req.userId).select("-password");
 
     if (!foundUser) {
@@ -34,7 +34,7 @@ const protectUser = asyncHandler(async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized, user not found" });
     }
 
-    //console.log("Authentication successful for user:", foundUser.email);
+    // ("Authentication successful for user:", foundUser.email);
     next();
   } catch (error) {
     console.error("Error verifying token:", error);

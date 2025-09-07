@@ -26,7 +26,7 @@ export const sendSignInEmail = (name, email) => {
     minute: "2-digit",
   });
 
-  console.log("📨 Preparing to send sign-in email to:", name, email);
+   ("📨 Preparing to send sign-in email to:", name, email);
   return emailjs.send(
     SERVICE_ID,
     SIGNIN_TEMPLATE,

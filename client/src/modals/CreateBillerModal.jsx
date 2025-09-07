@@ -60,15 +60,15 @@ const CreateBillerModal = () => {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("User not authenticated. Please login again.");
-        setIsCreating(false);
-        return;
-      }
+      // const token = localStorage.getItem("token");
+      // if (!token) {
+      //   toast.error("User not authenticated. Please login again.");
+      //   setIsCreating(false);
+      //   return;
+      // }
 
-      console.log(token);
-      console.log(userId);
+      //  (token);
+      //  (userId);
 
       const response = await axios.post(
         `${BASE_URL}/biller/createbiller`,
@@ -143,10 +143,10 @@ const CreateBillerModal = () => {
       setError(""); // Clear previous errors
       setIsSubmitting(true);
       const response = await axios.get(`${BASE_URL}/biller/search/${email}`);
-      console.log(response.data);
+      //  (response.data);
       if (response?.data?.biller) {
         setBiller(response.data.biller);
-        // console.log(biller)
+        //  (biller)
       } else {
         toast.error("Biller not found");
       }

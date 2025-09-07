@@ -6,7 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
 import image from "../assets/profileP.jpg";
-import Avatar from '../Layouts/Avatar'
+import Avatar from "../Layouts/Avatar";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -17,7 +17,7 @@ const ProfileSettings = () => {
   const [confirmPin, setConfirmPin] = useState("");
   const [firstname, setFirstName] = useState(" ");
   const [lastname, setLastName] = useState(" ");
- 
+
   const [profilePicture, setProfilePicture] = useState(" ");
   //   const { user, setUser } = useState(" ");
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -26,14 +26,11 @@ const ProfileSettings = () => {
   //   const [message, setMessage] = useState("");
   //   const [error, setError] = useState("");
 
-
- 
   const [confirmPassword, setConfirmPassword] = useState("");
-  
+
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
 
   const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -44,10 +41,9 @@ const ProfileSettings = () => {
   const [newPin, setNewPin] = useState("");
 
   const [email, setEmail] = useState("");
- 
+
   const [activeTab, setActiveTab] = useState("Profile");
   const [showPassword, setShowPassword] = useState(false);
-  
 
   const [showPin, setShowPin] = useState(false);
   const [showNewPin, setShowNewPin] = useState(false);
@@ -84,16 +80,14 @@ const ProfileSettings = () => {
     fetchUser();
   }, []);
 
-  
- // Handle file selection
- const handleSelectFile = (e) => {
-  const photo = e.target.files[0];
-  if (photo) {
-    setFile(photo);
-    uploadPhoto(photo);
-  }
-};
-
+  // Handle file selection
+  const handleSelectFile = (e) => {
+    const photo = e.target.files[0];
+    if (photo) {
+      setFile(photo);
+      uploadPhoto(photo);
+    }
+  };
 
   const uploadPhoto = async (photo) => {
     if (!photo) {
@@ -101,7 +95,7 @@ const ProfileSettings = () => {
     }
 
     const token = localStorage.getItem("token");
-    console.log("🪪 Token being sent:", token);
+     ("🪪 Token being sent:", token);
 
     if (!token) {
       return toast.error("No token found. Please log in again.");
@@ -121,7 +115,7 @@ const ProfileSettings = () => {
         }
       );
 
-      console.log("Upload Response:", res.data);
+       ("Upload Response:", res.data);
 
       if (res.data.user && res.data.user.profilePicture) {
         const imageUrl = res.data.user.profilePicture;
@@ -138,44 +132,42 @@ const ProfileSettings = () => {
     }
   };
 
-
   const handleUpdateInfo = async (e) => {
     e.preventDefault();
-  
+
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
-  
+
     if (!token) {
       toast.error("You must be logged in to update your profile.");
       return;
     }
-  
-    if (!firstname || !lastname ) {
+
+    if (!firstname || !lastname) {
       toast.error("All fields are required.");
       return;
     }
-  
+
     try {
       const response = await axios.put(
         `${BASE_URL}/user/update/${userId}`,
         {
           firstName: firstname.trim(),
           lastName: lastname.trim(),
-         
         },
         {
-          
           withCredentials: true,
         }
       );
-  
+
       toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error(error?.response?.data?.message || "Failed to update profile.");
+      toast.error(
+        error?.response?.data?.message || "Failed to update profile."
+      );
     }
   };
-  
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
@@ -210,7 +202,7 @@ const ProfileSettings = () => {
           newPassword,
         },
         {
-          withCredentials:true
+          withCredentials: true,
         }
       );
 
@@ -267,7 +259,7 @@ const ProfileSettings = () => {
           newPin,
         },
         {
-          withCredentials:true
+          withCredentials: true,
         }
       );
 
@@ -276,7 +268,7 @@ const ProfileSettings = () => {
       setNewPin("");
       setConfirmPin("");
     } catch (error) {
-      console.log("Something went wrong. Please try again.");
+       ("Something went wrong. Please try again.");
       toast.error(error.response?.data?.message || "Error updating PIN.");
     } finally {
       setIsSettingPin(false);
@@ -321,7 +313,10 @@ const ProfileSettings = () => {
               />
             </div>
 
-            <button onClick={handleUpdateInfo} className="mt-6 bg-cyan-600 text-white px-6 py-2 rounded hover:bg-green-700 cursor-pointer">
+            <button
+              onClick={handleUpdateInfo}
+              className="mt-6 bg-cyan-600 text-white px-6 py-2 rounded hover:bg-green-700 cursor-pointer"
+            >
               Update Profile
             </button>
           </div>
@@ -513,76 +508,83 @@ const ProfileSettings = () => {
 
   return (
     <>
-    { loading ? (
-        <Loader/>
-    ):(
+      {loading ? (
+        <Loader />
+      ) : (
         <div className="lg:flex h-full ">
-        <SideBar />
-  
-        {/* Layout Content */}
-        <div className="flex-col w-full pt-8 lg:ml-78 ">
-          <div className="flex items-center justify-end px-10 py-4 gap-2">
-            <h1 className="text-cyan- text-xl font-bold bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-600 bg-clip-text text-transparent">
-              Welcome, {firstname.charAt(0).toUpperCase() + firstname.slice(1)}
-            </h1><br />
-            
-            <div className="relative">
-            <input
-                type="file"
-                accept="image/*"
-                onChange={handleSelectFile}
-                className="hidden"
-                id="profileUpload"
-                multiple={false}
-              />
-              <label htmlFor="profileUpload">
-                {/* <img
+          <SideBar />
+
+          {/* Layout Content */}
+          <div className="flex-col w-full pt-8 lg:ml-78 ">
+            <div className="flex items-center justify-end px-10 py-4 gap-2">
+              <h1 className="text-cyan- text-xl font-bold bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-600 bg-clip-text text-transparent">
+                Welcome,{" "}
+                {firstname.charAt(0).toUpperCase() + firstname.slice(1)}
+              </h1>
+              <br />
+
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleSelectFile}
+                  className="hidden"
+                  id="profileUpload"
+                  multiple={false}
+                />
+                <label htmlFor="profileUpload">
+                  {/* <img
                   src={profilePicture}
                   alt="Profile"
                   className="w-14 h-14 rounded-full border-2 cursor-pointer hover:opacity-80 transition"
+                  
                 /> */}
-                <Avatar
-                  name={username}
-                  imageUrl={profilePicture}
-                  loading={loading}
-                />
-              </label>
-            </div>
-            <button
-              onClick={toggleTheme}
-              className="p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
-            >
-              {theme === "light" ? (
-                <Moon className="text-white" />
-              ) : (
-                <Sun className="text-yellow-400" />
-              )}
-            </button>
-          </div>
-  
-          {/* Tabs */}
-          <div className="flex px-10 mt-4 gap-4 border-b pb-2  ">
-            {["Profile", "Security"].map((tab) => (
+
+                  {/* NOTES-AT-UNILAG */}
+
+                  <Avatar
+                    name={username}
+                    imageUrl={profilePicture}
+                    loading={loading}
+                  />
+                </label>
+              </div>
               <button
-                key={tab}
-                className={`px-4 py-2 font-medium cursor-pointer ${
-                  activeTab === tab
-                    ? "border-b-2 border-cyan-600 text-cyan-600 font-extrabold text-xl"
-                    : "text-gray-500 hover:text-green-600 font-extrabold text-xl"
-                }`}
-                onClick={() => setActiveTab(tab)}
+                onClick={toggleTheme}
+                className="p-2 bg-blue-950 dark:bg-gray-700 rounded-2xl hover:cursor-pointer"
               >
-                {tab}
+                {theme === "light" ? (
+                  <Moon className="text-white" />
+                ) : (
+                  <Sun className="text-yellow-400" />
+                )}
               </button>
-            ))}
+            </div>
+
+            {/* Tabs */}
+            <div className="flex px-10 mt-4 gap-4 border-b pb-2  ">
+              {["Profile", "Security"].map((tab) => (
+                <button
+                  key={tab}
+                  className={`px-4 py-2 font-medium cursor-pointer ${
+                    activeTab === tab
+                      ? "border-b-2 border-cyan-600 text-cyan-600 font-extrabold text-xl"
+                      : "text-gray-500 hover:text-green-600 font-extrabold text-xl"
+                  }`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab Content */}
+            <div className="px-10 ">{renderTabContent()}</div>
           </div>
-  
-          {/* Tab Content */}
-          <div className="px-10 ">{renderTabContent()}</div>
         </div>
-      </div>
-    )};
-   </>
+      )}
+      ;
+    </>
   );
 };
 

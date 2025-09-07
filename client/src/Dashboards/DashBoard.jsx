@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useContext } from "react";
 import image from "../assets/category.png";
 import { UserContext } from "../context/UserContext";
-import Loader from "../components/Loader"; // Import your Loader component
+import Loader from "../components/Loader"; 
 import P2pModal from "../modals/P2pModal";
 import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import blkchain5 from "../assets/darkbg.jpg";
 import wallpaper from "../assets/paywise.jpeg";
 import { Link } from "react-router-dom";
-
 import SchedulePaymentModal from "../modals/SchedulePaymentModal.jsx";
 import AutoPayModal from "../modals/AutoPayModal";
 import {
@@ -19,7 +18,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { Button, Modal, Input, Select, Switch, DatePicker, Upload } from "antd";
+// import { Button, Modal, Input, Select, Switch, DatePicker, Upload } from "antd";
 import Line from "../charts/LineGraph";
 import DashPieChart from "../charts/PieChart";
 import { ethers } from "ethers";
@@ -87,11 +86,11 @@ const DashBoard = () => {
         //   toast.error("User not authenticated.");
         //   return;
         // }
-        console.log(UserId);
+        //  (UserId);
         const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
           withCredentials: true,
         });
-        console.log(response);
+        //  (response);
         setUser(response?.data?.user);
         setWalletBalance(response?.data?.user?.wallet?.balance || 0);
         setLedgerBalance(response?.data?.user?.wallet?.lockedAmount || 0);
@@ -102,7 +101,7 @@ const DashBoard = () => {
           response?.data?.user?.wallet.walletId || "Wallet not Linked!"
         );
       } catch (error) {
-        console.error(error);
+        // console.error(error);
         toast.error(error?.response?.data?.message);
       }
     };
@@ -120,10 +119,10 @@ const DashBoard = () => {
         });
 
         const fetchedBillers = response?.data || [];
-        console.log(fetchedBillers);
+        //  (fetchedBillers);
         setBillers(fetchedBillers);
       } catch (error) {
-        console.error(error);
+        // console.error(error);
         toast.info(
           error?.response?.data?.message || "Failed to fetch billers"
         );
@@ -138,9 +137,9 @@ const DashBoard = () => {
     const fetchHistory = async () => {
       try {
         const userId = localStorage.getItem("userId");
-        // console.log("User ID from localStorage:", userId); // Debugging
+        //  ("User ID from localStorage:", userId); // Debugging
         if (!userId) {
-          console.error("User ID not found in localStorage");
+          // console.error("User ID not found in localStorage");
           return;
         }
 
@@ -151,7 +150,7 @@ const DashBoard = () => {
           }
         );
 
-        console.log("Fetched Payments Data:", response.data); // Debugging
+        //  ("Fetched Payments Data:", response.data); // Debugging
         setHistory(response.data.data || []);
       } catch (error) {
         console.error(
@@ -192,14 +191,14 @@ const DashBoard = () => {
       logo: "https://res.cloudinary.com/dmlhebmi8/image/upload/v1742915517/WhatsApp_Image_2025-03-25_at_16.11.12_izlbju.jpg",
     },
     callback: async (response) => {
-      console.log("Payment callback:", response);
+       ("Payment callback:", response);
 
       const userId = localStorage.getItem("userId");
       if (!userId) {
         toast.error("User ID missing. Please log in again.");
         return;
       }
-      console.log(response);
+       (response);
       if (response.status === "successful") {
         setIsSending(true);
         try {
@@ -237,7 +236,7 @@ const DashBoard = () => {
       closePaymentModal();
     },
     onclose: () => {
-      console.log("Flutterwave modal closed");
+       ("Flutterwave modal closed");
     },
   };
 
@@ -289,7 +288,7 @@ const DashBoard = () => {
       );
 
       toast.success(`Withdrawal processed ${response.data.message}`);
-      console.log("Withdrawal response:", response.data);
+       ("Withdrawal response:", response.data);
     } catch (err) {
       toast.error("Error: " + (err.response?.data?.message || err.message));
       console.error("Withdrawal error:", err);
@@ -308,7 +307,7 @@ const DashBoard = () => {
       const senderId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
 
-      console.log("🔹 Sender ID from localStorage:", senderId);
+       ("🔹 Sender ID from localStorage:", senderId);
 
       if (!senderId) {
         toast.error("User ID is missing. Please log in again.");
@@ -320,7 +319,7 @@ const DashBoard = () => {
         return;
       }
 
-      console.log("🔹 Sending Transfer Request:", {
+       ("🔹 Sending Transfer Request:", {
         senderId,
         recipientEmail,
         amount,
@@ -332,7 +331,7 @@ const DashBoard = () => {
         { withCredentials: true }
       );
 
-      console.log("Transfer Success:", response);
+       ("Transfer Success:", response);
 
       toast.success(response.data.message);
 
@@ -374,7 +373,7 @@ const DashBoard = () => {
       }
 
       const walletAddress = accounts[0];
-      console.log("MetaMask Wallet Address:", walletAddress);
+       ("MetaMask Wallet Address:", walletAddress);
 
       // Store the wallet address (optional)
       localStorage.setItem("walletAddress", walletAddress);
@@ -397,7 +396,7 @@ const DashBoard = () => {
       if (response.status === 200) {
         toast.success("Wallet Connected Successfully!");
         const { updatedWallets } = response.data;
-        console.log(response.data);
+         (response.data);
         // Update user in state if needed
         setMetaMaskAddress(walletAddress);
         setWalletLinked(true);

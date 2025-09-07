@@ -41,11 +41,11 @@ const RewardsAndAnalytics = () => {
         //   toast.error("User not authenticated.");
         //   return;
         // }
-        console.log(UserId);
+         (UserId);
         const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
           withCredentials: true,
         });
-        console.log(response);
+         (response);
         setProfilePicture(response?.data?.user.profilePicture || image)
         setRewardBalance(response?.data?.user?.wallet?.payCoins || 0);
         
@@ -74,7 +74,7 @@ const RewardsAndAnalytics = () => {
           }
         );
         const data = response.data;
-        console.log(data);
+         (data);
         setInsights(data.insights || []);
         // setRewardBalance(data.rewardBalance || 0);
         // setRewardHistory(data.rewardHistory || []);
@@ -91,7 +91,7 @@ const RewardsAndAnalytics = () => {
   const handleRedeem = async() => {
     // const redeemAmount = parseFloat(amount);
      const user = localStorage.getItem("userId")
-    // console.log(user)
+    //  (user)
 
     if (!user || user?.wallet?.payCoins < 100) {
       toast.error("You need at least 100 PayCoins to redeem.");

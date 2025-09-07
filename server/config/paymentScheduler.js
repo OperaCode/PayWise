@@ -27,7 +27,7 @@ const getNextExecutionDate = (currentDate, frequency) => {
 cron.schedule("* * * * *", async () => {
   const now = new Date();
   now.setSeconds(0, 0); // Normalize for precision
-  console.log("🔄 Cron is running at", new Date().toISOString());
+   ("🔄 Cron is running at", new Date().toISOString());
 
   try {
     const duePayments = await Payment.find({
@@ -36,22 +36,22 @@ cron.schedule("* * * * *", async () => {
     });
 
     if (!duePayments.length) {
-      console.log("📭 No due payments found.");
+       ("📭 No due payments found.");
       return;
     }
 
-    console.log(`📌 Found ${duePayments.length} due payment(s)`);
+     (`📌 Found ${duePayments.length} due payment(s)`);
 
     for (const payment of duePayments) {
       const currentUser = await User.findById(payment.user);
       if (!currentUser) {
-        console.log(`⚠️ User not found for Payment ${payment._id}`);
+         (`⚠️ User not found for Payment ${payment._id}`);
         continue;
       }
 
       // Check wallet balance
       if (currentUser.wallet.lockedAmount < payment.amount) {
-        console.log(`⛔ Skipping Payment ${payment._id} — Insufficient funds`);
+         (`⛔ Skipping Payment ${payment._id} — Insufficient funds`);
         continue;
       }
 
@@ -72,7 +72,7 @@ cron.schedule("* * * * *", async () => {
       try {
         await currentUser.save();
       } catch (error) {
-        console.log(`❌ Error saving user wallet: ${error.message}`);
+         (`❌ Error saving user wallet: ${error.message}`);
         continue;
       }
 
@@ -109,9 +109,9 @@ cron.schedule("* * * * *", async () => {
 
         try {
           await Payment.create(newRecurringPayment);
-          console.log(`🔁 Created next recurring payment for ${nextDate}`);
+           (`🔁 Created next recurring payment for ${nextDate}`);
         } catch (err) {
-          console.log(`❌ Error creating recurring payment: ${err.message}`);
+           (`❌ Error creating recurring payment: ${err.message}`);
         }
 
         // Save the current payment with updated recurrence
@@ -122,7 +122,7 @@ cron.schedule("* * * * *", async () => {
       try {
         await payment.save();
       } catch (err) {
-        console.log(`❌ Error saving payment ${payment._id}: ${err.message}`);
+         (`❌ Error saving payment ${payment._id}: ${err.message}`);
         continue;
       }
 
@@ -135,16 +135,16 @@ cron.schedule("* * * * *", async () => {
               $inc: { totalAmountPaid: Number(payment.amount) },
             });
 
-            console.log(`🏦 Updated totalAmountPaid for Biller ${biller.nickname} by $${payment.amount}`);
+             (`🏦 Updated totalAmountPaid for Biller ${biller.nickname} by $${payment.amount}`);
           } else {
-            console.log(`⚠️ Biller not found for ID: ${payment.recipientBiller}`);
+             (`⚠️ Biller not found for ID: ${payment.recipientBiller}`);
           }
         } catch (err) {
-          console.log(`❌ Error updating biller: ${err.message}`);
+           (`❌ Error updating biller: ${err.message}`);
         }
       }
 
-      console.log(`✅ AutoPaid $${payment.amount} | Reward: ${reward} PayCoins`);
+       (`✅ AutoPaid $${payment.amount} | Reward: ${reward} PayCoins`);
     }
   } catch (error) {
     console.error("💥 Cron job error:", error);
