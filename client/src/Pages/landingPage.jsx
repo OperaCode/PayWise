@@ -59,12 +59,6 @@ const integrations = [
   "Stripe",
 ];
 
-// quick stats
-// const quickStats = [
-//   { label: "Users", value: `${users.toLocaleString()}+` },
-//   { label: "On-time rate", value: `${onTime}%` },
-//   { label: "Vendors", value: `${vendors.toLocaleString()}+` },
-// ];
 
 // simple count hook for stats section
 const useCounter = (end = 1000, duration = 1200) => {
