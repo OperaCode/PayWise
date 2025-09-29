@@ -137,7 +137,7 @@ const DashBoard = () => {
     const fetchHistory = async () => {
       try {
         const userId = localStorage.getItem("userId");
-        //  ("User ID from localStorage:", userId); // Debugging
+       
         if (!userId) {
           // console.error("User ID not found in localStorage");
           return;
@@ -150,7 +150,7 @@ const DashBoard = () => {
           }
         );
 
-        //  ("Fetched Payments Data:", response.data); // Debugging
+       
         setHistory(response.data.data || []);
       } catch (error) {
         console.error(
@@ -421,7 +421,7 @@ const DashBoard = () => {
         <section className="p-8">
           <div className="lg:flex gap-4">
             {/* Wallet Balance Section */}
-            <div className="flex-1 h-full font-bodyFont">
+            <div className="flex-1 h-full ">
               <h1 className="font-bold mb-2 text-xl py-2">Wallet Balance:</h1>
               <div className="p-4  w-full rounded-lg shadow-md items-center border-4 border-neutral-500">
                 <div className="flex w-full justify-between items-center">
@@ -919,3 +919,6 @@ const DashBoard = () => {
 };
 
 export default DashBoard;
+
+
+
