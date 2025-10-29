@@ -19,9 +19,9 @@ import { motion, AnimatePresence } from "framer-motion";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const SideBar = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const toggleModal = () => setIsModalOpen((prev) => !prev);
 
   const logoutUser = async () => {

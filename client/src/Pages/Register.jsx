@@ -200,7 +200,7 @@ const Register = () => {
         {/* Left - Form Section */}
         <div className="py-4 md:flex-1 justify-center ">
           <h2 className=" text-3xl md:text-5xl text-center mb-3 font-extrabold bg-gradient-to-r from-green-800 via-cyan-600 to-cyan-500 bg-clip-text text-transparent">
-            Sign up
+            Register
           </h2>
           <p className="mb-6 text-center">Hello Chief! Let’s get you started</p>
 

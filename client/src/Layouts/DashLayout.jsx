@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import Recent from "../components/RecentTransactions";
 import { ThemeContext } from "../context/ThemeContext";
+import { UserContext } from "../context/UserContext";
 import { Moon, Sun } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -10,7 +11,9 @@ import Avatar from "./Avatar";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const DashLayout = ({ children }) => {
+  const { user, setUser } = useContext(UserContext);
   const { theme, toggleTheme } = useContext(ThemeContext);
+
   const [username, setUserName] = useState("");
   const [loading, setLoading] = useState(false);
   const [profilePicture, setProfilePicture] = useState();
@@ -18,11 +21,7 @@ const DashLayout = ({ children }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const UserId = localStorage.getItem("userId");
-        const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
-          withCredentials: true,
-        });
-        const user = response.data?.user;
+        
         setUserName(user.firstName);
         setProfilePicture(user.profilePicture);
       } catch (error) {
@@ -69,7 +68,7 @@ const DashLayout = ({ children }) => {
         {/* Navbar */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-2 ">
           <h1 className="text-lg md:text-3xl font-bold bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-600 bg-clip-text text-transparent">
-            Welcome, {username.charAt(0).toUpperCase() + username.slice(1)}!
+            Welcome, {user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1)}!
           </h1>
 
           {/* Profile + Theme */}

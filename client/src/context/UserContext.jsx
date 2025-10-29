@@ -1,18 +1,38 @@
-import React, { createContext, useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { createContext, useEffect, useState } from "react";
+import axios from "axios";
 
 export const UserContext = createContext();
-
-const savedUser = localStorage.getItem("user");
-const defaultUser = savedUser ? JSON.parse(savedUser) : null;
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-
+// const savedUser = localStorage.getItem("user");
+// const defaultUser = savedUser ? JSON.parse(savedUser) : null;
 
 const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(defaultUser);
+  const [user, setUser] = useState(null);
 
-  // Keep localStorage in sync
+  // to fetch user using token
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const response = await axios.get(`${BASE_URL}/user/client`, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
+        setUser(response.data.user);
+        console.log(respose.data);
+      } catch (error) {
+        console.error("Failed to refresh user:", err);
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, []);
+
+
+
+// Keep localStorage in sync
   useEffect(() => {
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
@@ -21,20 +41,10 @@ const UserProvider = ({ children }) => {
     }
   }, [user]);
 
-  // Refresh user data from backend
-  const refreshUser = async () => {
-    try {
-      const res = await axios.get(`${BASE_URL}/user/${UserId}`, {
-        withCredentials: true, // If you're using cookies/sessions
-      });
-      setUser(res.data); // Update the context with fresh data
-    } catch (err) {
-      console.error("Failed to refresh user:", err);
-    }
-  };
+
 
   return (
-    <UserContext.Provider value={{ user, setUser, refreshUser }}>
+    <UserContext.Provider value={{ user, setUser,  }}>
       {children}
     </UserContext.Provider>
   );

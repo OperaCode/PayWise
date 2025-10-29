@@ -23,9 +23,7 @@ const protectUser = asyncHandler(async (req, res, next) => {
     req.userId = decoded.id;
     // req.user = await userModel.findById(decoded.id).select("-password");
 
-    //  ("Auth header:", req.headers.authorization);
-    //  ("Decoded user:", decoded);
-
+   
     // ("🔹 Fetching user from DB...");
     const foundUser = await userModel.findById(req.userId).select("-password");
 

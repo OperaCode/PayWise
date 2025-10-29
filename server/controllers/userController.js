@@ -200,8 +200,9 @@ const loginUser = asyncHandler(async (req, res) => {
       secure: true,
     });
 
-    res.json({
+    res.status(200).json({
       message: "Login successful",
+      token,
       user: {
         _id: user._id,
         firstName: user.firstName,
@@ -211,7 +212,7 @@ const loginUser = asyncHandler(async (req, res) => {
       },
     });
 
-     (user);
+     console.log(user);
   } catch (error) {
      ("Login Error:", error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -410,7 +411,7 @@ const getUser = asyncHandler(async (req, res) => {
     }
 
     // Find user in database
-    const user = await User.findById(userId).select("-password"); // Exclude password
+    const user = await User.findById(userId).select("-password"); 
 
     if (!user) {
       return res.status(404).json({ message: "User Not Found!" });

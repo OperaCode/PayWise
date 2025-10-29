@@ -30,7 +30,7 @@ router.post('/connect-metamask',connectWallet);
 router.post("/set-pin",protectUser ,setTransactionPin); 
 
 // router.put("/:id/update-profile-picture", uploadProfilePicture);
-router.get("/:userId",protectUser , getUser);
+router.get("/client",protectUser , getUser);
 router.get("/", protectUser, getUsers);
 router.put("/update/:userId", protectUser, updateUser);
 router.delete("/:userId", protectUser, deleteUser);

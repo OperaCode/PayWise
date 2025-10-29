@@ -54,20 +54,26 @@ const Login = () => {
       const response = await axios.post(`${BASE_URL}/user/login`, formData, {
         withCredentials: true,
       });
+      console.log(response.data);
+      const {token, user} = response.data
 
-      if (response?.data?.user) {
-        const user = response.data.user;
+      // if (response?.data?.user) {
+      //   const user = response.data.user;
+      //   console.log(user);
 
+        // localStorage.setItem("userId", user._id);
+        // localStorage.setItem("token", response.data.token);
+        // setUser(user);
+
+        localStorage.setItem("token", token);
         localStorage.setItem("userId", user._id);
         setUser(user);
-       
+
         await sendSignInEmail(user.firstName, user.email);
 
         navigate("/dashboard");
         toast.success("Login Successful! Welcome Back!");
-      } else {
-        toast.error("Invalid server response.");
-      }
+      
     } catch (error) {
       console.error("Login Error:", error);
       const message =
@@ -80,7 +86,6 @@ const Login = () => {
     }
   };
 
-  
   const GoogleLogin = async () => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
@@ -88,7 +93,7 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-       (user);
+      user;
 
       // Get Firebase ID token
       const idToken = await user.getIdToken();
@@ -96,10 +101,7 @@ const Login = () => {
       if (idToken) {
         // (idToken)
         localStorage.setItem("token", idToken);
-         (
-          "Token stored in localStorage:",
-          localStorage.getItem("token")
-        );
+        "Token stored in localStorage:", localStorage.getItem("token");
       }
       //  ("Google Auth Token:", idToken);
 
@@ -112,12 +114,12 @@ const Login = () => {
         }
       );
       if (response?.data) {
-         ("Backend Response:", response.data);
+        "Backend Response:", response.data;
         const user = response.data.user;
-         ("Backend Response:", user);
+        "Backend Response:", user;
 
         localStorage.setItem("userId", user._id);
-         (user);
+        user;
 
         setUser(user);
         navigate("/dashboard");
@@ -195,24 +197,24 @@ const Login = () => {
 
       <div className="rounded-lg  w-full px- gap-4 items-center flex">
         {/* soft background accents */}
-          <div
-            aria-hidden
-            className=" pointer-events-none absolute top-2 -left-24 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl"
-          ></div>
-          <div
-            aria-hidden
-            className="hidden md:block pointer-events-none absolute top-40 right-5  h-72 w-72 rounded-full bg-cyan-300/40 blur-3xl"
-          ></div>
+        <div
+          aria-hidden
+          className=" pointer-events-none absolute top-2 -left-24 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl"
+        ></div>
+        <div
+          aria-hidden
+          className="hidden md:block pointer-events-none absolute top-40 right-5  h-72 w-72 rounded-full bg-cyan-300/40 blur-3xl"
+        ></div>
         {/* Right - Illustration */}
         <div className="w-1/2 hidden md:flex flex-col justify-center items-center">
           {/* <img  alt="" className="w-md" /> */}
           <motion.img
-              src={signInImg.registerVector}
-              alt="Signup Illustration"
-              className="w-md drop-shadow-xl"
-              animate={{ y: [0, -8, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            />
+            src={signInImg.registerVector}
+            alt="Signup Illustration"
+            className="w-md drop-shadow-xl"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          />
           <p className="hidden md:block">
             Don't have an account?{" "}
             <Link to="/register" className="font-bold">

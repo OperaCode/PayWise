@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import logo from "../assets/paywise-logo.png";
-import { Input, Select, Button } from "antd";
+import { Input, Select } from "antd";
 import { jsPDF } from "jspdf";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -13,8 +12,8 @@ const Recent = () => {
   const [sortOption, setSortOption] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
 
+  // fetch transaction history
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -43,6 +42,8 @@ const Recent = () => {
     fetchHistory();
   }, []);
 
+
+  // convert to imglogo to base64 for pdf download- receipt 
   const convertToBase64 = async (url) => {
     const res = await fetch(url);
     const blob = await res.blob();
@@ -53,6 +54,8 @@ const Recent = () => {
     });
   };
 
+
+  // download receipt as pdf
   const downloadReceiptPdf = async () => {
     const doc = new jsPDF();
     const logoBase64 = await convertToBase64(logo);
