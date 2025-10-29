@@ -4,33 +4,28 @@ import LazyLoad from "react-lazyload";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
-import heropicture from "../assets/hero1.png";
-import computer from "../assets/computer.png";
-import files from "../assets/files.png";
-import security from "../assets/security.png";
-import tick from "../assets/tick.png";
-import hero2 from "../assets/hero2.png";
-import quote from "../assets/heroquote.png";
+
+import {landingImg} from "../assets/assets";
 import { Check, Clock, ShieldCheck } from "lucide-react";
 
 const features = [
   {
-    img: computer,
+    img: landingImg.computer,
     title: "Manage Bills Anywhere",
     desc: "Access, track, and pay your bills seamlessly from any location.",
   },
   {
-    img: security,
+    img: landingImg.security,
     title: "Secure Transactions",
     desc: "Your data is protected with advanced encryption and fraud prevention.",
   },
   {
-    img: files,
+    img: landingImg.files,
     title: "Organized Payments",
     desc: "Centralize all your bills in one place for clarity and control.",
   },
   {
-    img: tick,
+    img: landingImg.tick,
     title: "Vendor Management",
     desc: "Smooth, timely vendor payments without hassle.",
   },
@@ -109,7 +104,7 @@ const LandingPage = () => {
 
           <div className="flex flex-col items-center text-center">
             <motion.img
-              src={heropicture}
+              src={landingImg.heropicture}
               alt="Illustration of PayWise bill payment platform"
               className="w-full max-w-2xl mx-auto mb-6 drop-shadow-xl"
               animate={{ y: [0, -8, 0] }}
@@ -223,7 +218,7 @@ const LandingPage = () => {
           >
             <div className="flex-1">
               <motion.img
-                src={hero2}
+                src={landingImg.hero2}
                 alt="Illustration of earning rewards with PayWise"
                 className="w-full max-w-lg mx-auto rounded-xl shadow-lg"
                 loading="lazy"
@@ -271,7 +266,7 @@ const LandingPage = () => {
           >
             <div className="mx-auto max-w-6xl">
               <div className="flex items-center gap-3 mb-8">
-                <img src={quote} alt="" className="w-10 h-10" loading="lazy" />
+                <img src={landingImg.quote} alt="" className="w-10 h-10" loading="lazy" />
                 <h2 className="text-3xl font-bold">What Our Users Say</h2>
               </div>
 

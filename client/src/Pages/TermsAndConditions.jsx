@@ -1,5 +1,5 @@
 import React from 'react'
-import image from "../assets/TandC.png"
+import { tAndCImg } from '../assets/assets'
 
 const TermsAndConditions = () => {
   return (
@@ -27,7 +27,7 @@ const TermsAndConditions = () => {
           </p>
 
 
-          <img src={image} alt="" />
+          <img src={tAndCImg.tandCimage} alt="" />
         </div>
         
         <p className="text-lg mt-6 text-cyan-900 font-semibold">

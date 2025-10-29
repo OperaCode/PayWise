@@ -100,25 +100,25 @@ const SideBar = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.3 }}
-              className="fixed top-0 right-0 h-full w-72 bg-white shadow-lg p-4 z-50"
+              className="fixed top-0 right-0 h-full w-72 bg-zinc-100 shadow-lg p-8 z-50 "
             >
-              <button onClick={toggleModal} className="mb-4">
-                <SquareX className="w-8 h-8 hover:text-cyan-900" />
+              <button onClick={toggleModal} className="mb-4 text-black">
+                <SquareX className=" " />
               </button>
               <nav className="flex flex-col gap-6 font-headerFont">
-                <Link to="/billers" onClick={toggleModal} className="flex items-center gap-2">
+                <Link to="/billers" onClick={toggleModal} className="flex items-center gap-2 text-black">
                   <TabletSmartphone size={17} strokeWidth={3} /> Manage Billers
                 </Link>
-                <Link to="/analytics" onClick={toggleModal} className="flex items-center gap-2">
+                <Link to="/analytics" onClick={toggleModal} className="flex items-center gap-2 text-black">
                   <BadgeDollarSign size={17} strokeWidth={3} /> Rewards & Analytics
                 </Link>
-                <Link to="/transactions" onClick={toggleModal} className="flex items-center gap-2">
+                <Link to="/transactions" onClick={toggleModal} className="flex items-center gap-2 text-black">
                   <ArrowRightLeft size={17} strokeWidth={3} /> Transaction History
                 </Link>
-                <Link to="/settings" onClick={toggleModal} className="flex items-center gap-2">
+                <Link to="/settings" onClick={toggleModal} className="flex items-center gap-2 text-black">
                   <UserRoundCog size={17} strokeWidth={3} /> Profile Settings
                 </Link>
-                <button onClick={logoutUser} className="flex items-center gap-2">
+                <button onClick={logoutUser} className="flex items-center gap-2 text-black">
                   <LogOut size={17} strokeWidth={3} /> Log Out
                 </button>
               </nav>

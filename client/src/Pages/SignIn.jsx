@@ -10,11 +10,9 @@ import {
 
 import { toast } from "react-toastify";
 import { ThemeContext } from "../context/ThemeContext";
-
 import { UserContext } from "../context/UserContext";
 import { Moon, Sun } from "lucide-react";
-import image from "../assets/Register.png";
-import logo from "../assets/paywise-logo.png";
+import { signInImg } from "../assets/assets";
 import Loader from "../components/Loader";
 import { sendSignInEmail } from "../Hooks/email";
 import { motion } from "framer-motion";
@@ -62,8 +60,7 @@ const Login = () => {
 
         localStorage.setItem("userId", user._id);
         setUser(user);
-        //  ("✅ User from backend:", user);
-
+       
         await sendSignInEmail(user.firstName, user.email);
 
         navigate("/dashboard");
@@ -178,7 +175,7 @@ const Login = () => {
         <div className="w-35">
           <Link to="/">
             <img
-              src={logo}
+              src={signInImg.logo}
               alt="Register"
               className="bg-zinc-100 w-md rounded-sm"
             />
@@ -210,7 +207,7 @@ const Login = () => {
         <div className="w-1/2 hidden md:flex flex-col justify-center items-center">
           {/* <img  alt="" className="w-md" /> */}
           <motion.img
-              src={image}
+              src={signInImg.registerVector}
               alt="Signup Illustration"
               className="w-md drop-shadow-xl"
               animate={{ y: [0, -8, 0] }}

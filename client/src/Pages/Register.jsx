@@ -4,6 +4,7 @@ import { UserContext } from "../context/UserContext";
 import { Moon, Sun } from "lucide-react";
 import image from "../assets/signup.png";
 import logo from "../assets/paywise-logo.png";
+import { signUpImg } from "../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -165,7 +166,7 @@ const Register = () => {
         <div className="w-35">
           <Link to="/">
             <img
-              src={logo}
+              src={signUpImg.signUplogo}
               alt="Register"
               className="bg-zinc-100 w-md rounded-sm"
             />
@@ -292,7 +293,7 @@ const Register = () => {
         <div className="w-1/2 hidden md:flex flex-col flex-1 justify-center items-center">
          
           <motion.img
-              src={image}
+              src={signUpImg.signUpVector}
               alt="Register Illustration"
               className="w-md drop-shadow-xl"
               animate={{ y: [0, -8, 0] }}

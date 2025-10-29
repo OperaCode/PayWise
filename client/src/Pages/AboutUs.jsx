@@ -1,5 +1,5 @@
 import React from 'react'
-import image from "../assets/aboutUs.png"
+import { aboutUsImg } from '../assets/assets';
 import { Check } from 'lucide-react';
 
 const AboutUs = () => {
@@ -14,7 +14,7 @@ const AboutUs = () => {
           Our platform is designed to give you full control over your payments, ensuring convenience, security,
           and efficiency.
         </p>
-        <img src={image} alt="" />
+        <img src={aboutUsImg.image} alt="" />
         </div>
         <h2 className="text-2xl font-semibold mb-3 text-cyan-900">Why Choose PayWise?</h2>
         <ul className=" text-left mx-auto max-w-xl">
