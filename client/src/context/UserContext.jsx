@@ -21,9 +21,9 @@ const UserProvider = ({ children }) => {
           withCredentials: true,
         });
         setUser(response.data.user);
-        console.log(respose.data);
+        // console.log(response.data);
       } catch (error) {
-        console.error("Failed to refresh user:", err);
+        console.error("Failed to refresh user:", error);
         setUser(null);
       }
     };
