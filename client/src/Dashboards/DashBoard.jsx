@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import image from "../assets/category.png";
 import { UserContext } from "../context/UserContext";
-import Loader from "../components/Loader"; 
+import Loader from "../components/Loader";
 import P2pModal from "../modals/P2pModal";
 import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import blkchain5 from "../assets/darkbg.jpg";
@@ -29,9 +29,8 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const DashBoard = () => {
-  // const { user, setUser } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   //const { setLoading } = useContext(LoaderContext);
-  const [user, setUser] = useState("");
   const [fundModalOpen, setFundModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [manageTokensModalOpen, setManageTokensModalOpen] = useState(false);
@@ -53,68 +52,35 @@ const DashBoard = () => {
   const [walletLinked, setWalletLinked] = useState(false);
   const [metaMaskAddress, setMetaMaskAddress] = useState("");
   const [payWalletAddress, setPayWalletAddress] = useState("");
-  // const [scheduleDate, setScheduleDate] = useState("");
-  // const [activeTab, setActiveTab] = useState("crypto");
-  //to show hidden wallet balance
+
   const [showWallet, setShowWallet] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
-  // const [activeBillers, setActiveBillers] = useState({});
-  // const [pin, setPin] = useState("");
+
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [bankCode, setBankCode] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [narration, setNarration] = useState("");
   const [activeTab, setActiveTab] = useState("fund");
-  // const [loading, setLoading] = useState(false);
 
   const [history, setHistory] = useState([]);
 
+  const token = localStorage.getItem("token");
+  console.log(token);
+  console.log(user);
+
+  
   //Loading Timeout
   useEffect(() => {
     // Simulate an API call or app initialization delay
     setTimeout(() => setLoading(false), 3000);
   }, []);
 
-  //Fetch User
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const UserId = localStorage.getItem("userId");
-
-        // (!UserId) {
-        //   console.error("User ID not found in localStorage.");
-        //   toast.error("User not authenticated.");
-        //   return;
-        // }
-        //  (UserId);
-        const response = await axios.get(`${BASE_URL}/user/${UserId}`, {
-          withCredentials: true,
-        });
-        //  (response);
-        setUser(response?.data?.user);
-        setWalletBalance(response?.data?.user?.wallet?.balance || 0);
-        setLedgerBalance(response?.data?.user?.wallet?.lockedAmount || 0);
-        setMetaMaskAddress(
-          response?.data?.user?.metamaskWallet || "Wallet not Linked!"
-        );
-        setPayWalletAddress(
-          response?.data?.user?.wallet.walletId || "Wallet not Linked!"
-        );
-      } catch (error) {
-        // console.error(error);
-        toast.error(error?.response?.data?.message);
-      }
-    };
-    fetchUser();
-  }, []);
-
   // for fetching billers to frontend
   useEffect(() => {
     const fetchBillers = async () => {
       try {
-        // const UserId = localStorage.getItem("userId");
-        const token = localStorage.getItem("token");
         const response = await axios.get(`${BASE_URL}/biller`, {
+          headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
 
@@ -123,9 +89,7 @@ const DashBoard = () => {
         setBillers(fetchedBillers);
       } catch (error) {
         // console.error(error);
-        toast.info(
-          error?.response?.data?.message || "Failed to fetch billers"
-        );
+        toast.info(error?.response?.data?.message || "Failed to fetch billers");
       }
     };
 
@@ -137,7 +101,7 @@ const DashBoard = () => {
     const fetchHistory = async () => {
       try {
         const userId = localStorage.getItem("userId");
-       
+
         if (!userId) {
           // console.error("User ID not found in localStorage");
           return;
@@ -150,7 +114,6 @@ const DashBoard = () => {
           }
         );
 
-       
         setHistory(response.data.data || []);
       } catch (error) {
         console.error(
@@ -182,8 +145,8 @@ const DashBoard = () => {
     currency: "NGN",
     payment_options: "card, banktransfer, ussd",
     customer: {
-      email: user.email,
-      name: `${user.firstName} ${user.lastName}`,
+      email: user?.email,
+      name: `${user?.firstName} ${user?.lastName}`,
     },
     customizations: {
       title: "Fund PayWise Wallet",
@@ -191,14 +154,14 @@ const DashBoard = () => {
       logo: "https://res.cloudinary.com/dmlhebmi8/image/upload/v1742915517/WhatsApp_Image_2025-03-25_at_16.11.12_izlbju.jpg",
     },
     callback: async (response) => {
-       ("Payment callback:", response);
+      "Payment callback:", response;
 
       const userId = localStorage.getItem("userId");
       if (!userId) {
         toast.error("User ID missing. Please log in again.");
         return;
       }
-       (response);
+      response;
       if (response.status === "successful") {
         setIsSending(true);
         try {
@@ -236,7 +199,7 @@ const DashBoard = () => {
       closePaymentModal();
     },
     onclose: () => {
-       ("Flutterwave modal closed");
+      ("Flutterwave modal closed");
     },
   };
 
@@ -288,7 +251,7 @@ const DashBoard = () => {
       );
 
       toast.success(`Withdrawal processed ${response.data.message}`);
-       ("Withdrawal response:", response.data);
+      "Withdrawal response:", response.data;
     } catch (err) {
       toast.error("Error: " + (err.response?.data?.message || err.message));
       console.error("Withdrawal error:", err);
@@ -307,7 +270,7 @@ const DashBoard = () => {
       const senderId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
 
-       ("🔹 Sender ID from localStorage:", senderId);
+      "🔹 Sender ID from localStorage:", senderId;
 
       if (!senderId) {
         toast.error("User ID is missing. Please log in again.");
@@ -319,11 +282,12 @@ const DashBoard = () => {
         return;
       }
 
-       ("🔹 Sending Transfer Request:", {
-        senderId,
-        recipientEmail,
-        amount,
-      });
+      "🔹 Sending Transfer Request:",
+        {
+          senderId,
+          recipientEmail,
+          amount,
+        };
 
       const response = await axios.post(
         `${BASE_URL}/payment/wallet-transfer`,
@@ -331,7 +295,7 @@ const DashBoard = () => {
         { withCredentials: true }
       );
 
-       ("Transfer Success:", response);
+      "Transfer Success:", response;
 
       toast.success(response.data.message);
 
@@ -373,7 +337,7 @@ const DashBoard = () => {
       }
 
       const walletAddress = accounts[0];
-       ("MetaMask Wallet Address:", walletAddress);
+      "MetaMask Wallet Address:", walletAddress;
 
       // Store the wallet address (optional)
       localStorage.setItem("walletAddress", walletAddress);
@@ -396,7 +360,7 @@ const DashBoard = () => {
       if (response.status === 200) {
         toast.success("Wallet Connected Successfully!");
         const { updatedWallets } = response.data;
-         (response.data);
+        response.data;
         // Update user in state if needed
         setMetaMaskAddress(walletAddress);
         setWalletLinked(true);
@@ -919,6 +883,3 @@ const DashBoard = () => {
 };
 
 export default DashBoard;
-
-
-

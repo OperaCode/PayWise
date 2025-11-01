@@ -37,6 +37,7 @@ const ManageBillers = ({formatCurrency}) => {
     serviceType: "",
     amount: "",
   });
+  
   const [newBiller, setNewBiller] = useState({
     fullName: "",
     nickname: "",
@@ -45,6 +46,7 @@ const ManageBillers = ({formatCurrency}) => {
     profilePicture: "",
     wallet: { walletId: "" },
   });
+
   // const billerTypes = ["Vendor", " Beneficiary"];
   const serviceTypes = [
     "Electricity",
@@ -78,7 +80,7 @@ const ManageBillers = ({formatCurrency}) => {
         });
 
         const fetchedBillers = response?.data || [];
-         (fetchedBillers);
+         console.log(fetchedBillers);
         setBillers(fetchedBillers);
 
         // Initialize active states

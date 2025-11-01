@@ -212,7 +212,7 @@ const loginUser = asyncHandler(async (req, res) => {
       },
     });
 
-     console.log(user);
+    
   } catch (error) {
      ("Login Error:", error);
     return res.status(500).json({ message: "Internal Server Error" });

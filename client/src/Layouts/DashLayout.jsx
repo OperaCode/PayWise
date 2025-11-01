@@ -17,7 +17,7 @@ const DashLayout = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [profilePicture, setProfilePicture] = useState();
 
-  console.log(user);
+  // console.log(user);
 
   const token = localStorage.getItem("token");
 
@@ -48,10 +48,7 @@ const DashLayout = ({ children }) => {
         }
       );
       if (res.data.user?.profilePicture) {
-        // setProfilePicture(res.data.user.profilePicture);
-        // toast.success("Profile picture updated!");
-
-        // ✅ Update local + global user state
+      const newPicture = res.data.user.profilePicture;
         setProfilePicture(newPicture);
         setUser((prev) => ({ ...prev, profilePicture: newPicture }));
 
